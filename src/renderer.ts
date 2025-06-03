@@ -1,4 +1,5 @@
 import { vert, frag } from "./shaders";
+import { Camera } from "./camera";
 
 export class Renderer {
     private device!: GPUDevice
@@ -12,12 +13,14 @@ export class Renderer {
     private uniformBuffer!: GPUBuffer
     private uniformData!: Float32Array
     private bindGroup!: GPUBindGroup
+    private camera!: Camera
 
     constructor(private canvas: HTMLCanvasElement) {
 		
     }
 
     public async init() {
+        this.camera = new Camera()
         await this.getGPUDevice()
         this.configCanvas()
         this.loadShaders()
@@ -85,10 +88,10 @@ export class Renderer {
                 module: this.vertexShader,
                 buffers: [
                     {
-                        arrayStride: 6 * 4,
+                        arrayStride: 7 * 4,
                         attributes: [
-                            {shaderLocation: 0, offset: 0, format: "float32x2"}, // pos
-                            {shaderLocation: 1, offset: 2 * 4, format: "float32x4"}, // color
+                            {shaderLocation: 0, offset: 0, format: "float32x3"}, // pos
+                            {shaderLocation: 1, offset: 3 * 4, format: "float32x4"}, // color
                         ]
                     }
                 ]
@@ -101,11 +104,11 @@ export class Renderer {
     }
 
     private configureVertexBuffer() {
-        const vertexData = new Float32Array(6 * 3)
+        const vertexData = new Float32Array(7 * 3)
         vertexData.set([
-             0.0,  0.8, 1.0, 0.0, 0.0, 1.0,
-            -0.8, -0.8, 0.0, 1.0, 0.0, 1.0,
-             0.8, -0.8, 0.0, 0.0, 1.0, 1.0,
+             0.0,  0.8, -1.0, 1.0, 0.0, 0.0, 1.0,
+            -0.8, -0.8, -1.0, 0.0, 1.0, 0.0, 1.0,
+             0.8, -0.8, -1.0, 0.0, 0.0, 1.0, 1.0,
         ])
         
         this.vertexBuffer = this.device.createBuffer({
@@ -119,11 +122,10 @@ export class Renderer {
     private configureUniformBuffer() {
         this.uniformBuffer = this.device.createBuffer({
             label: "uniform buffer",
-            size: 4,
+            size: (4 + 16 + 16 + 16) * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         })
-        this.uniformData = new Float32Array(1)
-        this.uniformData[0] = 0.0
+        this.uniformData = new Float32Array((4 + 16 + 16 + 16))
 
         this.bindGroup = this.device.createBindGroup({
             layout: this.pipeline.getBindGroupLayout(0),
@@ -150,6 +152,15 @@ export class Renderer {
         (this.renderPassDescriptor.colorAttachments as any)[0].view = this.context.getCurrentTexture().createView()
 
         this.uniformData[0] = ((Date.now() - 1748964096000) / 1000)
+        const model = [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ]
+        this.uniformData.subarray(4, 20).set(model)
+        this.uniformData.subarray(20, 36).set(this.camera.view)
+        this.uniformData.subarray(36, 52).set(this.camera.projection)
         this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformData)
 
         const encoder = this.device.createCommandEncoder({ label: "render encoder" })

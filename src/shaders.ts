@@ -1,6 +1,6 @@
 export const vert = /* wgsl */ `
 struct VertexIn {
-	@location(0) pos: vec2f,
+	@location(0) pos: vec3f,
 	@location(1) color: vec4f
 };
 
@@ -10,14 +10,21 @@ struct VertexOut {
 	@location(0) color: vec4f
 };
 
-@group(0) @binding(0) var<uniform> time: f32;
+struct Uniforms {
+	time: f32,
+	model: mat4x4f,
+	view: mat4x4f,
+	projection: mat4x4f,
+};
+
+@group(0) @binding(0) var<uniform> uniforms: Uniforms;
 
 // process the points of the triangle
 @vertex 
 fn vs(vert: VertexIn) -> VertexOut {
 	var out: VertexOut;
-	out.pos = vec4f(vert.pos, 0.0, 1.0);
-	out.color = vert.color * fract(time);
+	out.pos = uniforms.projection * uniforms.view * uniforms.model * vec4f(vert.pos, 1.0);
+	out.color = vert.color * fract(uniforms.time);
 
 	return out;
 }
