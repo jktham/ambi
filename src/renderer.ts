@@ -25,7 +25,7 @@ export class Renderer {
         this.configureVertexBuffer()
         this.configureUniformBuffer()
         this.configureRenderPassDescriptor()
-        this.render()
+        this.loop()
     }
 
 	private async getGPUDevice() {
@@ -161,5 +161,22 @@ export class Renderer {
         pass.end()
 
         this.device.queue.submit([encoder.finish()])
+    }
+
+    private loop() {
+        let t0 = 0
+        const frame = (t: number) => {
+            if (t0 == 0) {
+                t0 = t
+            }
+            const dt = t - t0
+            if (dt > 1000 / 60) {
+                this.render()
+            }
+            requestAnimationFrame(frame)
+        }
+
+        this.render()
+        requestAnimationFrame(frame)
     }
 }
