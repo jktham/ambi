@@ -1,5 +1,6 @@
 import { vert, frag } from "./shaders";
 import { Camera } from "./camera";
+import { Input } from "./input";
 
 export class Renderer {
     private device!: GPUDevice
@@ -13,7 +14,8 @@ export class Renderer {
     private uniformBuffer!: GPUBuffer
     private uniformData!: Float32Array
     private bindGroup!: GPUBindGroup
-    private camera!: Camera
+    public camera!: Camera
+    public input!: Input
 
     constructor(private canvas: HTMLCanvasElement) {
 		
@@ -21,6 +23,7 @@ export class Renderer {
 
     public async init() {
         this.camera = new Camera()
+        this.input = new Input()
         await this.getGPUDevice()
         this.configCanvas()
         this.loadShaders()
@@ -148,6 +151,11 @@ export class Renderer {
         }
     }
 
+    private update(dt: number) {
+        this.camera.updatePosition(this.input.activeActions, dt);
+        this.camera.updateRotation(this.input.cursor);
+    }
+
     private render() {
         (this.renderPassDescriptor.colorAttachments as any)[0].view = this.context.getCurrentTexture().createView()
 
@@ -180,8 +188,10 @@ export class Renderer {
             if (t0 == 0) {
                 t0 = t
             }
-            const dt = t - t0
-            if (dt > 1000 / 60) {
+            const dt = (t - t0) / 1000
+            t0 = t;
+            if (dt >= 1 / 60) {
+                this.update(dt)
                 this.render()
             }
             requestAnimationFrame(frame)
