@@ -144,7 +144,7 @@ export class Renderer {
         this.renderPassDescriptor = {
             label: "Render Pass Description",
             colorAttachments: [{
-                clearValue: [0.0, 0.0, 0.0, 1.0],
+                clearValue: [0.1, 0.1, 0.1, 1.0],
                 loadOp: "clear",
                 storeOp: "store",
                 view: this.context.getCurrentTexture().createView()
@@ -154,7 +154,8 @@ export class Renderer {
 
     private update(dt: number) {
         this.camera.updatePosition(this.input.activeActions, dt);
-        this.camera.updateRotation(this.input.cursor);
+        this.camera.updateRotation(this.input.cursorChange);
+        this.input.resetChange();
     }
 
     private render() {

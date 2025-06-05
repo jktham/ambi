@@ -1,4 +1,3 @@
-
 export class Vec3 {
 	public data: number[];
 
@@ -45,6 +44,14 @@ export class Vec3 {
 			this.z * op.x - this.x * op.z, 
 			this.x * op.y - this.y * op.x
 		]);
+	}
+
+	public length(): number {
+		return Math.sqrt(this.x**2 + this.y**2 + this.z**2);
+	}
+
+	public normalize(): Vec3 {
+		return this.mul(1/this.length());
 	}
 
 }

@@ -21,7 +21,7 @@ export class Input {
 		["f", "down"],
 		["shift", "sprint"],
 	]);
-	cursor: Vec3 = new Vec3();
+	cursorChange: Vec3 = new Vec3();
 
 	constructor() {
 		addEventListener("keydown", (e) => {
@@ -40,9 +40,13 @@ export class Input {
 		});
 		addEventListener("mousemove", (e) => {
 			if (document.pointerLockElement) {
-				this.cursor = new Vec3([this.cursor.x + e.movementX, this.cursor.y + e.movementY, 0]);
+				this.cursorChange = new Vec3([this.cursorChange.x + e.movementX, this.cursorChange.y + e.movementY, 0]);
 			}
 		})
+	}
+
+	resetChange() {
+		this.cursorChange = new Vec3();
 	}
 
 }
