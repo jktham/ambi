@@ -1,3 +1,5 @@
+import { Vec3 } from "./vec";
+
 export type Action = 
 	"left" |
 	"right" |
@@ -19,7 +21,7 @@ export class Input {
 		["f", "down"],
 		["shift", "sprint"],
 	]);
-	cursor: [number, number] = [0, 0];
+	cursor: Vec3 = new Vec3();
 
 	constructor() {
 		addEventListener("keydown", (e) => {
@@ -38,7 +40,7 @@ export class Input {
 		});
 		addEventListener("mousemove", (e) => {
 			if (document.pointerLockElement) {
-				this.cursor = [this.cursor[0] + e.movementX, this.cursor[1] + e.movementY];
+				this.cursor = new Vec3([this.cursor.x + e.movementX, this.cursor.y + e.movementY, 0]);
 			}
 		})
 	}

@@ -1,35 +1,26 @@
 import type { Action } from "./input";
+import { Vec3, Mat4 } from "./vec";
 
 export class Camera {
-	position: number[];
-	rotation: number[];
-	fov: number;
-	view: number[];
-	projection: number[];
+	position: Vec3 = new Vec3();
+	rotation: Vec3 = new Vec3();
 	speed: number = 4.0;
+	fov: number = 90.0;
+	view: Mat4 = new Mat4();
+	projection: Mat4;
 
 	constructor() {
-		this.position = [0, 0, 1];
-		this.rotation = [0, 0];
-		this.fov = 90.0;
-		this.view = [
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			-this.position[0], -this.position[1], -this.position[2], 1
-		];
-
-		const near = 0.01;
+		const near = 0.001;
 		const far = 1000.0;
 		const aspect = 16.0 / 9.0;
 		const phi = Math.tan(Math.PI * 0.5 - 0.5 * this.fov / 180.0 * Math.PI);
 
-		this.projection = [
+		this.projection = new Mat4([
 			phi / aspect, 0.0, 0.0, 0.0,
 			0.0, phi, 0.0, 0.0,
-			0.0, 0.0, far / (near - far), -1.0,
-			0.0, 0.0, near * far / (near - far), 0.0,
-		];
+			0.0, 0.0, far / (near - far), near * far / (near - far),
+			0.0, 0.0, -1.0, 0.0
+		]);
 	}
 
 	updatePosition(actions: Set<Action>, dt: number) {
@@ -37,42 +28,36 @@ export class Camera {
 			const speed = actions.has("sprint") ? this.speed * 4 : this.speed;
 			switch (action) {
 				case "left":
-					this.position[0] -= speed * dt;
+					this.position.x -= speed * dt;
 					break;
 				case "right":
-					this.position[0] += speed * dt;
+					this.position.x += speed * dt;
 					break;
 				case "up":
-					this.position[1] += speed * dt;
+					this.position.y += speed * dt;
 					break;
 				case "down":
-					this.position[1] -= speed * dt;
+					this.position.y -= speed * dt;
 					break;
 				case "forward":
-					this.position[2] -= speed * dt;
+					this.position.z -= speed * dt;
 					break;
 				case "backward":
-					this.position[2] += speed * dt;
+					this.position.z += speed * dt;
 					break;
 			}
 		}
-		this.view = [
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			-this.position[0], -this.position[1], -this.position[2], 1
-		];
+		this.updateView();
 	}
 
-	updateRotation(cursor: [number, number]) {
-		this.rotation[0] = cursor[0] / 100.0 * Math.PI;
-		this.rotation[1] = cursor[1] / 100.0 * Math.PI;
-		this.view = [
-			1, 0, 0, 0,
-			0, Math.cos(this.rotation[0]), -Math.sin(this.rotation[0]), 0,
-			0, Math.sin(this.rotation[0]), Math.cos(this.rotation[0]), 0,
-			-this.position[0], -this.position[1], -this.position[2], 1
-		];
+	updateRotation(cursor: Vec3) {
+		this.rotation.x = cursor.x / 400.0 * Math.PI;
+		this.rotation.y = cursor.y / 400.0 * Math.PI;
+		this.updateView();
+	}
+
+	updateView() {
+		this.view = Mat4.rotate(this.rotation.y, this.rotation.x, 0).mul(Mat4.translate(this.position.mul(-1)));
 	}
 
 }

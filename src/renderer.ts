@@ -1,6 +1,7 @@
 import { vert, frag } from "./shaders";
 import { Camera } from "./camera";
 import { Input } from "./input";
+import { Mat4 } from "./vec";
 
 export class Renderer {
     private device!: GPUDevice
@@ -160,15 +161,10 @@ export class Renderer {
         (this.renderPassDescriptor.colorAttachments as any)[0].view = this.context.getCurrentTexture().createView()
 
         this.uniformData[0] = ((Date.now() - 1748964096000) / 1000)
-        const model = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ]
-        this.uniformData.subarray(4, 20).set(model)
-        this.uniformData.subarray(20, 36).set(this.camera.view)
-        this.uniformData.subarray(36, 52).set(this.camera.projection)
+        const model = Mat4.rotate(0, 0, this.uniformData[0]);
+        this.uniformData.subarray(4, 20).set(model.transpose().data)
+        this.uniformData.subarray(20, 36).set(this.camera.view.transpose().data)
+        this.uniformData.subarray(36, 52).set(this.camera.projection.transpose().data)
         this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformData)
 
         const encoder = this.device.createCommandEncoder({ label: "render encoder" })

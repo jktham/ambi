@@ -24,7 +24,7 @@ struct Uniforms {
 fn vs(vert: VertexIn) -> VertexOut {
 	var out: VertexOut;
 	out.pos = uniforms.projection * uniforms.view * uniforms.model * vec4f(vert.pos, 1.0);
-	out.color = vert.color * fract(uniforms.time);
+	out.color = vert.color * (sin(uniforms.time * 2) + 1) / 2;
 
 	return out;
 }
