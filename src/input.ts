@@ -1,14 +1,7 @@
 import { Vec3 } from "./vec";
 
-export type Action = 
-	"left" |
-	"right" |
-	"up" |
-	"down" |
-	"forward" |
-	"backward" |
-	"sprint" 
-;
+export const Actions = ["left", "right", "up", "down", "forward", "backward", "sprint"] as const;
+export type Action = typeof Actions[number];
 
 export class Input {
 	private canvas: HTMLCanvasElement;

@@ -19,7 +19,7 @@ export class Engine {
 	public async run() {
 		await this.renderer.init();
 		this.scene.init();
-		this.renderer.loadScene(this.scene);
+		await this.renderer.loadScene(this.scene);
 		this.loop();
 	}
 

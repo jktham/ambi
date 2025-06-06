@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
+import { Resources } from "./resources";
 import type { Scene } from "./scene";
-import { vert, frag } from "./shaders";
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
@@ -14,6 +14,7 @@ export class Renderer {
     private uniformData: Float32Array[] = [];
     private uniformBindGroup: GPUBindGroup[] = [];
     private textureBindGroup: GPUBindGroup[] = [];
+    private resources: Resources = new Resources();
 
     constructor(canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
@@ -22,7 +23,7 @@ export class Renderer {
     public async init() {
         await this.getGPUDevice();
         this.configureCanvas();
-        this.configurePipeline();
+        await this.configurePipeline();
         this.configureRenderPassDescriptor();
     }
 
@@ -56,14 +57,14 @@ export class Renderer {
         });
     }
 
-    private configurePipeline() {
+    private async configurePipeline() {
         const vertexShader = this.device.createShaderModule({
             label: "vertex shader",
-            code: vert,
+            code: await this.resources.loadShader("world_vert.wgsl"),
         });
         const fragmentShader = this.device.createShaderModule({
             label: "fragment shader",
-            code: frag,
+            code: await this.resources.loadShader("world_frag.wgsl"),
         });
 
         this.pipeline = this.device.createRenderPipeline({
@@ -101,15 +102,10 @@ export class Renderer {
         };
     }
 
-    public loadScene(scene: Scene) {
+    public async loadScene(scene: Scene) {
         for (let i=0; i<scene.worldObjects.length; i++) {
             // vertex buffer
-            const vertexData = new Float32Array(9 * 3);
-            vertexData.set([
-                0.0,  0.8, -1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-                -0.8, -0.8, -1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0,
-                0.8, -0.8, -1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-            ]);
+            const vertexData = await this.resources.loadMesh("triangle.json");
             this.vertexBuffer.push(this.device.createBuffer({
                 label: "vertex buffer",
                 size: vertexData.byteLength,
@@ -134,11 +130,7 @@ export class Renderer {
             }));
 
             // texture buffer
-            const textureData = new Uint8Array([
-                [255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255], [255, 255, 255, 255], 
-                [255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255], [255, 255, 255, 255], 
-                [255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255], [255, 255, 255, 255]
-            ].flat());
+            const textureData = await this.resources.loadTexture("test.json");
             const textureBuffer = this.device.createTexture({
                 label: "texture buffer",
                 size: [4, 3],
