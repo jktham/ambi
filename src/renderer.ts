@@ -17,6 +17,7 @@ export class Renderer {
     private bindGroup!: GPUBindGroup
     public camera!: Camera
     public input!: Input
+    private textureBindGroup!: GPUBindGroup;
 
     constructor(private canvas: HTMLCanvasElement) {
 		
@@ -31,6 +32,7 @@ export class Renderer {
         this.configurePipeline()
         this.configureVertexBuffer()
         this.configureUniformBuffer()
+        this.configureTextureBuffer()
         this.configureRenderPassDescriptor()
         this.loop()
     }
@@ -92,10 +94,11 @@ export class Renderer {
                 module: this.vertexShader,
                 buffers: [
                     {
-                        arrayStride: 7 * 4,
+                        arrayStride: 9 * 4,
                         attributes: [
                             {shaderLocation: 0, offset: 0, format: "float32x3"}, // pos
                             {shaderLocation: 1, offset: 3 * 4, format: "float32x4"}, // color
+                            {shaderLocation: 2, offset: 7 * 4, format: "float32x2"}, // uv
                         ]
                     }
                 ]
@@ -108,11 +111,11 @@ export class Renderer {
     }
 
     private configureVertexBuffer() {
-        const vertexData = new Float32Array(7 * 3)
+        const vertexData = new Float32Array(9 * 3)
         vertexData.set([
-             0.0,  0.8, -1.0, 1.0, 0.0, 0.0, 1.0,
-            -0.8, -0.8, -1.0, 0.0, 1.0, 0.0, 1.0,
-             0.8, -0.8, -1.0, 0.0, 0.0, 1.0, 1.0,
+             0.0,  0.8, -1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+            -0.8, -0.8, -1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0,
+             0.8, -0.8, -1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
         ])
         
         this.vertexBuffer = this.device.createBuffer({
@@ -137,6 +140,36 @@ export class Renderer {
                 { binding: 0, resource: { buffer: this.uniformBuffer }},
             ],
       });
+
+    }
+
+    private configureTextureBuffer() {
+        const textureData = new Uint8Array([
+            [255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255], [255, 255, 255, 255], 
+            [255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255], [255, 255, 255, 255], 
+            [255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 255], [255, 255, 255, 255]
+        ].flat());
+        const textureBuffer = this.device.createTexture({
+            label: "texture buffer",
+            size: [4, 3],
+            format: "rgba8unorm",
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+        });
+        this.device.queue.writeTexture(
+            {texture: textureBuffer},
+            textureData,
+            {bytesPerRow: 4 * 4},
+            {width: 4, height: 3}
+        );
+
+        const sampler = this.device.createSampler();
+        this.textureBindGroup = this.device.createBindGroup({
+            layout: this.pipeline.getBindGroupLayout(1),
+            entries: [
+                { binding: 0, resource: sampler },
+                { binding: 1, resource: textureBuffer.createView() },
+            ],
+        });
 
     }
 
@@ -173,6 +206,7 @@ export class Renderer {
         pass.setPipeline(this.pipeline)
         pass.setVertexBuffer(0, this.vertexBuffer)
         pass.setBindGroup(0, this.bindGroup)
+        pass.setBindGroup(1, this.textureBindGroup)
         pass.draw(3)
         pass.end()
 
