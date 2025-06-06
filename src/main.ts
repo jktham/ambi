@@ -1,6 +1,6 @@
-import { Renderer } from "./renderer";
+import { Engine } from "./engine";
 
-const canvas = document.getElementById("canvas") as HTMLCanvasElement
+const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
-const render = new Renderer(canvas)
-render.init()
+const engine = new Engine(canvas);
+engine.run();

@@ -11,8 +11,9 @@ export type Action =
 ;
 
 export class Input {
-	activeActions: Set<Action> = new Set();
-	controls: Map<string, Action> = new Map([
+	private canvas: HTMLCanvasElement;
+	public activeActions: Set<Action> = new Set();
+	public controls: Map<string, Action> = new Map([
 		["w", "forward"],
 		["s", "backward"],
 		["a", "left"],
@@ -21,9 +22,10 @@ export class Input {
 		["f", "down"],
 		["shift", "sprint"],
 	]);
-	cursorChange: Vec3 = new Vec3();
+	public cursorChange: Vec3 = new Vec3();
 
-	constructor() {
+	constructor(canvas: HTMLCanvasElement) {
+		this.canvas = canvas;
 		addEventListener("keydown", (e) => {
 			let action = this.controls.get(e.key.toLowerCase());
 			if (action) this.activeActions.add(action);
@@ -33,9 +35,8 @@ export class Input {
 			if (action) this.activeActions.delete(action);
 		});
 		addEventListener("click", (_e) => {
-			const canvas = document.getElementById("canvas")!;
 			if (!document.pointerLockElement) {
-				canvas.requestPointerLock();
+				this.canvas.requestPointerLock();
 			}
 		});
 		addEventListener("mousemove", (e) => {
@@ -45,7 +46,7 @@ export class Input {
 		})
 	}
 
-	resetChange() {
+	public resetChange() {
 		this.cursorChange = new Vec3();
 	}
 
