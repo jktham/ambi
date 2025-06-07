@@ -10,9 +10,13 @@ export class Renderer {
     private pipeline!: GPURenderPipeline;
     private renderPassDescriptor!: GPURenderPassDescriptor;
     private vertexBuffer: GPUBuffer[] = [];
-    private uniformBuffer: GPUBuffer[] = [];
-    private uniformData: Float32Array[] = [];
-    private uniformBindGroup: GPUBindGroup[] = [];
+    private defaultUniformBuffer: GPUBuffer[] = [];
+    private defaultUniformData: Float32Array[] = [];
+    private defaultUniformBindGroup: GPUBindGroup[] = [];
+    private vertUniformBuffer: GPUBuffer[] = [];
+    private vertUniformBindGroup: GPUBindGroup[] = [];
+    private fragUniformBuffer: GPUBuffer[] = [];
+    private fragUniformBindGroup: GPUBindGroup[] = [];
     private textureBindGroup: GPUBindGroup[] = [];
     private resources: Resources = new Resources();
 
@@ -74,11 +78,12 @@ export class Renderer {
                 module: vertexShader,
                 buffers: [
                     {
-                        arrayStride: 9 * 4,
+                        arrayStride: 12 * 4,
                         attributes: [
                             {shaderLocation: 0, offset: 0, format: "float32x3"}, // pos
-                            {shaderLocation: 1, offset: 3 * 4, format: "float32x4"}, // color
-                            {shaderLocation: 2, offset: 7 * 4, format: "float32x2"}, // uv
+                            {shaderLocation: 1, offset: 3 * 4, format: "float32x3"}, // normal
+                            {shaderLocation: 2, offset: 6 * 4, format: "float32x4"}, // color
+                            {shaderLocation: 3, offset: 10 * 4, format: "float32x2"}, // uv
                         ]
                     }
                 ]
@@ -94,7 +99,7 @@ export class Renderer {
         this.renderPassDescriptor = {
             label: "render pass descriptor",
             colorAttachments: [{
-                clearValue: [0.1, 0.1, 0.1, 1.0],
+                clearValue: [0.05, 0.05, 0.05, 1.0],
                 loadOp: "clear",
                 storeOp: "store",
                 view: this.context.getCurrentTexture().createView()
@@ -105,7 +110,7 @@ export class Renderer {
     public async loadScene(scene: Scene) {
         for (let i=0; i<scene.worldObjects.length; i++) {
             // vertex buffer
-            const vertexData = await this.resources.loadMesh("triangle.json");
+            const vertexData = await this.resources.loadMesh(scene.worldObjects[i].mesh);
             this.vertexBuffer.push(this.device.createBuffer({
                 label: "vertex buffer",
                 size: vertexData.byteLength,
@@ -113,24 +118,53 @@ export class Renderer {
             }));
             this.device.queue.writeBuffer(this.vertexBuffer[i], 0, vertexData);
 
-            // uniform buffer
-            const uniformLength = 4 + 16 + 16 + 16;
-            this.uniformData.push(new Float32Array(uniformLength));
-            this.uniformBuffer.push(this.device.createBuffer({
-                label: "uniform buffer",
-                size: uniformLength * 4,
+            // default uniform buffer
+            const defaultUniformLength = 56;
+            this.defaultUniformData.push(new Float32Array(defaultUniformLength));
+            this.defaultUniformBuffer.push(this.device.createBuffer({
+                label: "default uniform buffer",
+                size: defaultUniformLength * 4,
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
             }));
-            this.device.queue.writeBuffer(this.uniformBuffer[i], 0, this.uniformData[i]);
-            this.uniformBindGroup.push(this.device.createBindGroup({
+            this.device.queue.writeBuffer(this.defaultUniformBuffer[i], 0, this.defaultUniformData[i]);
+            this.defaultUniformBindGroup.push(this.device.createBindGroup({
                 layout: this.pipeline.getBindGroupLayout(0),
                 entries: [
-                    { binding: 0, resource: { buffer: this.uniformBuffer[i] }},
+                    { binding: 0, resource: { buffer: this.defaultUniformBuffer[i] }},
+                ],
+            }));
+
+            // custom uniform buffers
+            const vertUniformLength = 16;
+            this.vertUniformBuffer.push(this.device.createBuffer({
+                label: "vert uniform buffer",
+                size: vertUniformLength * 4,
+                usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+            }));
+            this.device.queue.writeBuffer(this.vertUniformBuffer[i], 0, scene.worldObjects[i].vertUniforms);
+            this.vertUniformBindGroup.push(this.device.createBindGroup({
+                layout: this.pipeline.getBindGroupLayout(1),
+                entries: [
+                    { binding: 0, resource: { buffer: this.vertUniformBuffer[i] }},
+                ],
+            }));
+
+            const fragUniformLength = 16;
+            this.fragUniformBuffer.push(this.device.createBuffer({
+                label: "frag uniform buffer",
+                size: fragUniformLength * 4,
+                usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+            }));
+            this.device.queue.writeBuffer(this.fragUniformBuffer[i], 0, scene.worldObjects[i].fragUniforms);
+            this.fragUniformBindGroup.push(this.device.createBindGroup({
+                layout: this.pipeline.getBindGroupLayout(2),
+                entries: [
+                    { binding: 0, resource: { buffer: this.fragUniformBuffer[i] }},
                 ],
             }));
 
             // texture buffer
-            const textureData = await this.resources.loadTexture("test.json");
+            const textureData = await this.resources.loadTexture(scene.worldObjects[i].texture);
             const textureBuffer = this.device.createTexture({
                 label: "texture buffer",
                 size: [4, 3],
@@ -146,7 +180,7 @@ export class Renderer {
 
             const sampler = this.device.createSampler();
             this.textureBindGroup.push(this.device.createBindGroup({
-                layout: this.pipeline.getBindGroupLayout(1),
+                layout: this.pipeline.getBindGroupLayout(3),
                 entries: [
                     { binding: 0, resource: sampler },
                     { binding: 1, resource: textureBuffer.createView() },
@@ -155,15 +189,22 @@ export class Renderer {
         }
     }
 
-    public drawScene(scene: Scene, camera: Camera) {
+    public drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
         (this.renderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = this.context.getCurrentTexture().createView();
 
         for (let i=0; i<scene.worldObjects.length; i++) {
-            this.uniformData[i][0] = ((Date.now() - 1748964096000) / 1000);
-            this.uniformData[i].subarray(4, 20).set(scene.worldObjects[i].model.transpose().data);
-            this.uniformData[i].subarray(20, 36).set(camera.view.transpose().data);
-            this.uniformData[i].subarray(36, 52).set(camera.projection.transpose().data);
-            this.device.queue.writeBuffer(this.uniformBuffer[i], 0, this.uniformData[i]);
+            this.defaultUniformData[i][0] = time;
+            this.defaultUniformData[i][1] = frame;
+            this.defaultUniformData[i][2] = scene.worldObjects[i].vertMode;
+            this.defaultUniformData[i][3] = scene.worldObjects[i].fragMode;
+            this.defaultUniformData[i].subarray(4, 4+3).set(scene.worldObjects[i].color.data);
+            this.defaultUniformData[i].subarray(8, 8+16).set(scene.worldObjects[i].model.transpose().data);
+            this.defaultUniformData[i].subarray(24, 24+16).set(camera.view.transpose().data);
+            this.defaultUniformData[i].subarray(40, 40+16).set(camera.projection.transpose().data);
+            this.device.queue.writeBuffer(this.defaultUniformBuffer[i], 0, this.defaultUniformData[i]);
+
+            this.device.queue.writeBuffer(this.vertUniformBuffer[i], 0, scene.worldObjects[i].vertUniforms);
+            this.device.queue.writeBuffer(this.fragUniformBuffer[i], 0, scene.worldObjects[i].fragUniforms);
         }
 
         const encoder = this.device.createCommandEncoder({ label: "render encoder" });
@@ -171,8 +212,10 @@ export class Renderer {
         for (let i=0; i<scene.worldObjects.length; i++) {
             pass.setPipeline(this.pipeline);
             pass.setVertexBuffer(0, this.vertexBuffer[i]);
-            pass.setBindGroup(0, this.uniformBindGroup[i]);
-            pass.setBindGroup(1, this.textureBindGroup[i]);
+            pass.setBindGroup(0, this.defaultUniformBindGroup[i]);
+            pass.setBindGroup(1, this.vertUniformBindGroup[i]);
+            pass.setBindGroup(2, this.fragUniformBindGroup[i]);
+            pass.setBindGroup(3, this.textureBindGroup[i]);
             pass.draw(3);
         }
         pass.end();

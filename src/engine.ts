@@ -23,33 +23,35 @@ export class Engine {
 		this.loop();
 	}
 
-	private update(dt: number) {
-        this.camera.updatePosition(this.input.activeActions, dt);
+	private update(time: number, deltaTime: number) {
+        this.camera.updatePosition(this.input.activeActions, deltaTime);
         this.camera.updateRotation(this.input.cursorChange);
         this.input.resetChange();
-		this.scene.update(dt);
+		this.scene.update(time, deltaTime);
 	}
 
-	private draw() {
-		this.renderer.drawScene(this.scene, this.camera);
+	private draw(time: number, frame: number) {
+		this.renderer.drawScene(this.scene, this.camera, time, frame);
 	}
 
 	private loop() {
+		let frameRate = 60;
         let t0 = 0;
-        const frame = (t: number) => {
+		let f = 0;
+        const newFrame = (t: number) => {
             if (t0 == 0) {
                 t0 = t;
             }
             const dt = (t - t0) / 1000;
-            t0 = t;
-            if (dt >= 1 / 60 - 0.001) {
-                this.update(dt);
-                this.draw();
+            if (frameRate == 0 || dt >= 1 / frameRate - 0.001) {
+            	t0 = t;
+				f++;
+                this.update(t / 1000, dt);
+                this.draw(t / 1000, f);
             }
-            requestAnimationFrame(frame);
+            requestAnimationFrame(newFrame);
         }
 
-        this.draw();
-        requestAnimationFrame(frame);
+        requestAnimationFrame(newFrame);
     }
 }

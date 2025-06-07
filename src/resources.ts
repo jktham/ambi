@@ -1,7 +1,7 @@
 export class Resources {
-	public shaders: Map<string, string> = new Map();
-	public meshes: Map<string, Float32Array> = new Map();
-	public textures: Map<string, Uint8Array> = new Map();
+	private shaders: Map<string, string> = new Map();
+	private meshes: Map<string, Float32Array> = new Map();
+	private textures: Map<string, Uint8Array> = new Map();
 
 	public async loadShader(name: string): Promise<string> {
 		let cached = this.shaders.get(name);
@@ -20,7 +20,7 @@ export class Resources {
 			return cached;
 		} else {
 			let file = await this.fetchFile(`/meshes/${name}`);
-			let mesh = new Float32Array(JSON.parse(file));
+			let mesh = new Float32Array(JSON.parse(file || "[]"));
 			this.meshes.set(name, mesh);
 			return mesh;
 		}
@@ -32,7 +32,7 @@ export class Resources {
 			return cached;
 		} else {
 			let file = await this.fetchFile(`/textures/${name}`);
-			let texture = new Uint8Array(JSON.parse(file).flat());
+			let texture = new Uint8Array(JSON.parse(file || "[]").flat());
 			this.textures.set(name, texture);
 			return texture;
 		}
