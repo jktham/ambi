@@ -1,4 +1,4 @@
-import { Vec3 } from "./vec";
+import { Vec2 } from "./vec";
 
 export const Actions = ["left", "right", "up", "down", "forward", "backward", "sprint"] as const;
 export type Action = typeof Actions[number];
@@ -15,7 +15,7 @@ export class Input {
 		["f", "down"],
 		["shift", "sprint"],
 	]);
-	public cursorChange: Vec3 = new Vec3();
+	public cursorChange: Vec2 = new Vec2();
 
 	constructor(canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
@@ -34,13 +34,13 @@ export class Input {
 		});
 		addEventListener("mousemove", (e) => {
 			if (document.pointerLockElement) {
-				this.cursorChange = new Vec3([this.cursorChange.x + e.movementX, this.cursorChange.y + e.movementY, 0]);
+				this.cursorChange = new Vec2(this.cursorChange.x + e.movementX, this.cursorChange.y + e.movementY);
 			}
 		})
 	}
 
 	public resetChange() {
-		this.cursorChange = new Vec3();
+		this.cursorChange = new Vec2();
 	}
 
 }

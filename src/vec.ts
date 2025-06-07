@@ -1,14 +1,49 @@
+export class Vec2 {
+	public data: number[];
+
+	constructor(x: number = 0, y: number = 0) {
+		this.data = [x, y];
+	}
+
+	public get x(): number {return this.data[0]};
+	public get y(): number {return this.data[1]};
+	public set x(value: number) {this.data[0] = value};
+	public set y(value: number) {this.data[1] = value};
+
+	public add(op: number | Vec2): Vec2 {
+		if (op instanceof Vec2) {
+			return new Vec2(...this.data.map((v, i) => v + op.data[i]));
+		} else {
+			return new Vec2(...this.data.map(v => v + op));
+		}
+	}
+
+	public mul(op: number | Vec2): Vec2 {
+		if (op instanceof Vec2) {
+			return new Vec2(...this.data.map((v, i) => v * op.data[i]));
+		} else {
+			return new Vec2(...this.data.map(v => v * op));
+		}
+	}
+
+	public dot(op: Vec2): number {
+		return this.data.map((v, i) => v * op.data[i]).reduce((sum, v) => sum + v, 0);
+	}
+
+	public length(): number {
+		return Math.sqrt(this.data.map(v => v**2).reduce((sum, v) => sum + v, 0));
+	}
+
+	public normalize(): Vec2 {
+		return this.mul(1/this.length());
+	}
+}
+
 export class Vec3 {
 	public data: number[];
 
-	constructor(data?: number[]) {
-		if (!data) {
-			this.data = [0, 0, 0];
-		} else if (data.length != 3) {
-			throw new Error("Vec3 constructor not length 3");
-		} else {
-			this.data = data;
-		}
+	constructor(x: number = 0, y: number = 0, z: number = 0) {
+		this.data = [x, y, z];
 	}
 
 	public get x(): number {return this.data[0]};
@@ -20,40 +55,84 @@ export class Vec3 {
 
 	public add(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
-			return new Vec3([this.x + op.x, this.y + op.y, this.z + op.z]);
+			return new Vec3(...this.data.map((v, i) => v + op.data[i]));
 		} else {
-			return new Vec3([this.x + op, this.y + op, this.z + op]);
+			return new Vec3(...this.data.map(v => v + op));
 		}
 	}
 
 	public mul(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
-			return new Vec3([this.x * op.x, this.y * op.y, this.z * op.z]);
+			return new Vec3(...this.data.map((v, i) => v * op.data[i]));
 		} else {
-			return new Vec3([this.x * op, this.y * op, this.z * op]);
+			return new Vec3(...this.data.map(v => v * op));
 		}
 	}
 
 	public dot(op: Vec3): number {
-		return this.x * op.x + this.y * op.y + this.z * op.z;
+		return this.data.map((v, i) => v * op.data[i]).reduce((sum, v) => sum + v, 0);
 	}
-
+	
 	public cross(op: Vec3): Vec3 {
-		return new Vec3([
+		return new Vec3(
 			this.y * op.z - this.z * op.y, 
 			this.z * op.x - this.x * op.z, 
 			this.x * op.y - this.y * op.x
-		]);
+		);
 	}
 
 	public length(): number {
-		return Math.sqrt(this.x**2 + this.y**2 + this.z**2);
+		return Math.sqrt(this.data.map(v => v**2).reduce((sum, v) => sum + v, 0));
 	}
 
 	public normalize(): Vec3 {
 		return this.mul(1/this.length());
 	}
+}
 
+export class Vec4 {
+	public data: number[];
+
+	constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
+		this.data = [x, y, z, w];
+	}
+
+	public get x(): number {return this.data[0]};
+	public get y(): number {return this.data[1]};
+	public get z(): number {return this.data[2]};
+	public get w(): number {return this.data[3]};
+	public set x(value: number) {this.data[0] = value};
+	public set y(value: number) {this.data[1] = value};
+	public set z(value: number) {this.data[2] = value};
+	public set w(value: number) {this.data[3] = value};
+
+	public add(op: number | Vec4): Vec4 {
+		if (op instanceof Vec4) {
+			return new Vec4(...this.data.map((v, i) => v + op.data[i]));
+		} else {
+			return new Vec4(...this.data.map(v => v + op));
+		}
+	}
+
+	public mul(op: number | Vec4): Vec4 {
+		if (op instanceof Vec4) {
+			return new Vec4(...this.data.map((v, i) => v * op.data[i]));
+		} else {
+			return new Vec4(...this.data.map(v => v * op));
+		}
+	}
+
+	public dot(op: Vec4): number {
+		return this.data.map((v, i) => v * op.data[i]).reduce((sum, v) => sum + v, 0);
+	}
+
+	public length(): number {
+		return Math.sqrt(this.data.map(v => v**2).reduce((sum, v) => sum + v, 0));
+	}
+
+	public normalize(): Vec4 {
+		return this.mul(1/this.length());
+	}
 }
 
 export class Mat4 {
@@ -91,11 +170,11 @@ export class Mat4 {
 	}
 
 	public transform(op: Vec3): Vec3 {
-		return new Vec3([
+		return new Vec3(
 			this.data[0] * op.x + this.data[1] * op.y + this.data[2] * op.z + this.data[3] * 1,
 			this.data[4] * op.x + this.data[5] * op.y + this.data[6] * op.z + this.data[7] * 1,
 			this.data[8] * op.x + this.data[9] * op.y + this.data[10] * op.z + this.data[11] * 1,
-		]);
+		);
 	}
 
 	public inverse(): Mat4 {

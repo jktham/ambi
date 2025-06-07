@@ -197,7 +197,7 @@ export class Renderer {
             this.defaultUniformData[i][1] = frame;
             this.defaultUniformData[i][2] = scene.worldObjects[i].vertMode;
             this.defaultUniformData[i][3] = scene.worldObjects[i].fragMode;
-            this.defaultUniformData[i].subarray(4, 4+3).set(scene.worldObjects[i].color.data);
+            this.defaultUniformData[i].subarray(4, 4+4).set(scene.worldObjects[i].color.data);
             this.defaultUniformData[i].subarray(8, 8+16).set(scene.worldObjects[i].model.transpose().data);
             this.defaultUniformData[i].subarray(24, 24+16).set(camera.view.transpose().data);
             this.defaultUniformData[i].subarray(40, 40+16).set(camera.projection.transpose().data);

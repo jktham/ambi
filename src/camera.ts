@@ -1,12 +1,12 @@
 import type { Action } from "./input";
-import { Vec3, Mat4 } from "./vec";
+import { Vec2, Vec3, Mat4 } from "./vec";
 
 export class Camera {
 	private canvas: HTMLCanvasElement;
 	private speed: number = 4.0;
 	private fov: number = 90.0;
 	private position: Vec3 = new Vec3();
-	private rotation: Vec3 = new Vec3();
+	private rotation: Vec2 = new Vec2();
 	private front: Vec3 = new Vec3();
 	private right: Vec3 = new Vec3();
 	private up: Vec3 = new Vec3();
@@ -47,7 +47,7 @@ export class Camera {
 		this.updateView();
 	}
 
-	public updateRotation(cursorChange: Vec3) {
+	public updateRotation(cursorChange: Vec2) {
 		this.rotation.x += cursorChange.x / 400.0 * Math.PI;
 		this.rotation.y += cursorChange.y / 400.0 * Math.PI;
 		this.rotation.y = Math.min(Math.max(this.rotation.y, -Math.PI/2 + 0.01), Math.PI/2 - 0.01);
@@ -55,8 +55,8 @@ export class Camera {
 	}
 
 	private updateView() {
-		this.front = Mat4.rotate(this.rotation.y, this.rotation.x, 0).inverse().transform(new Vec3([0, 0, -1])).normalize();
-		this.right = this.front.cross(new Vec3([0, 1, 0])).normalize();
+		this.front = Mat4.rotate(this.rotation.y, this.rotation.x, 0).inverse().transform(new Vec3(0, 0, -1)).normalize();
+		this.right = this.front.cross(new Vec3(0, 1, 0)).normalize();
 		this.up = this.right.cross(this.front).normalize();
 
 		this.view = Mat4.rotate(this.rotation.y, this.rotation.x, 0).mul(Mat4.translate(this.position.mul(1)).inverse());

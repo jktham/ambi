@@ -17,7 +17,7 @@ struct DefaultUniforms {
 	frame: f32,
 	vertMode: f32,
 	fragMode: f32,
-	color: vec3f,
+	color: vec4f,
 	model: mat4x4f,
 	view: mat4x4f,
 	projection: mat4x4f,
@@ -35,7 +35,7 @@ fn vs(in: VertexIn) -> VertexOut {
 	var out: VertexOut;
 	out.pos = du.projection * du.view * du.model * vec4f(in.pos, 1.0);
 	out.normal = (du.projection * du.view * du.model * vec4f(in.normal, 1.0)).xyz;
-	out.color = in.color * vec4f(du.color, 1.0) * (sin(du.time * 2) + 2) / 2;
+	out.color = in.color * du.color * (sin(du.time * 2) + 2) / 2;
 	out.uv = in.uv;
 
 	return out;

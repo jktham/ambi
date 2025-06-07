@@ -10,7 +10,7 @@ struct DefaultUniforms {
 	frame: f32,
 	vertMode: f32,
 	fragMode: f32,
-	color: vec3f,
+	color: vec4f,
 	model: mat4x4f,
 	view: mat4x4f,
 	projection: mat4x4f,
