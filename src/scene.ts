@@ -2,7 +2,7 @@ import { Mat4, Vec3, Vec4 } from "./vec";
 
 export class GameObject {
 	public mesh: string = "triangle.json";
-	public texture: string = "test.json";
+	public texture: string = "test.png";
 	public vertMode: number = 0;
 	public fragMode: number = 0;
 	public color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
@@ -21,10 +21,13 @@ export class Scene {
 
 		obj = new GameObject();
 		obj.model = Mat4.translate(new Vec3(-1, 0, -2));
+		obj.color = new Vec4(1.0, 0.0, 0.0, 1.0);
 		this.worldObjects.push(obj);
 
 		obj = new GameObject();
 		obj.model = Mat4.translate(new Vec3(1, 0, -2));
+		obj.mesh = "quad.json";
+		obj.texture = "house.jpg";
 		this.worldObjects.push(obj);
 	}
 

@@ -167,15 +167,15 @@ export class Renderer {
             const textureData = await this.resources.loadTexture(scene.worldObjects[i].texture);
             const textureBuffer = this.device.createTexture({
                 label: "texture buffer",
-                size: [4, 3],
+                size: [textureData.width, textureData.height],
                 format: "rgba8unorm",
                 usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
             });
             this.device.queue.writeTexture(
                 {texture: textureBuffer},
-                textureData,
-                {bytesPerRow: 4 * 4},
-                {width: 4, height: 3}
+                textureData.data,
+                {bytesPerRow: 4 * textureData.width},
+                {width: textureData.width, height: textureData.height}
             );
 
             const sampler = this.device.createSampler();
@@ -216,7 +216,7 @@ export class Renderer {
             pass.setBindGroup(1, this.vertUniformBindGroup[i]);
             pass.setBindGroup(2, this.fragUniformBindGroup[i]);
             pass.setBindGroup(3, this.textureBindGroup[i]);
-            pass.draw(3);
+            pass.draw(this.vertexBuffer[i].size / 4 / 12);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);
