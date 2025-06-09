@@ -26,6 +26,11 @@ export class Scene {
 
 		obj = new GameObject();
 		obj.model = Mat4.translate(new Vec3(1, 0, -2));
+		obj.mesh = "monke.obj";
+		this.worldObjects.push(obj);
+
+		obj = new GameObject();
+		obj.model = Mat4.translate(new Vec3(0, 0, -10)).mul(Mat4.scale(5));
 		obj.mesh = "quad.json";
 		obj.texture = "house.jpg";
 		this.worldObjects.push(obj);

@@ -19,11 +19,30 @@ export class Resources {
 		if (cached) {
 			return cached;
 		} else {
-			let file = await this.fetchFile(`/meshes/${name}`);
-			let data = JSON.parse(file || "[]") as number[];
-			let mesh = new Float32Array(data);
-			this.meshes.set(name, mesh);
-			return mesh;
+			try {
+				const type = name.split(".").pop() || "";
+				if (type == "json") {
+					let file = await this.fetchFile(`/meshes/${name}`);
+					let data = JSON.parse(file || "[]") as number[];
+					let mesh = new Float32Array(data);
+					this.meshes.set(name, mesh);
+					return mesh;
+
+				} else if (type == "obj") {
+					let file = await this.fetchFile(`/meshes/${name}`);
+					let data = this.parseObj(file);
+					let mesh = new Float32Array(data);
+					this.meshes.set(name, mesh);
+					return mesh;
+
+				} else {
+					throw new Error(`unknown mesh filetype: ${name}`);
+				}
+
+			} catch (e) {
+				console.error(e);
+				return new Float32Array();
+			}
 		}
 	}
 
@@ -94,5 +113,42 @@ export class Resources {
 			console.error(e);
 			return "";
 		}
+	}
+
+	private parseObj(file: string): number[] {
+		let v: number[][] = [];
+		let vn: number[][] = [];
+		let vt: number[][] = [];
+		let f: number[][][] = [];
+
+		for (let line of file.split(/\r?\n/)) {
+			let words = line.split(" ");
+			if (words[0] == "v") {
+				v.push(words.slice(1, 4).map(w => parseFloat(w)));
+
+			} else if (words[0] == "vn") {
+				vn.push(words.slice(1, 4).map(w => parseFloat(w)));
+
+			} else if (words[0] == "vt") {
+				vt.push(words.slice(1, 3).map(w => parseFloat(w)));
+
+			} else if (words[0] == "f") {
+				let face: number[][] = [];
+				for (let group of words.slice(1)) {
+					let indices = group.split("/").map(i => parseInt(i));
+					let vert = [v[indices[0]-1], vn[indices[2]-1], [1, 1, 1, 1], indices[1] ? vt[indices[1]-1] : [0, 0]].flat();
+					face.push(vert);
+				}
+				if (face.length > 3) { // we assume convex
+					for (let i=2; i<face.length; i++) {
+						f.push([face[0], face[i-1], face[i]]);
+					}
+
+				} else {
+					f.push(face);
+				}
+			}
+		}
+		return f.flat(2);
 	}
 }

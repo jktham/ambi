@@ -35,7 +35,7 @@ fn vs(in: VertexIn) -> VertexOut {
 	var out: VertexOut;
 	out.pos = du.projection * du.view * du.model * vec4f(in.pos, 1.0);
 	out.normal = (du.projection * du.view * du.model * vec4f(in.normal, 1.0)).xyz;
-	out.color = in.color * du.color * (sin(du.time * 2) + 2) / 2;
+	out.color = in.color * du.color;
 	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y);
 
 	return out;
