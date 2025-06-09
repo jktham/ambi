@@ -70,6 +70,11 @@ export class Renderer {
             label: "fragment shader",
             code: await this.resources.loadShader("world_frag.wgsl"),
         });
+        const depthStencilState: GPUDepthStencilState = {
+            depthWriteEnabled: true,
+            depthCompare: 'less' as GPUCompareFunction,
+            format: 'depth24plus-stencil8' as GPUTextureFormat,
+        }
 
         this.pipeline = this.device.createRenderPipeline({
             label: "render pipeline",
@@ -90,12 +95,28 @@ export class Renderer {
             },
             fragment: {
                 module: fragmentShader,
-                targets: [{ format: this.presentationFormat }]
+                targets: [
+                    { format: this.presentationFormat }
+                ]
+            },
+            depthStencil: depthStencilState,
+            primitive: {
+                topology: "triangle-list",
+                frontFace: "ccw",
+                cullMode: "none"
             }
         });
     }
 
     private configureRenderPassDescriptor() {
+        const depthTextureDesc: GPUTextureDescriptor = {
+            size: { width: this.canvas.width, height: this.canvas.height },
+            dimension: '2d',
+            format: 'depth24plus-stencil8',
+            usage: GPUTextureUsage.RENDER_ATTACHMENT
+        };
+        const depthTexture = this.device.createTexture(depthTextureDesc);
+
         this.renderPassDescriptor = {
             label: "render pass descriptor",
             colorAttachments: [{
@@ -103,7 +124,16 @@ export class Renderer {
                 loadOp: "clear",
                 storeOp: "store",
                 view: this.context.getCurrentTexture().createView()
-            }]
+            }],
+            depthStencilAttachment: {
+                view: depthTexture.createView(),
+                depthClearValue: 1,
+                depthLoadOp: 'clear',
+                depthStoreOp: 'store',
+                stencilClearValue: 0,
+                stencilLoadOp: 'clear',
+                stencilStoreOp: 'store'
+            }
         };
     }
 
