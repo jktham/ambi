@@ -5,8 +5,11 @@ export class Camera {
 	private canvas: HTMLCanvasElement;
 	private speed: number = 4.0;
 	private fov: number = 90.0;
+
+	private velocity: Vec3 = new Vec3();
 	private position: Vec3 = new Vec3();
 	private rotation: Vec2 = new Vec2();
+
 	private front: Vec3 = new Vec3();
 	private right: Vec3 = new Vec3();
 	private up: Vec3 = new Vec3();
@@ -20,29 +23,35 @@ export class Camera {
 		this.updateProjection();
 	}
 
-	public updatePosition(actions: Set<Action>, dt: number) {
+	public updatePosition(actions: Set<Action>, deltaTime: number) {
+		let velocity = new Vec3();
         for (let action of actions) {
-			const speed = actions.has("sprint") ? this.speed * 4 : this.speed;
 			switch (action) {
 				case "left":
-					this.position = this.position.add(this.right.mul(-speed * dt));
+					velocity = velocity.add(this.right.mul(-1));
 					break;
 				case "right":
-					this.position = this.position.add(this.right.mul(speed * dt));
+					velocity = velocity.add(this.right);
 					break;
 				case "up":
-					this.position = this.position.add(this.up.mul(speed * dt));
+					velocity = velocity.add(this.up);
 					break;
 				case "down":
-					this.position = this.position.add(this.up.mul(-speed * dt));
+					velocity = velocity.add(this.up.mul(-1));
 					break;
 				case "forward":
-					this.position = this.position.add(this.front.mul(speed * dt));
+					velocity = velocity.add(this.front);
 					break;
 				case "backward":
-					this.position = this.position.add(this.front.mul(-speed * dt));
+					velocity = velocity.add(this.front.mul(-1));
 					break;
 			}
+		}
+		
+		const speed = actions.has("sprint") ? this.speed * 4 : this.speed;
+		if (velocity.length() > 0) {
+			this.velocity = velocity.normalize().mul(speed);
+			this.position = this.position.add(this.velocity.mul(deltaTime));
 		}
 		this.updateView();
 	}
@@ -55,11 +64,11 @@ export class Camera {
 	}
 
 	private updateView() {
-		this.front = Mat4.rotate(this.rotation.y, this.rotation.x, 0).inverse().transform(new Vec3(0, 0, -1)).normalize();
+		this.front = Mat4.rotate(new Vec3(this.rotation.y, this.rotation.x, 0)).inverse().transform(new Vec3(0, 0, -1)).normalize();
 		this.right = this.front.cross(new Vec3(0, 1, 0)).normalize();
 		this.up = this.right.cross(this.front).normalize();
 
-		this.view = Mat4.rotate(this.rotation.y, this.rotation.x, 0).mul(Mat4.translate(this.position.mul(1)).inverse());
+		this.view = Mat4.rotate(new Vec3(this.rotation.y, this.rotation.x, 0)).mul(Mat4.translate(this.position.mul(1)).inverse());
 	}
 
 	private updateProjection() {

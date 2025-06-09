@@ -86,6 +86,7 @@ export class Vec3 {
 	}
 
 	public normalize(): Vec3 {
+		if (this.length() == 0) { return this };
 		return this.mul(1/this.length());
 	}
 }
@@ -244,26 +245,33 @@ export class Mat4 {
 		}
 	}
 
-	public static rotate(x: number, y: number, z: number): Mat4 {
+	public static rotate(euler: Vec3): Mat4 {
 		let X = new Mat4([
 			1, 0, 0, 0, 
-			0, Math.cos(x), -Math.sin(x), 0, 
-			0, Math.sin(x), Math.cos(x), 0, 
+			0, Math.cos(euler.x), -Math.sin(euler.x), 0, 
+			0, Math.sin(euler.x), Math.cos(euler.x), 0, 
 			0, 0, 0, 1
 		]);
 		let Y = new Mat4([
-			Math.cos(y), 0, Math.sin(y), 0, 
+			Math.cos(euler.y), 0, Math.sin(euler.y), 0, 
 			0, 1, 0, 0, 
-			-Math.sin(y), 0, Math.cos(y), 0, 
+			-Math.sin(euler.y), 0, Math.cos(euler.y), 0, 
 			0, 0, 0, 1
 		]);
 		let Z = new Mat4([
-			Math.cos(z), -Math.sin(z), 0, 0, 
-			Math.sin(z), Math.cos(z), 0, 0, 
+			Math.cos(euler.z), -Math.sin(euler.z), 0, 0, 
+			Math.sin(euler.z), Math.cos(euler.z), 0, 0, 
 			0, 0, 1, 0, 
 			0, 0, 0, 1
 		]);
 		return X.mul(Y).mul(Z);
+	}
+
+	public static trs(translation: Vec3 = new Vec3(), rotation: Vec3 = new Vec3(), scale: number | Vec3 = 1) {
+		let T = Mat4.translate(translation);
+		let R = Mat4.rotate(rotation);
+		let S = Mat4.scale(scale);
+		return T.mul(R).mul(S);
 	}
 
 }
