@@ -7,7 +7,7 @@ export class Camera {
 	private fov: number = 90.0;
 
 	private velocity: Vec3 = new Vec3();
-	private position: Vec3 = new Vec3();
+	public position: Vec3 = new Vec3();
 	private rotation: Vec2 = new Vec2();
 
 	private front: Vec3 = new Vec3();
@@ -47,7 +47,7 @@ export class Camera {
 					break;
 			}
 		}
-		
+
 		const speed = actions.has("sprint") ? this.speed * 4 : this.speed;
 		if (velocity.length() > 0) {
 			this.velocity = velocity.normalize().mul(speed);

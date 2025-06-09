@@ -1,5 +1,5 @@
 import type { Camera } from "./camera";
-import { Resources } from "./resources";
+import { fragModes, Resources, vertModes } from "./resources";
 import type { Scene } from "./scene";
 
 export class Renderer {
@@ -149,7 +149,7 @@ export class Renderer {
             this.device.queue.writeBuffer(this.vertexBuffer[i], 0, vertexData);
 
             // default uniform buffer
-            const defaultUniformLength = 56;
+            const defaultUniformLength = 88;
             this.defaultUniformData.push(new Float32Array(defaultUniformLength));
             this.defaultUniformBuffer.push(this.device.createBuffer({
                 label: "default uniform buffer",
@@ -225,12 +225,20 @@ export class Renderer {
         for (let i=0; i<scene.worldObjects.length; i++) {
             this.defaultUniformData[i][0] = time;
             this.defaultUniformData[i][1] = frame;
-            this.defaultUniformData[i][2] = scene.worldObjects[i].vertMode;
-            this.defaultUniformData[i][3] = scene.worldObjects[i].fragMode;
-            this.defaultUniformData[i].subarray(4, 4+4).set(scene.worldObjects[i].color.data);
-            this.defaultUniformData[i].subarray(8, 8+16).set(scene.worldObjects[i].model.transpose().data);
-            this.defaultUniformData[i].subarray(24, 24+16).set(camera.view.transpose().data);
-            this.defaultUniformData[i].subarray(40, 40+16).set(camera.projection.transpose().data);
+            this.defaultUniformData[i][2] = vertModes.indexOf(scene.worldObjects[i].vertMode);
+            this.defaultUniformData[i][3] = fragModes.indexOf(scene.worldObjects[i].fragMode);
+            this.defaultUniformData[i][4] = scene.worldObjects[i].ambientFactor;
+            this.defaultUniformData[i][5] = scene.worldObjects[i].diffuseFactor;
+            this.defaultUniformData[i][6] = scene.worldObjects[i].specularFactor;
+            this.defaultUniformData[i][7] = scene.worldObjects[i].specularExponent;
+            this.defaultUniformData[i].subarray(8, 8+3).set(scene.worldObjects[i].lightPos.data);
+            this.defaultUniformData[i].subarray(12, 12+4).set(scene.worldObjects[i].lightColor.data);
+            this.defaultUniformData[i].subarray(16, 16+3).set(camera.position.data);
+            this.defaultUniformData[i].subarray(20, 20+4).set(scene.worldObjects[i].color.data);
+            this.defaultUniformData[i].subarray(24, 24+16).set(scene.worldObjects[i].model.transpose().data);
+            this.defaultUniformData[i].subarray(40, 40+16).set(camera.view.transpose().data);
+            this.defaultUniformData[i].subarray(56, 56+16).set(camera.projection.transpose().data);
+            this.defaultUniformData[i].subarray(72, 72+16).set(scene.worldObjects[i].model.inverse().data);
             this.device.queue.writeBuffer(this.defaultUniformBuffer[i], 0, this.defaultUniformData[i]);
 
             this.device.queue.writeBuffer(this.vertUniformBuffer[i], 0, scene.worldObjects[i].vertUniforms);
