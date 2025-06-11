@@ -9,16 +9,22 @@ export class Renderer {
     private presentationFormat!: GPUTextureFormat;
     private pipeline!: GPURenderPipeline;
     private renderPassDescriptor!: GPURenderPassDescriptor;
+
     private vertexBuffer: GPUBuffer[] = [];
     private defaultUniformBuffer: GPUBuffer[] = [];
     private defaultUniformData: Float32Array[] = [];
-    private defaultUniformBindGroup: GPUBindGroup[] = [];
     private vertUniformBuffer: GPUBuffer[] = [];
-    private vertUniformBindGroup: GPUBindGroup[] = [];
     private fragUniformBuffer: GPUBuffer[] = [];
-    private fragUniformBindGroup: GPUBindGroup[] = [];
+    private uniformBindGroup: GPUBindGroup[] = [];
     private textureBindGroup: GPUBindGroup[] = [];
     private resources: Resources = new Resources();
+
+    private colorFrameBuffer!: GPUTexture;
+    private posDepthFrameBuffer!: GPUTexture;
+    private normalMaskFrameBuffer!: GPUTexture;
+    private postPipeline!: GPURenderPipeline;
+    private postFrameBuffersBindGroup!: GPUBindGroup;
+    private postRenderPassDescriptor!: GPURenderPassDescriptor;
 
     constructor(canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
@@ -28,7 +34,10 @@ export class Renderer {
         await this.getGPUDevice();
         this.configureCanvas();
         await this.configurePipeline();
+        await this.configurePostPipeline();
+        this.configureFrameBufferTextures();
         this.configureRenderPassDescriptor();
+        this.configurePostRenderPassDescriptor();
     }
 
     private fail(msg: string) {
@@ -64,11 +73,11 @@ export class Renderer {
     private async configurePipeline() {
         const vertexShader = this.device.createShaderModule({
             label: "vertex shader",
-            code: await this.resources.loadShader("world_vert.wgsl"),
+            code: await this.resources.loadShader("world_base.vert.wgsl"),
         });
         const fragmentShader = this.device.createShaderModule({
             label: "fragment shader",
-            code: await this.resources.loadShader("world_frag.wgsl"),
+            code: await this.resources.loadShader("world_base.frag.wgsl"),
         });
         const depthStencilState: GPUDepthStencilState = {
             depthWriteEnabled: true,
@@ -96,14 +105,46 @@ export class Renderer {
             fragment: {
                 module: fragmentShader,
                 targets: [
-                    { format: this.presentationFormat }
+                    { format: "rgba8unorm" }, 
+                    { format: "rgba32float" }, 
+                    { format: "rgba8unorm" },
                 ]
             },
             depthStencil: depthStencilState,
             primitive: {
                 topology: "triangle-list",
                 frontFace: "ccw",
-                cullMode: "none"
+                cullMode: "back"
+            }
+        });
+    }
+
+    private async configurePostPipeline() {
+        const vertexShader = this.device.createShaderModule({
+            label: "vertex shader",
+            code: await this.resources.loadShader("post_base.vert.wgsl"),
+        });
+        const fragmentShader = this.device.createShaderModule({
+            label: "fragment shader",
+            code: await this.resources.loadShader("post_base.frag.wgsl"),
+        });
+
+        this.postPipeline = this.device.createRenderPipeline({
+            label: "post pipeline",
+            layout: "auto",
+            vertex: {
+                module: vertexShader,
+            },
+            fragment: {
+                module: fragmentShader,
+                targets: [
+                    { format: this.presentationFormat }
+                ]
+            },
+            primitive: {
+                topology: "triangle-list",
+                frontFace: "ccw",
+                cullMode: "back"
             }
         });
     }
@@ -120,10 +161,20 @@ export class Renderer {
         this.renderPassDescriptor = {
             label: "render pass descriptor",
             colorAttachments: [{
-                clearValue: [0.05, 0.05, 0.05, 1.0],
+                clearValue: [0.0, 0.0, 0.0, 0.0],
                 loadOp: "clear",
                 storeOp: "store",
-                view: this.context.getCurrentTexture().createView()
+                view: this.colorFrameBuffer.createView()
+            }, {
+                clearValue: [0.0, 0.0, 0.0, 0.0],
+                loadOp: "clear",
+                storeOp: "store",
+                view: this.posDepthFrameBuffer.createView()
+            }, {
+                clearValue: [0.0, 0.0, 0.0, 0.0],
+                loadOp: "clear",
+                storeOp: "store",
+                view: this.normalMaskFrameBuffer.createView()
             }],
             depthStencilAttachment: {
                 view: depthTexture.createView(),
@@ -135,6 +186,48 @@ export class Renderer {
                 stencilStoreOp: 'store'
             }
         };
+    }
+
+    private configurePostRenderPassDescriptor() {
+        this.postRenderPassDescriptor = {
+            label: "post render pass descriptor",
+            colorAttachments: [{
+                clearValue: [0.0, 0.0, 0.0, 0.0],
+                loadOp: "clear",
+                storeOp: "store",
+                view: this.context.getCurrentTexture().createView()
+            }]
+        };
+    }
+
+    private configureFrameBufferTextures() {
+        this.colorFrameBuffer = this.device.createTexture({
+            label: "color framebuffer",
+            size: [this.canvas.width, this.canvas.height],
+            format: "rgba8unorm",
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST,
+        });
+        this.posDepthFrameBuffer = this.device.createTexture({
+            label: "pos/depth framebuffer",
+            size: [this.canvas.width, this.canvas.height],
+            format: "rgba32float",
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST,
+        });
+        this.normalMaskFrameBuffer = this.device.createTexture({
+            label: "normal/mask framebuffer",
+            size: [this.canvas.width, this.canvas.height],
+            format: "rgba8unorm",
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST,
+        });
+
+        this.postFrameBuffersBindGroup = this.device.createBindGroup({
+            layout: this.postPipeline.getBindGroupLayout(2),
+            entries: [
+                { binding: 0, resource: this.colorFrameBuffer.createView() },
+                { binding: 1, resource: this.posDepthFrameBuffer.createView() },
+                { binding: 2, resource: this.normalMaskFrameBuffer.createView() },
+            ],
+        });
     }
 
     public async loadScene(scene: Scene) {
@@ -157,12 +250,6 @@ export class Renderer {
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
             }));
             this.device.queue.writeBuffer(this.defaultUniformBuffer[i], 0, this.defaultUniformData[i]);
-            this.defaultUniformBindGroup.push(this.device.createBindGroup({
-                layout: this.pipeline.getBindGroupLayout(0),
-                entries: [
-                    { binding: 0, resource: { buffer: this.defaultUniformBuffer[i] }},
-                ],
-            }));
 
             // custom uniform buffers
             const vertUniformLength = 16;
@@ -172,12 +259,6 @@ export class Renderer {
                 usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
             }));
             this.device.queue.writeBuffer(this.vertUniformBuffer[i], 0, scene.worldObjects[i].vertUniforms);
-            this.vertUniformBindGroup.push(this.device.createBindGroup({
-                layout: this.pipeline.getBindGroupLayout(1),
-                entries: [
-                    { binding: 0, resource: { buffer: this.vertUniformBuffer[i] }},
-                ],
-            }));
 
             const fragUniformLength = 16;
             this.fragUniformBuffer.push(this.device.createBuffer({
@@ -186,10 +267,13 @@ export class Renderer {
                 usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
             }));
             this.device.queue.writeBuffer(this.fragUniformBuffer[i], 0, scene.worldObjects[i].fragUniforms);
-            this.fragUniformBindGroup.push(this.device.createBindGroup({
-                layout: this.pipeline.getBindGroupLayout(2),
+
+            this.uniformBindGroup.push(this.device.createBindGroup({
+                layout: this.pipeline.getBindGroupLayout(0),
                 entries: [
-                    { binding: 0, resource: { buffer: this.fragUniformBuffer[i] }},
+                    { binding: 0, resource: { buffer: this.defaultUniformBuffer[i] }},
+                    { binding: 1, resource: { buffer: this.vertUniformBuffer[i] }},
+                    { binding: 2, resource: { buffer: this.fragUniformBuffer[i] }},
                 ],
             }));
 
@@ -210,7 +294,7 @@ export class Renderer {
 
             const sampler = this.device.createSampler();
             this.textureBindGroup.push(this.device.createBindGroup({
-                layout: this.pipeline.getBindGroupLayout(3),
+                layout: this.pipeline.getBindGroupLayout(1),
                 entries: [
                     { binding: 0, resource: sampler },
                     { binding: 1, resource: textureBuffer.createView() },
@@ -220,8 +304,6 @@ export class Renderer {
     }
 
     public drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
-        (this.renderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = this.context.getCurrentTexture().createView();
-
         for (let i=0; i<scene.worldObjects.length; i++) {
             this.defaultUniformData[i][0] = time;
             this.defaultUniformData[i][1] = frame;
@@ -250,13 +332,21 @@ export class Renderer {
         for (let i=0; i<scene.worldObjects.length; i++) {
             pass.setPipeline(this.pipeline);
             pass.setVertexBuffer(0, this.vertexBuffer[i]);
-            pass.setBindGroup(0, this.defaultUniformBindGroup[i]);
-            pass.setBindGroup(1, this.vertUniformBindGroup[i]);
-            pass.setBindGroup(2, this.fragUniformBindGroup[i]);
-            pass.setBindGroup(3, this.textureBindGroup[i]);
+            pass.setBindGroup(0, this.uniformBindGroup[i]);
+            pass.setBindGroup(1, this.textureBindGroup[i]);
             pass.draw(this.vertexBuffer[i].size / 4 / 12);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);
+
+        const postEncoder = this.device.createCommandEncoder({ label: "post render encoder" });
+        (this.postRenderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = this.context.getCurrentTexture().createView();
+        const postPass = postEncoder.beginRenderPass(this.postRenderPassDescriptor);
+        postPass.setPipeline(this.postPipeline);
+        postPass.setBindGroup(2, this.postFrameBuffersBindGroup);
+        postPass.draw(6);
+        postPass.end();
+
+        this.device.queue.submit([postEncoder.finish()]);
     }
 }

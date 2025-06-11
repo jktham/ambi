@@ -33,12 +33,12 @@ struct DefaultUniforms {
 }
 
 @group(0) @binding(0) var<uniform> du: DefaultUniforms;
-@group(1) @binding(0) var<storage, read> vu: array<f32, 16>;
-@group(2) @binding(0) var<storage, read> fu: array<f32, 16>;
+@group(0) @binding(1) var<storage, read> vu: array<f32, 16>;
+@group(0) @binding(2) var<storage, read> fu: array<f32, 16>;
 
 @vertex 
 fn main(in: VertexIn) -> VertexOut {
-	let dontDiscard = vec2f(vu[0], fu[0]);
+	_ = vec2f(vu[0], fu[0]);
 	switch (du.vertMode) {
 		default: {
 			return base(in);
