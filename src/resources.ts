@@ -1,8 +1,3 @@
-export const vertModes = ["base"] as const;
-export type VertMode = typeof vertModes[number];
-
-export const fragModes = ["phong"] as const;
-export type FragMode = typeof fragModes[number];
 
 export class Resources {
 	private shaders: Map<string, string> = new Map();

@@ -31,7 +31,17 @@ struct BaseUniforms {
 	normal: mat4x4f
 }
 
+struct PhongUniforms {
+	ambientFactor: f32,
+	diffuseFactor: f32,
+	specularFactor: f32,
+	specularExponent: f32,
+	lightPos: vec3f,
+	lightColor: vec4f,
+}
+
 @group(0) @binding(0) var<uniform> baseUniforms: BaseUniforms;
+@group(0) @binding(2) var<uniform> phongUniforms: PhongUniforms;
 
 @group(1) @binding(0) var textureSampler: sampler;
 @group(1) @binding(1) var texture: texture_2d<f32>;
@@ -39,12 +49,25 @@ struct BaseUniforms {
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
 	var data: FbData;
-	data.color = in.color * textureSample(texture, textureSampler, in.uv);
+	data.color = phong(in) * textureSample(texture, textureSampler, in.uv);
 	data.pos = in.pos;
 	data.depth = length(baseUniforms.viewPos - in.pos);
 	data.normal = in.normal;
 	data.mask = 0;
 	return encodeFbData(data);
+}
+
+fn phong(in: FragmentIn) -> vec4f {
+	let norm = normalize(in.normal);
+	let lightDir = normalize(phongUniforms.lightPos - in.pos);
+	let viewDir = normalize(baseUniforms.viewPos - in.pos);
+	let reflectDir = reflect(-lightDir, norm);
+
+	let ambient = phongUniforms.ambientFactor;
+	let diffuse = phongUniforms.diffuseFactor * max(dot(norm, lightDir), 0.0);
+	let specular = phongUniforms.specularFactor * pow(max(dot(viewDir, reflectDir), 0.0), phongUniforms.specularExponent);
+
+	return in.color * phongUniforms.lightColor * (ambient + diffuse + specular);
 }
 
 fn encodeFbData(data: FbData) -> FragmentOut {

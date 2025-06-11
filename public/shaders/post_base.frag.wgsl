@@ -12,15 +12,23 @@ struct FbData {
 	mask: u32,
 }
 
+struct PostBaseUniforms {
+	time: f32,
+	frame: f32,
+	resolution: vec2f,
+}
+
+@group(0) @binding(0) var<uniform> postBaseUniforms: PostBaseUniforms;
+
 @group(2) @binding(0) var fbColor: texture_storage_2d<rgba8unorm, read>;
 @group(2) @binding(1) var fbPosDepth: texture_storage_2d<rgba32float, read>;
 @group(2) @binding(2) var fbNormalMask: texture_storage_2d<rgba8unorm, read>;
 
 @fragment 
 fn main(in: FragmentIn) -> @location(0) vec4f {
+	_ = postBaseUniforms.time;
 	let pixel: vec2u = vec2u(in.screen.xy);
 	let data = loadFbData(pixel);
-
 	return data.color;
 }
 
