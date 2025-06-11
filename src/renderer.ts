@@ -40,16 +40,15 @@ export class Renderer {
         this.configurePostRenderPassDescriptor();
     }
 
-    private fail(msg: string) {
-        document.body.innerHTML = `<H1>${msg}</H1>`;
-    }
-
 	private async getGPUDevice() {
         var adapter = await navigator.gpu?.requestAdapter();
         const device = await adapter?.requestDevice();
         if (!device) {
-            this.fail("Browser does not support WebGPU");
+            alert("no webgpu support, try chromium based browser with chrome://flags/#enable-unsafe-webgpu");
             return;
+        }
+        if (device.adapterInfo.isFallbackAdapter) {
+            alert("fallback to cpu simulated device, bad performance likely, try chrome://flags/#enable-vulkan");
         }
 
         this.device = device;
@@ -58,7 +57,6 @@ export class Renderer {
 	private configureCanvas() {
         var context = this.canvas.getContext("webgpu");
         if (!context) {
-            this.fail("Failed to get canvas context");
             return;
         }
         this.context = context;
@@ -114,7 +112,7 @@ export class Renderer {
             primitive: {
                 topology: "triangle-list",
                 frontFace: "ccw",
-                cullMode: "back"
+                cullMode: "none"
             }
         });
     }
