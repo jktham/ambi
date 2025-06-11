@@ -41,17 +41,22 @@ export class Renderer {
     }
 
 	private async getGPUDevice() {
-        var adapter = await navigator.gpu?.requestAdapter();
-        const device = await adapter?.requestDevice();
-        if (!device) {
-            alert("no webgpu support, try chromium based browser with chrome://flags/#enable-unsafe-webgpu");
-            return;
-        }
-        if (device.adapterInfo.isFallbackAdapter) {
-            alert("fallback to cpu simulated device, bad performance likely, try chrome://flags/#enable-vulkan");
-        }
+        try {
+            var adapter = await navigator.gpu?.requestAdapter(); // may throw error in firefox
+            const device = await adapter?.requestDevice();
+            if (!device) {
+                throw new Error("no webgpu device");
+            }
+            if (device.adapterInfo.isFallbackAdapter) {
+                alert("fallback to cpu simulated device, bad performance likely, try chrome://flags/#enable-vulkan");
+            }
+            this.device = device;
 
-        this.device = device;
+        } catch (e) {
+            console.error(e);
+            alert("no webgpu support, try chromium based browser with chrome://flags/#enable-unsafe-webgpu");
+            throw new Error("no webgpu support");
+        }
     }
 
 	private configureCanvas() {
