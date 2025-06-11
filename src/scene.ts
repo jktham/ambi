@@ -21,6 +21,8 @@ export class Scene {
 	public postUniforms: Uniforms = new Uniforms();
 
 	public init() {
+		this.worldObjects = [];
+
 		let obj = new WorldObject();
 		obj.model = Mat4.translate(new Vec3(0, 1, -1.5));
 		obj.fragShader = "world_phong.frag.wgsl";

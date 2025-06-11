@@ -152,4 +152,10 @@ export class Resources {
 		}
 		return f.flat(2);
 	}
+
+	public clear() {
+		this.shaders.clear();
+		this.meshes.clear();
+		this.textures.clear();
+	}
 }
