@@ -29,7 +29,8 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = postBaseUniforms.time;
 	let pixel: vec2u = vec2u(in.screen.xy);
 	let data = loadFbData(pixel);
-	return data.color;
+	let m = f32(data.mask) / 255.0;
+	return vec4f(m, m, m, 1.0);
 }
 
 fn loadFbData(pixel: vec2u) -> FbData {

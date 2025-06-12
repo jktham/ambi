@@ -74,6 +74,6 @@ fn encodeFbData(data: FbData) -> FragmentOut {
 	var out: FragmentOut;
 	out.color = data.color;
 	out.posDepth = vec4f(data.pos, data.depth);
-	out.normalMask = vec4f(data.normal, f32(data.mask) / 255.0);
+	out.normalMask = vec4f((data.normal + 1.0) / 2.0, f32(data.mask) / 255.0);
 	return out;
 }

@@ -1,8 +1,6 @@
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec4 } from "./vec";
 
-export const scenes = ["none", "debug", "debug2"] as const;
-
 export class WorldObject {
 	public mesh: string = "triangle.json";
 	public texture: string = "test.png";
@@ -26,7 +24,6 @@ export class Scene {
 
 	}
 
-	// @ts-ignore
 	public update(time: number, deltaTime: number) {
 		
 	}

@@ -35,7 +35,7 @@ fn baseTransform(in: VertexIn) -> VertexOut {
 	var out: VertexOut;
 	out.ndc = baseUniforms.projection * baseUniforms.view * baseUniforms.model * vec4f(in.pos, 1.0);
 	out.pos = (baseUniforms.model * vec4f(in.pos, 1.0)).xyz;
-	out.normal = (baseUniforms.normal * vec4f(in.normal, 0.0)).xyz;
+	out.normal = normalize((baseUniforms.normal * vec4f(in.normal, 0.0)).xyz);
 	out.color = in.color * baseUniforms.color;
 	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y);
 	return out;

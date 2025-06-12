@@ -11,8 +11,9 @@ export class Engine {
 	private camera: Camera;
 	private input: Input;
 	private scene: Scene;
-	private exitLoop: boolean = false;
 	private gui: Gui;
+	private deltaHist: number[] = [];
+	private scheduledFrameHandle: number = 0;
 
 	constructor(canvas: HTMLCanvasElement) {
 		this.renderer = new Renderer(canvas);
@@ -25,11 +26,10 @@ export class Engine {
 	public async run() {
 		await this.renderer.init();
 		await this.setScene("debug");
-		this.loop();
 	}
 
 	public async setScene(name: string) {
-		this.exitLoop = true;
+		cancelAnimationFrame(this.scheduledFrameHandle);
 		if (name == "debug") {
 			this.scene = new DebugScene();
 		} else if (name == "debug2") {
@@ -38,17 +38,32 @@ export class Engine {
 			this.scene = new Scene();
 		}
 		this.gui.setScene(this.scene.name);
+		this.gui.setPost(this.scene.postShader);
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
 		this.loop();
 	}
 
+	public async setPost(path: string) {
+		cancelAnimationFrame(this.scheduledFrameHandle);
+		this.scene.postShader = path;
+		this.gui.setPost(this.scene.postShader);
+		await this.renderer.loadPost(this.scene);
+		this.loop();
+	}
+
 	private update(time: number, deltaTime: number) {
+		this.deltaHist.push(deltaTime);
+		if (this.deltaHist.length > 60) {
+			this.deltaHist.shift();
+		}
+		let deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / 60.0;
+
         this.camera.updatePosition(this.input.activeActions, deltaTime);
         this.camera.updateRotation(this.input.cursorChange);
         this.input.resetChange();
 		this.scene.update(time, deltaTime);
-		this.gui.updateInfo(deltaTime, this.scene.name);
+		this.gui.updateInfo(deltaAvg);
 	}
 
 	private draw(time: number, frame: number) {
@@ -56,14 +71,10 @@ export class Engine {
 	}
 
 	private loop() {
-		this.exitLoop = false;
 		let frameRate = 60;
         let t0 = 0;
 		let f = 0;
         const newFrame = (t: number) => {
-			if (this.exitLoop) {
-				return;
-			}
             if (t0 == 0) {
                 t0 = t;
             }
@@ -74,9 +85,9 @@ export class Engine {
                 this.update(t / 1000, dt);
                 this.draw(t / 1000, f);
             }
-            requestAnimationFrame(newFrame);
+            this.scheduledFrameHandle = requestAnimationFrame(newFrame);
         }
 
-        requestAnimationFrame(newFrame);
+        this.scheduledFrameHandle = requestAnimationFrame(newFrame);
     }
 }

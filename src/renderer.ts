@@ -98,7 +98,7 @@ export class Renderer {
                 storeOp: "store",
                 view: this.posDepthFrameBuffer.createView()
             }, {
-                clearValue: [0.0, 0.0, 0.0, 0.0],
+                clearValue: [0.5, 0.5, 0.5, 0.0],
                 loadOp: "clear",
                 storeOp: "store",
                 view: this.normalMaskFrameBuffer.createView()
@@ -147,19 +147,19 @@ export class Renderer {
     }
 
     public async loadScene(scene: Scene) {
-        this.unloadScene();
         await this.initWorld(scene);
         await this.initPost(scene);
     }
 
-    private unloadScene() {
+    public async loadPost(scene: Scene) {
+        await this.initPost(scene);
+    }
+
+    private destroyWorldBuffers() {
         this.vertexBuffers.map(b => b.destroy());
         this.baseUniformBuffers.map(b => b.destroy());
         this.vertUniformBuffers.map(b => b.destroy());
         this.fragUniformBuffers.map(b => b.destroy());
-
-        this.postBaseUniformBuffer?.destroy();
-        this.postUniformBuffer?.destroy();
 
         this.pipelines = [];
         this.vertexBuffers = [];
@@ -168,17 +168,22 @@ export class Renderer {
         this.fragUniformBuffers = [];
         this.uniformBindGroups = [];
         this.textureBindGroups = [];
+    }
+
+    private destroyPostBuffers() {
+        this.postBaseUniformBuffer?.destroy();
+        this.postUniformBuffer?.destroy();
 
         (this.postPipeline as any) = undefined;
         (this.postBaseUniformBuffer as any) = undefined;
         (this.postUniformBuffer as any) = undefined;
         (this.postUniformBindGroup as any) = undefined;
         (this.postFrameBufferBindGroup as any) = undefined;
-
-        this.resources.clear();
     }
 
     private async initWorld(scene: Scene) {
+        this.destroyWorldBuffers();
+
         for (let i=0; i<scene.worldObjects.length; i++) {
             // pipeline
             const vertexShader = this.device.createShaderModule({
@@ -193,7 +198,7 @@ export class Renderer {
                 depthWriteEnabled: true,
                 depthCompare: 'less' as GPUCompareFunction,
                 format: 'depth24plus-stencil8' as GPUTextureFormat,
-            }
+            };
 
             this.pipelines.push(this.device.createRenderPipeline({
                 label: "render pipeline",
@@ -306,6 +311,8 @@ export class Renderer {
     }
 
     private async initPost(scene: Scene) {
+        this.destroyPostBuffers();
+
         // post pipeline
         const postVertexShader = this.device.createShaderModule({
             label: "post vertex shader",
