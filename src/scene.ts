@@ -26,6 +26,7 @@ export class Scene {
 
 	}
 
+	// @ts-ignore
 	public update(time: number, deltaTime: number) {
 		
 	}
