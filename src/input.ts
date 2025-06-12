@@ -27,7 +27,7 @@ export class Input {
 			let action = this.controls.get(e.key.toLowerCase());
 			if (action) this.activeActions.delete(action);
 		});
-		addEventListener("click", (_e) => {
+		this.canvas.addEventListener("click", (_e) => {
 			if (!document.pointerLockElement) {
 				this.canvas.requestPointerLock();
 			}

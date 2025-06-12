@@ -3,6 +3,8 @@ import { Camera } from "./camera";
 import { Input } from "./input";
 import { Scene } from "./scene";
 import { DebugScene } from "./scenes/debugScene";
+import { Gui } from "./gui";
+import { Debug2Scene } from "./scenes/debug2Scene";
 
 export class Engine {
 	private renderer: Renderer;
@@ -10,18 +12,19 @@ export class Engine {
 	private input: Input;
 	private scene: Scene;
 	private exitLoop: boolean = false;
+	private gui: Gui;
 
 	constructor(canvas: HTMLCanvasElement) {
 		this.renderer = new Renderer(canvas);
 		this.camera = new Camera(canvas);
 		this.input = new Input(canvas);
-		this.scene = new DebugScene();
+		this.scene = new Scene();
+		this.gui = new Gui(this);
 	}
 
 	public async run() {
 		await this.renderer.init();
-		this.scene.init();
-		await this.renderer.loadScene(this.scene);
+		await this.setScene("debug");
 		this.loop();
 	}
 
@@ -29,9 +32,12 @@ export class Engine {
 		this.exitLoop = true;
 		if (name == "debug") {
 			this.scene = new DebugScene();
+		} else if (name == "debug2") {
+			this.scene = new Debug2Scene();
 		} else {
 			this.scene = new Scene();
 		}
+		this.gui.setScene(this.scene.name);
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
 		this.loop();
@@ -42,6 +48,7 @@ export class Engine {
         this.camera.updateRotation(this.input.cursorChange);
         this.input.resetChange();
 		this.scene.update(time, deltaTime);
+		this.gui.updateInfo(deltaTime, this.scene.name);
 	}
 
 	private draw(time: number, frame: number) {

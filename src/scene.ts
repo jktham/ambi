@@ -1,6 +1,8 @@
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec4 } from "./vec";
 
+export const scenes = ["none", "debug", "debug2"] as const;
+
 export class WorldObject {
 	public mesh: string = "triangle.json";
 	public texture: string = "test.png";
@@ -14,7 +16,7 @@ export class WorldObject {
 }
 
 export class Scene {
-	public name: string = "";
+	public name: string = "none";
 	public worldObjects: WorldObject[] = [];
 
 	public postShader: string = "post/base.frag.wgsl";

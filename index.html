@@ -4,25 +4,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css">
     <title>engine</title>
-    <style>
-      html, body {
-        margin: 0px;
-        padding: 0px;
-        width: 100%;
-        height: 100dvh;
-        background-color: black;
-      }
-      canvas {
-        width: 960px;
-        height: 540px;
-      }
-    </style>
   </head>
   <body>
     <canvas id="canvas" width="960" height="540">
       Your browser does not support the HTML5 canvas.
-     </canvas>
+    </canvas>
+    <div id="gui">
+      <span id="gui-info">aaa</span>
+      <select id="gui-scene-select"></select>
+      <input type="text">
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
