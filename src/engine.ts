@@ -2,22 +2,36 @@ import { Renderer } from "./renderer";
 import { Camera } from "./camera";
 import { Input } from "./input";
 import { Scene } from "./scene";
+import { DebugScene } from "./scenes/debugScene";
 
 export class Engine {
 	private renderer: Renderer;
 	private camera: Camera;
 	private input: Input;
 	private scene: Scene;
+	private exitLoop: boolean = false;
 
 	constructor(canvas: HTMLCanvasElement) {
 		this.renderer = new Renderer(canvas);
 		this.camera = new Camera(canvas);
 		this.input = new Input(canvas);
-		this.scene = new Scene();
+		this.scene = new DebugScene();
 	}
 
 	public async run() {
 		await this.renderer.init();
+		this.scene.init();
+		await this.renderer.loadScene(this.scene);
+		this.loop();
+	}
+
+	public async setScene(name: string) {
+		this.exitLoop = true;
+		if (name == "debug") {
+			this.scene = new DebugScene();
+		} else {
+			this.scene = new Scene();
+		}
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
 		this.loop();
@@ -35,10 +49,14 @@ export class Engine {
 	}
 
 	private loop() {
+		this.exitLoop = false;
 		let frameRate = 60;
         let t0 = 0;
 		let f = 0;
         const newFrame = (t: number) => {
+			if (this.exitLoop) {
+				return;
+			}
             if (t0 == 0) {
                 t0 = t;
             }

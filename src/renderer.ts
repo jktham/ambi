@@ -153,6 +153,14 @@ export class Renderer {
     }
 
     private unloadScene() {
+        this.vertexBuffers.map(b => b.destroy());
+        this.baseUniformBuffers.map(b => b.destroy());
+        this.vertUniformBuffers.map(b => b.destroy());
+        this.fragUniformBuffers.map(b => b.destroy());
+
+        this.postBaseUniformBuffer?.destroy();
+        this.postUniformBuffer?.destroy();
+
         this.pipelines = [];
         this.vertexBuffers = [];
         this.baseUniformBuffers = [];
@@ -301,7 +309,7 @@ export class Renderer {
         // post pipeline
         const postVertexShader = this.device.createShaderModule({
             label: "post vertex shader",
-            code: await this.resources.loadShader("post_base.vert.wgsl"),
+            code: await this.resources.loadShader("post/base.vert.wgsl"),
         });
         const postFragmentShader = this.device.createShaderModule({
             label: "post fragment shader",
