@@ -6,6 +6,7 @@ html, body {
 	background-color: black;
 	color: white;
 	font-family: sans-serif;
+	overscroll-behavior: none;
 }
 
 canvas {
