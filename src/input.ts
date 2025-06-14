@@ -16,18 +16,28 @@ export class Input {
 		["shift", "sprint"],
 	]);
 	public cursorChange: Vec2 = new Vec2();
+	private previousTouch?: Touch;
 
 	constructor(canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
 		addEventListener("keydown", (e) => {
+			if ((e.target as HTMLElement).id == "gui-keyboard-input") {
+				return;
+			}
 			let action = this.controls.get(e.key.toLowerCase());
 			if (action) this.activeActions.add(action);
 		});
 		addEventListener("keyup", (e) => {
+			if ((e.target as HTMLElement).id == "gui-keyboard-input") {
+				return;
+			}
 			let action = this.controls.get(e.key.toLowerCase());
 			if (action) this.activeActions.delete(action);
 		});
-		this.canvas.addEventListener("click", (_e) => {
+		this.canvas.addEventListener("pointerup", (e) => {
+			if (e.pointerType !== "mouse") {
+				return;
+			}
 			if (!document.pointerLockElement) {
 				this.canvas.requestPointerLock();
 			}
@@ -37,6 +47,18 @@ export class Input {
 				this.cursorChange = new Vec2(this.cursorChange.x + e.movementX, this.cursorChange.y + e.movementY);
 			}
 		})
+		this.canvas.addEventListener("touchmove", (e) => {
+			if (document.pointerLockElement) {
+				return;
+			}
+			if (this.previousTouch) {
+				this.cursorChange = new Vec2(e.touches[0].pageX - this.previousTouch.pageX, e.touches[0].pageY - this.previousTouch.pageY);
+			}
+			this.previousTouch = e.touches[0];
+		})
+		this.canvas.addEventListener("touchend", (e) => {
+			this.previousTouch = undefined;
+		});
 	}
 
 	public resetChange() {

@@ -33,6 +33,8 @@ export class Renderer {
     private resources: Resources = new Resources();
 
     constructor(canvas: HTMLCanvasElement) {
+        canvas.width = 960;
+        canvas.height = 540;
 		this.canvas = canvas;
     }
 
