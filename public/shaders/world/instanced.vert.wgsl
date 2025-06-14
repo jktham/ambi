@@ -24,14 +24,25 @@ struct BaseUniforms {
 	normal: mat4x4f
 }
 
+struct Instance {
+	model: mat4x4f,
+	normal: mat4x4f,
+}
+
+struct InstancedUniforms {
+	instanceCount: i32,
+	instances: array<Instance>,
+}
+
 @group(0) @binding(0) var<uniform> baseUniforms: BaseUniforms;
+@group(0) @binding(1) var<storage, read> instancedUniforms: InstancedUniforms;
 
 @vertex 
-fn main(in: VertexIn) -> VertexOut {
+fn main(in: VertexIn, @builtin(instance_index) i: u32) -> VertexOut {
 	var out: VertexOut;
-	out.ndc = baseUniforms.projection * baseUniforms.view * baseUniforms.model * vec4f(in.pos, 1.0);
-	out.pos = (baseUniforms.model * vec4f(in.pos, 1.0)).xyz;
-	out.normal = normalize((baseUniforms.normal * vec4f(in.normal, 0.0)).xyz);
+	out.ndc = baseUniforms.projection * baseUniforms.view * instancedUniforms.instances[i].model * vec4f(in.pos, 1.0);
+	out.pos = (instancedUniforms.instances[i].model * vec4f(in.pos, 1.0)).xyz;
+	out.normal = normalize((instancedUniforms.instances[i].normal * vec4f(in.normal, 0.0)).xyz);
 	out.color = in.color * baseUniforms.color;
 	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y);
 	return out;

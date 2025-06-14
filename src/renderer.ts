@@ -1,7 +1,7 @@
 import type { Camera } from "./camera";
 import { Resources } from "./resources";
 import type { Scene } from "./scene";
-import { BaseUniforms, PostBaseUniforms } from "./uniforms";
+import { BaseUniforms, InstancedUniforms, PostBaseUniforms } from "./uniforms";
 import { Vec2 } from "./vec";
 
 export class Renderer {
@@ -245,24 +245,25 @@ export class Renderer {
             this.device.queue.writeBuffer(this.vertexBuffers[i], 0, vertexData);
 
             // uniforms
-            const baseUniformLength = new BaseUniforms().size;
+            const baseUniformLength = new BaseUniforms().size();
             this.baseUniformBuffers.push(this.device.createBuffer({
                 label: "base uniform buffer",
                 size: baseUniformLength * 4,
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
             }));
 
-            const vertUniformLength = scene.worldObjects[i].vertUniforms.size;
+            const vertUniformLength = scene.worldObjects[i].vertUniforms.size();
+            const useStorageBuffer = (scene.worldObjects[i].vertUniforms as InstancedUniforms).instanceCount > 0;
             this.vertUniformBuffers.push(this.device.createBuffer({
                 label: "vert uniform buffer",
                 size: vertUniformLength * 4,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                usage: (useStorageBuffer ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
             }));
             if (vertUniformLength > 0) {
                 this.device.queue.writeBuffer(this.vertUniformBuffers[i], 0, scene.worldObjects[i].vertUniforms.toArray());
             }
 
-            const fragUniformLength = scene.worldObjects[i].fragUniforms.size;
+            const fragUniformLength = scene.worldObjects[i].fragUniforms.size();
             this.fragUniformBuffers.push(this.device.createBuffer({
                 label: "frag uniform buffer",
                 size: fragUniformLength * 4,
@@ -345,14 +346,14 @@ export class Renderer {
         });
 
         // post uniforms
-        const postBaseUniformLength = new PostBaseUniforms().size;
+        const postBaseUniformLength = new PostBaseUniforms().size();
         this.postBaseUniformBuffer = this.device.createBuffer({
             label: "post base uniform buffer",
             size: postBaseUniformLength * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
         
-        const postUniformLength = scene.postUniforms.size;
+        const postUniformLength = scene.postUniforms.size();
         this.postUniformBuffer = this.device.createBuffer({
             label: "post uniform buffer",
             size: postUniformLength * 4,
@@ -398,10 +399,10 @@ export class Renderer {
             baseUniforms.normal = scene.worldObjects[i].model.inverse().transpose();
             this.device.queue.writeBuffer(this.baseUniformBuffers[i], 0, baseUniforms.toArray());
 
-            if (scene.worldObjects[i].vertUniforms.size > 0) {
+            if (scene.worldObjects[i].vertUniforms.size() > 0) {
                 this.device.queue.writeBuffer(this.vertUniformBuffers[i], 0, scene.worldObjects[i].vertUniforms.toArray());
             }
-            if (scene.worldObjects[i].fragUniforms.size > 0) {
+            if (scene.worldObjects[i].fragUniforms.size() > 0) {
                 this.device.queue.writeBuffer(this.fragUniformBuffers[i], 0, scene.worldObjects[i].fragUniforms.toArray());
             }
         }
@@ -414,7 +415,7 @@ export class Renderer {
             pass.setVertexBuffer(0, this.vertexBuffers[i]);
             pass.setBindGroup(0, this.uniformBindGroups[i]);
             pass.setBindGroup(1, this.textureBindGroups[i]);
-            pass.draw(this.vertexBuffers[i].size / 4 / 12);
+            pass.draw(this.vertexBuffers[i].size / 4 / 12, (scene.worldObjects[i].vertUniforms as InstancedUniforms).instanceCount ?? 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);
@@ -426,7 +427,7 @@ export class Renderer {
         postBaseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
         this.device.queue.writeBuffer(this.postBaseUniformBuffer, 0, postBaseUniforms.toArray());
 
-        if (scene.postUniforms.size > 0) {
+        if (scene.postUniforms.size() > 0) {
             this.device.queue.writeBuffer(this.postUniformBuffer, 0, scene.postUniforms.toArray());
         }
 

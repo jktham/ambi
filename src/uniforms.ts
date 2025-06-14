@@ -1,16 +1,17 @@
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class Uniforms {
-	readonly size: number = 0;
+	
+	public size(): number {
+		return 0;
+	}
 
 	public toArray(): Float32Array {
-		return new Float32Array();
+		return new Float32Array(this.size());
 	}
 }
 
 export class BaseUniforms extends Uniforms {
-	readonly size = 76;
-
 	public time = 0;
 	public frame = 0;
 	public color = new Vec4();
@@ -20,8 +21,12 @@ export class BaseUniforms extends Uniforms {
 	public projection = new Mat4();
 	public normal = new Mat4();
 
+	public size(): number {
+		return 76;
+	}
+
 	public toArray(): Float32Array {
-		let data = new Float32Array(this.size);
+		let data = new Float32Array(this.size());
 		data[0] = this.time;
 		data[1] = this.frame;
 		data.subarray(4, 4+4).set(this.color.data);
@@ -35,8 +40,6 @@ export class BaseUniforms extends Uniforms {
 }
 
 export class PhongUniforms extends Uniforms {
-	readonly size = 12;
-
 	public ambientFactor = 0.1;
 	public diffuseFactor = 0.6;
 	public specularFactor = 0.3;
@@ -44,8 +47,12 @@ export class PhongUniforms extends Uniforms {
 	public lightPos = new Vec3();
 	public lightColor = new Vec4(1.0, 1.0, 1.0, 1.0);
 
+	public size(): number {
+		return 12;
+	}
+
 	public toArray(): Float32Array {
-		let data = new Float32Array(this.size);
+		let data = new Float32Array(this.size());
 		data[0] = this.ambientFactor;
 		data[1] = this.diffuseFactor;
 		data[2] = this.specularFactor;
@@ -56,15 +63,37 @@ export class PhongUniforms extends Uniforms {
 	}
 }
 
-export class PostBaseUniforms extends Uniforms {
-	readonly size = 4;
+export class InstancedUniforms extends Uniforms {
+	public instanceCount = 0;
+	public models: Mat4[] = [];
+	public normals: Mat4[] = [];
 
+	public size(): number {
+		return 4 + 32*this.instanceCount;
+	}
+
+	public toArray(): Float32Array {
+		let data = new Float32Array(this.size());
+		data[0] = this.instanceCount;
+		for (let i=0; i<this.instanceCount; i++) {
+			data.subarray(4 + i*32, 4 + (i+1)*32 + 16).set(this.models[i].transpose().data);
+			data.subarray(4 + 16 + i*32, 4 + 16 + (i+1)*32 + 16).set(this.normals[i].transpose().data);
+		}
+		return data;
+	}
+}
+
+export class PostBaseUniforms extends Uniforms {
 	public time = 0;
 	public frame = 0;
 	public resolution = new Vec2();
 
+	public size(): number {
+		return 4;
+	}
+
 	public toArray(): Float32Array {
-		let data = new Float32Array(this.size);
+		let data = new Float32Array(this.size());
 		data[0] = this.time;
 		data[1] = this.frame;
 		data.subarray(2, 2+2).set(this.resolution.data);
