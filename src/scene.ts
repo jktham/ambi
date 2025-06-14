@@ -6,6 +6,7 @@ export class WorldObject {
 	public texture: string = "test.png";
 	public color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
 	public model: Mat4 = new Mat4();
+	public mask: number = 0.5;
 
 	public vertShader: string = "world/base.vert.wgsl";
 	public fragShader: string = "world/base.frag.wgsl";

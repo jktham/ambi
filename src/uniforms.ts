@@ -14,6 +14,7 @@ export class Uniforms {
 export class BaseUniforms extends Uniforms {
 	public time = 0;
 	public frame = 0;
+	public mask = 0;
 	public color = new Vec4();
 	public viewPos = new Vec3();
 	public model = new Mat4();
@@ -29,6 +30,7 @@ export class BaseUniforms extends Uniforms {
 		let data = new Float32Array(this.size());
 		data[0] = this.time;
 		data[1] = this.frame;
+		data[2] = this.mask;
 		data.subarray(4, 4+4).set(this.color.data);
 		data.subarray(8, 8+3).set(this.viewPos.data);
 		data.subarray(12, 12+16).set(this.model.transpose().data);

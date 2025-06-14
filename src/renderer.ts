@@ -391,6 +391,7 @@ export class Renderer {
             let baseUniforms = new BaseUniforms();
             baseUniforms.time = time;
             baseUniforms.frame = frame;
+            baseUniforms.mask = scene.worldObjects[i].mask;
             baseUniforms.color = scene.worldObjects[i].color;
             baseUniforms.viewPos = camera.position;
             baseUniforms.model = scene.worldObjects[i].model;

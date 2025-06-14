@@ -8,8 +8,8 @@ struct FragmentIn {
 
 struct FragmentOut {
 	@location(0) color: vec4f,
-	@location(1) posDepth: vec4f,
-	@location(2) normalMask: vec4f
+	@location(1) pos_depth: vec4f,
+	@location(2) normal_mask: vec4f
 }
 
 struct FbData {
@@ -22,35 +22,36 @@ struct FbData {
 
 struct BaseUniforms {
 	time: f32,
-	frame: i32,
+	frame: f32,
+	mask: f32,
 	color: vec4f,
-	viewPos: vec3f,
+	view_pos: vec3f,
 	model: mat4x4f,
 	view: mat4x4f,
 	projection: mat4x4f,
 	normal: mat4x4f
 }
 
-@group(0) @binding(0) var<uniform> baseUniforms: BaseUniforms;
+@group(0) @binding(0) var<uniform> u_base: BaseUniforms;
 
-@group(1) @binding(0) var textureSampler: sampler;
-@group(1) @binding(1) var texture: texture_2d<f32>;
+@group(1) @binding(0) var t_sampler: sampler;
+@group(1) @binding(1) var t_color: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
 	var data: FbData;
-	data.color = in.color * textureSample(texture, textureSampler, in.uv);
+	data.color = in.color * textureSample(t_color, t_sampler, in.uv);
 	data.pos = in.pos;
-	data.depth = length(baseUniforms.viewPos - in.pos);
+	data.depth = length(u_base.view_pos - in.pos);
 	data.normal = in.normal;
-	data.mask = 0;
+	data.mask = u32(u_base.mask);
 	return encodeFbData(data);
 }
 
 fn encodeFbData(data: FbData) -> FragmentOut {
 	var out: FragmentOut;
 	out.color = data.color;
-	out.posDepth = vec4f(data.pos, data.depth);
-	out.normalMask = vec4f((data.normal + 1.0) / 2.0, f32(data.mask) / 255.0);
+	out.pos_depth = vec4f(data.pos, data.depth);
+	out.normal_mask = vec4f((data.normal + 1.0) / 2.0, f32(data.mask) / 255.0);
 	return out;
 }

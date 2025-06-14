@@ -8,7 +8,7 @@ export class Gui {
 	private inputKeyUpHandles: Map<string, number> = new Map();
 
 	constructor(engine: Engine) {
-		const scenes = ["none", "debug", "debug2"];
+		const scenes = ["none", "debug"];
 		for (let scene of scenes) {
 			this.sceneSelect.options.add(new Option(scene));
 		}

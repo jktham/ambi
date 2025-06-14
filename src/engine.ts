@@ -4,7 +4,6 @@ import { Input } from "./input";
 import { Scene } from "./scene";
 import { DebugScene } from "./scenes/debugScene";
 import { Gui } from "./gui";
-import { Debug2Scene } from "./scenes/debug2Scene";
 
 export class Engine {
 	private renderer: Renderer;
@@ -32,8 +31,6 @@ export class Engine {
 		cancelAnimationFrame(this.scheduledFrameHandle);
 		if (name == "debug") {
 			this.scene = new DebugScene();
-		} else if (name == "debug2") {
-			this.scene = new Debug2Scene();
 		} else {
 			this.scene = new Scene();
 		}

@@ -15,9 +15,10 @@ struct VertexOut {
 
 struct BaseUniforms {
 	time: f32,
-	frame: i32,
+	frame: f32,
+	mask: f32,
 	color: vec4f,
-	viewPos: vec3f,
+	view_pos: vec3f,
 	model: mat4x4f,
 	view: mat4x4f,
 	projection: mat4x4f,
@@ -30,20 +31,20 @@ struct Instance {
 }
 
 struct InstancedUniforms {
-	instanceCount: i32,
+	instance_count: i32,
 	instances: array<Instance>,
 }
 
-@group(0) @binding(0) var<uniform> baseUniforms: BaseUniforms;
-@group(0) @binding(1) var<storage, read> instancedUniforms: InstancedUniforms;
+@group(0) @binding(0) var<uniform> u_base: BaseUniforms;
+@group(0) @binding(1) var<storage, read> u_instanced: InstancedUniforms;
 
 @vertex 
 fn main(in: VertexIn, @builtin(instance_index) i: u32) -> VertexOut {
 	var out: VertexOut;
-	out.ndc = baseUniforms.projection * baseUniforms.view * instancedUniforms.instances[i].model * vec4f(in.pos, 1.0);
-	out.pos = (instancedUniforms.instances[i].model * vec4f(in.pos, 1.0)).xyz;
-	out.normal = normalize((instancedUniforms.instances[i].normal * vec4f(in.normal, 0.0)).xyz);
-	out.color = in.color * baseUniforms.color;
+	out.ndc = u_base.projection * u_base.view * u_instanced.instances[i].model * vec4f(in.pos, 1.0);
+	out.pos = (u_instanced.instances[i].model * vec4f(in.pos, 1.0)).xyz;
+	out.normal = normalize((u_instanced.instances[i].normal * vec4f(in.normal, 0.0)).xyz);
+	out.color = in.color * u_base.color;
 	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y);
 	return out;
 }

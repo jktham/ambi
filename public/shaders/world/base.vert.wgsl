@@ -15,24 +15,25 @@ struct VertexOut {
 
 struct BaseUniforms {
 	time: f32,
-	frame: i32,
+	frame: f32,
+	mask: f32,
 	color: vec4f,
-	viewPos: vec3f,
+	view_pos: vec3f,
 	model: mat4x4f,
 	view: mat4x4f,
 	projection: mat4x4f,
 	normal: mat4x4f
 }
 
-@group(0) @binding(0) var<uniform> baseUniforms: BaseUniforms;
+@group(0) @binding(0) var<uniform> u_base: BaseUniforms;
 
 @vertex 
 fn main(in: VertexIn) -> VertexOut {
 	var out: VertexOut;
-	out.ndc = baseUniforms.projection * baseUniforms.view * baseUniforms.model * vec4f(in.pos, 1.0);
-	out.pos = (baseUniforms.model * vec4f(in.pos, 1.0)).xyz;
-	out.normal = normalize((baseUniforms.normal * vec4f(in.normal, 0.0)).xyz);
-	out.color = in.color * baseUniforms.color;
+	out.ndc = u_base.projection * u_base.view * u_base.model * vec4f(in.pos, 1.0);
+	out.pos = (u_base.model * vec4f(in.pos, 1.0)).xyz;
+	out.normal = normalize((u_base.normal * vec4f(in.normal, 0.0)).xyz);
+	out.color = in.color * u_base.color;
 	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y);
 	return out;
 }
