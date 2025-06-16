@@ -41,6 +41,8 @@ export class Engine {
 		this.gui.setScene(this.scene.name);
 		this.gui.setPost("", this.scene.postShader);
 		this.scene.init();
+		this.camera.position = this.scene.spawnPos;
+		this.camera.rotation = this.scene.spawnRot;
 		await this.renderer.loadScene(this.scene);
 		this.loop();
 	}

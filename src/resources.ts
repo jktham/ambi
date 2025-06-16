@@ -119,6 +119,7 @@ export class Resources {
 
 	private parseObj(file: string): number[] {
 		let v: number[][] = [];
+		let vc: number[][] = [];
 		let vn: number[][] = [];
 		let vt: number[][] = [];
 		let f: number[][][] = [];
@@ -127,6 +128,11 @@ export class Resources {
 			let words = line.split(" ");
 			if (words[0] == "v") {
 				v.push(words.slice(1, 4).map(w => parseFloat(w)));
+				if (words.length == 7) {
+					vc.push([words.slice(4, 7).map(w => parseFloat(w)), 1.0].flat());
+				} else {
+					vc.push([1.0, 1.0, 1.0, 1.0]);
+				}
 
 			} else if (words[0] == "vn") {
 				vn.push(words.slice(1, 4).map(w => parseFloat(w)));
@@ -138,7 +144,7 @@ export class Resources {
 				let face: number[][] = [];
 				for (let group of words.slice(1)) {
 					let indices = group.split("/").map(i => parseInt(i));
-					let vert = [v[indices[0]-1], vn[indices[2]-1], [1, 1, 1, 1], indices[1] ? vt[indices[1]-1] : [0, 0]].flat();
+					let vert = [v[indices[0]-1], vn[indices[2]-1], vc[indices[0]-1], indices[1] ? vt[indices[1]-1] : [0, 0]].flat();
 					face.push(vert);
 				}
 				if (face.length > 3) { // we assume convex

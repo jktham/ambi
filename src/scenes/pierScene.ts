@@ -4,10 +4,12 @@ import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class PierScene extends Scene {
 	public name: string = "pier";
+	public resolution: Vec2 = new Vec2(320, 180);
+	public spawnPos: Vec3 = new Vec3(6, 1.2, -0.5);
+	public spawnRot: Vec2 = new Vec2(-Math.PI / 2.0, 0);
 
 	public postShader: string = "post/ps1.frag.wgsl";
 	public postUniforms: Uniforms = new PostPS1Uniforms();
-	public resolution: Vec2 = new Vec2(320, 180);
 
 	constructor() {
 		super();
@@ -18,7 +20,6 @@ export class PierScene extends Scene {
 
 	public init() {
 		let pier = new WorldObject();
-		pier.model = Mat4.trs(new Vec3(0, -2, -5), new Vec3(0, -Math.PI / 2, 0), 1);
 		pier.mesh = "pier.obj";
 		pier.texture = "wood.jpg";
 		pier.fragShader = "world/ps1.frag.wgsl";
@@ -26,16 +27,14 @@ export class PierScene extends Scene {
 		this.worldObjects.push(pier);
 
 		let water = new WorldObject();
-		water.model = Mat4.trs(new Vec3(0, -3, -10), new Vec3(0, 0, 0), 10);
-		water.mesh = "quad_subdiv.obj";
+		water.mesh = "pier_water.obj";
 		water.texture = "snow.jpg";
 		water.fragShader = "world/ps1.frag.wgsl";
 		water.vertShader = "world/ps1.vert.wgsl";
 		this.worldObjects.push(water);
 
 		let ground = new WorldObject();
-		ground.model = Mat4.trs(new Vec3(0, -12, 8), new Vec3(0, 0, 0), 10);
-		ground.mesh = "cube_subdiv.obj";
+		ground.mesh = "pier_ground.obj";
 		ground.texture = "ground.jpg";
 		ground.fragShader = "world/ps1.frag.wgsl";
 		ground.vertShader = "world/ps1.vert.wgsl";

@@ -8,7 +8,7 @@ export class Camera {
 
 	private velocity: Vec3 = new Vec3();
 	public position: Vec3 = new Vec3();
-	private rotation: Vec2 = new Vec2();
+	public rotation: Vec2 = new Vec2();
 
 	private front: Vec3 = new Vec3();
 	private right: Vec3 = new Vec3();

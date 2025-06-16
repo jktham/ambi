@@ -1,5 +1,5 @@
 import { Uniforms } from "./uniforms";
-import { Mat4, Vec2, Vec4 } from "./vec";
+import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class WorldObject {
 	public mesh: string = "triangle.json";
@@ -17,6 +17,9 @@ export class WorldObject {
 export class Scene {
 	public name: string = "none";
 	public resolution: Vec2 = new Vec2(960, 540);
+	public spawnPos: Vec3 = new Vec3();
+	public spawnRot: Vec2 = new Vec2();
+
 	public worldObjects: WorldObject[] = [];
 
 	public postShader: string = "post/base.frag.wgsl";
