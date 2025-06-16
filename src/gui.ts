@@ -8,7 +8,7 @@ export class Gui {
 	private inputKeyUpHandles: Map<string, number> = new Map();
 
 	constructor(engine: Engine) {
-		const scenes = ["none", "debug"];
+		const scenes = ["none", "debug", "pier"];
 		for (let scene of scenes) {
 			this.sceneSelect.options.add(new Option(scene));
 		}
@@ -16,12 +16,12 @@ export class Gui {
 			await engine.setScene((e.target as HTMLSelectElement).value);
 		});
 		this.sceneSelect.addEventListener("keydown", (e) => {
-			if (e.key.length == 1) {
+			if (e.key.length == 1 && !e.ctrlKey) {
 				e.preventDefault();
 			}
 		});
 
-		const postShaders = ["post/base.frag.wgsl", "post/fb_depth.frag.wgsl", "post/fb_normal.frag.wgsl", "post/fb_pos.frag.wgsl", "post/fb_mask.frag.wgsl"];
+		const postShaders = ["post/base.frag.wgsl", "post/ps1_fog.frag.wgsl", "post/fb_depth.frag.wgsl", "post/fb_normal.frag.wgsl", "post/fb_pos.frag.wgsl", "post/fb_mask.frag.wgsl"];
 		for (let postShader of postShaders) {
 			this.postSelect.options.add(new Option(postShader));
 		}
@@ -29,7 +29,7 @@ export class Gui {
 			await engine.setPost((e.target as HTMLSelectElement).value);
 		});
 		this.postSelect.addEventListener("keydown", (e) => {
-			if (e.key.length == 1) {
+			if (e.key.length == 1 && !e.ctrlKey) {
 				e.preventDefault();
 			}
 		});

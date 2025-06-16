@@ -148,7 +148,19 @@ export class Renderer {
         });
     }
 
+    private destroyFrameBufferTextures() {
+        this.colorFrameBuffer.destroy();
+        this.posDepthFrameBuffer.destroy();
+        this.normalMaskFrameBuffer.destroy();
+    }
+
     public async loadScene(scene: Scene) {
+        this.canvas.width = scene.resolution.x;
+        this.canvas.height = scene.resolution.y;
+        this.destroyFrameBufferTextures();
+        this.createFrameBufferTextures();
+        this.configureRenderPass();
+
         await this.initWorld(scene);
         await this.initPost(scene);
     }
@@ -392,6 +404,7 @@ export class Renderer {
             baseUniforms.time = time;
             baseUniforms.frame = frame;
             baseUniforms.mask = scene.worldObjects[i].mask;
+            baseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
             baseUniforms.color = scene.worldObjects[i].color;
             baseUniforms.viewPos = camera.position;
             baseUniforms.model = scene.worldObjects[i].model;

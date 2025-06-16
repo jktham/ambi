@@ -15,6 +15,7 @@ export class BaseUniforms extends Uniforms {
 	public time = 0;
 	public frame = 0;
 	public mask = 0;
+	public resolution = new Vec2();
 	public color = new Vec4();
 	public viewPos = new Vec3();
 	public model = new Mat4();
@@ -23,7 +24,7 @@ export class BaseUniforms extends Uniforms {
 	public normal = new Mat4();
 
 	public size(): number {
-		return 76;
+		return 80;
 	}
 
 	public toArray(): Float32Array {
@@ -31,12 +32,13 @@ export class BaseUniforms extends Uniforms {
 		data[0] = this.time;
 		data[1] = this.frame;
 		data[2] = this.mask;
-		data.subarray(4, 4+4).set(this.color.data);
-		data.subarray(8, 8+3).set(this.viewPos.data);
-		data.subarray(12, 12+16).set(this.model.transpose().data);
-		data.subarray(28, 28+16).set(this.view.transpose().data);
-		data.subarray(44, 44+16).set(this.projection.transpose().data);
-		data.subarray(60, 60+16).set(this.normal.transpose().data);
+		data.subarray(4, 4+2).set(this.resolution.data);
+		data.subarray(8, 8+4).set(this.color.data);
+		data.subarray(12, 12+3).set(this.viewPos.data);
+		data.subarray(16, 16+16).set(this.model.transpose().data);
+		data.subarray(32, 32+16).set(this.view.transpose().data);
+		data.subarray(48, 48+16).set(this.projection.transpose().data);
+		data.subarray(64, 64+16).set(this.normal.transpose().data);
 		return data;
 	}
 }
