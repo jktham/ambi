@@ -1,11 +1,20 @@
 import { Scene, WorldObject } from "../scene";
+import { type Uniforms, PostPS1Uniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class PierScene extends Scene {
 	public name: string = "pier";
 
-	public postShader: string = "post/ps1_fog.frag.wgsl";
+	public postShader: string = "post/ps1.frag.wgsl";
+	public postUniforms: Uniforms = new PostPS1Uniforms();
 	public resolution: Vec2 = new Vec2(320, 180);
+
+	constructor() {
+		super();
+		(this.postUniforms as PostPS1Uniforms).fogStart = -2.0;
+		(this.postUniforms as PostPS1Uniforms).fogEnd = 10.0;
+		(this.postUniforms as PostPS1Uniforms).fogColor = new Vec4(0.60, 0.60, 0.60, 1.0);
+	}
 
 	public init() {
 		let pier = new WorldObject();

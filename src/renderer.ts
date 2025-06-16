@@ -335,7 +335,7 @@ export class Renderer {
         });
         const postFragmentShader = this.device.createShaderModule({
             label: "post fragment shader",
-            code: await this.resources.loadShader(scene.postShader),
+            code: await this.resources.loadShader(scene.postShaderOverride ?? scene.postShader),
         });
 
         this.postPipeline = this.device.createRenderPipeline({
@@ -365,14 +365,15 @@ export class Renderer {
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
         
-        const postUniformLength = scene.postUniforms.size();
+        let postUniforms = scene.postUniformsOverride ?? scene.postUniforms;
+        const postUniformLength = postUniforms.size();
         this.postUniformBuffer = this.device.createBuffer({
             label: "post uniform buffer",
             size: postUniformLength * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
         if (postUniformLength > 0) {
-            this.device.queue.writeBuffer(this.postUniformBuffer, 0, scene.postUniforms.toArray());
+            this.device.queue.writeBuffer(this.postUniformBuffer, 0, postUniforms.toArray());
         }
 
         let postUniformBindings: GPUBindGroupEntry[] = [];
@@ -441,8 +442,9 @@ export class Renderer {
         postBaseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
         this.device.queue.writeBuffer(this.postBaseUniformBuffer, 0, postBaseUniforms.toArray());
 
-        if (scene.postUniforms.size() > 0) {
-            this.device.queue.writeBuffer(this.postUniformBuffer, 0, scene.postUniforms.toArray());
+        let postUniforms = scene.postUniformsOverride ?? scene.postUniforms;
+        if (postUniforms.size() > 0) {
+            this.device.queue.writeBuffer(this.postUniformBuffer, 0, postUniforms.toArray());
         }
 
         // draw post

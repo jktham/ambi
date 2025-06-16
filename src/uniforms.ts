@@ -104,3 +104,21 @@ export class PostBaseUniforms extends Uniforms {
 		return data;
 	}
 }
+
+export class PostPS1Uniforms extends Uniforms {
+	public fogStart = 0.0;
+	public fogEnd = 10.0;
+	public fogColor = new Vec4(0.6, 0.6, 0.6, 1.0);
+
+	public size(): number {
+		return 8;
+	}
+
+	public toArray(): Float32Array {
+		let data = new Float32Array(this.size());
+		data[0] = this.fogStart;
+		data[1] = this.fogEnd;
+		data.subarray(4, 4+4).set(this.fogColor.data);
+		return data;
+	}
+}

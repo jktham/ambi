@@ -10,8 +10,9 @@ export class Resources {
 			return cached;
 		} else {
 			let file = await this.fetchFile(`/shaders/${name}`);
-			this.shaders.set(name, file);
-			return file;
+			let processed = await this.preprocessShader(file, `/shaders/${name}`);
+			this.shaders.set(name, processed);
+			return processed;
 		}
 	}
 
@@ -151,6 +152,19 @@ export class Resources {
 			}
 		}
 		return f.flat(2);
+	}
+
+	private async preprocessShader(file: string, path: string): Promise<string> {
+		let out = "";
+		for (let line of file.split(/\r?\n/)) {
+			if (line.startsWith("#import ")) {
+				let currentPath = path.split("/").slice(0, -1).join("/").replace("/shaders/", "") + "/";
+				let importPath = line.replace(/#import\s+/, "").replace(/"/g, "");
+				line = await this.loadShader(currentPath + importPath);
+			}
+			out += line + "\n";
+		}
+		return out;
 	}
 
 	public clear() {

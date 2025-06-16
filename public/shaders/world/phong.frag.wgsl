@@ -1,37 +1,4 @@
-struct FragmentIn {
-	@builtin(position) screen: vec4f,
-	@location(0) pos: vec3f,
-	@location(1) normal: vec3f,
-	@location(2) color: vec4f,
-	@location(3) uv: vec2f
-};
-
-struct FragmentOut {
-	@location(0) color: vec4f,
-	@location(1) pos_depth: vec4f,
-	@location(2) normal_mask: vec4f
-}
-
-struct FbData {
-	color: vec4f,
-	pos: vec3f,
-	depth: f32,
-	normal: vec3f,
-	mask: u32,
-}
-
-struct BaseUniforms {
-	time: f32,
-	frame: f32,
-	mask: f32,
-	resolution: vec2f,
-	color: vec4f,
-	view_pos: vec3f,
-	model: mat4x4f,
-	view: mat4x4f,
-	projection: mat4x4f,
-	normal: mat4x4f
-}
+#import "../shared.wgsl"
 
 struct PhongUniforms {
 	ambient_factor: f32,
@@ -70,12 +37,4 @@ fn phong(in: FragmentIn) -> vec4f {
 	let specular = u_phong.specular_factor * pow(max(dot(view_dir, reflect_dir), 0.0), u_phong.specular_exponent);
 
 	return in.color * u_phong.light_color * (ambient + diffuse + specular);
-}
-
-fn encodeFbData(data: FbData) -> FragmentOut {
-	var out: FragmentOut;
-	out.color = data.color;
-	out.pos_depth = vec4f(data.pos, data.depth);
-	out.normal_mask = vec4f((data.normal + 1.0) / 2.0, f32(data.mask) / 255.0);
-	return out;
 }

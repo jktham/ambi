@@ -1,30 +1,4 @@
-struct VertexIn {
-	@location(0) pos: vec3f,
-	@location(1) normal: vec3f,
-	@location(2) color: vec4f,
-	@location(3) uv: vec2f
-};
-
-struct VertexOut {
-	@builtin(position) ndc: vec4f,
-	@location(0) pos: vec3f,
-	@location(1) normal: vec3f,
-	@location(2) color: vec4f,
-	@location(3) uv: vec2f
-};
-
-struct BaseUniforms {
-	time: f32,
-	frame: f32,
-	mask: f32,
-	resolution: vec2f,
-	color: vec4f,
-	view_pos: vec3f,
-	model: mat4x4f,
-	view: mat4x4f,
-	projection: mat4x4f,
-	normal: mat4x4f
-}
+#import "../shared.wgsl"
 
 struct Instance {
 	model: mat4x4f,

@@ -1,8 +1,4 @@
-struct VertexOut {
-	@builtin(position) ndc: vec4f,
-	@location(0) pos: vec3f,
-	@location(1) uv: vec2f
-};
+#import "../shared.wgsl"
 
 @vertex 
 fn main(@builtin(vertex_index) i: u32) -> VertexOut {
@@ -21,4 +17,3 @@ fn main(@builtin(vertex_index) i: u32) -> VertexOut {
 	out.uv = vec2f((pos[i].x + 1.0) / 2.0, 1.0 - (pos[i].y + 1.0) / 2.0);
 	return out;
 }
-

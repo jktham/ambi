@@ -5,6 +5,7 @@ import { Scene } from "./scene";
 import { DebugScene } from "./scenes/debugScene";
 import { Gui } from "./gui";
 import { PierScene } from "./scenes/pierScene";
+import type { Uniforms } from "./uniforms";
 
 export class Engine {
 	private renderer: Renderer;
@@ -38,16 +39,23 @@ export class Engine {
 			this.scene = new Scene();
 		}
 		this.gui.setScene(this.scene.name);
-		this.gui.setPost(this.scene.postShader);
+		this.gui.setPost("", this.scene.postShader);
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
 		this.loop();
 	}
 
-	public async setPost(path: string) {
+	public async setPost(path: string, uniforms: Uniforms) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
-		this.scene.postShader = path;
-		this.gui.setPost(this.scene.postShader);
+		if (path == "") {
+			this.scene.postShaderOverride = undefined;
+			this.scene.postUniformsOverride = undefined;
+			this.gui.setPost("", this.scene.postShader);
+		} else {
+			this.scene.postShaderOverride = path;
+			this.scene.postUniformsOverride = uniforms;
+			this.gui.setPost(this.scene.postShaderOverride ?? this.scene.postShader, this.scene.postShader);
+		}
 		await this.renderer.loadPost(this.scene);
 		this.loop();
 	}
@@ -63,7 +71,7 @@ export class Engine {
         this.camera.updateRotation(this.input.cursorChange);
         this.input.resetChange();
 		this.scene.update(time, deltaTime);
-		this.gui.updateInfo(deltaAvg);
+		this.gui.updateInfo(`fps: ${(1/deltaAvg).toFixed(2)}`);
 	}
 
 	private draw(time: number, frame: number) {

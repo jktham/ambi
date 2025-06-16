@@ -16,11 +16,13 @@ export class WorldObject {
 
 export class Scene {
 	public name: string = "none";
+	public resolution: Vec2 = new Vec2(960, 540);
 	public worldObjects: WorldObject[] = [];
 
 	public postShader: string = "post/base.frag.wgsl";
 	public postUniforms: Uniforms = new Uniforms();
-	public resolution: Vec2 = new Vec2(960, 540);
+	public postShaderOverride?: string;
+	public postUniformsOverride?: Uniforms;
 
 	public init() {
 

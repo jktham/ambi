@@ -1,4 +1,5 @@
 import type { Engine } from "./engine";
+import { PostPS1Uniforms, Uniforms } from "./uniforms";
 
 export class Gui {
 	private info: HTMLSpanElement = document.getElementById("gui-info")! as HTMLSpanElement;
@@ -21,12 +22,21 @@ export class Gui {
 			}
 		});
 
-		const postShaders = ["post/base.frag.wgsl", "post/ps1_fog.frag.wgsl", "post/fb_depth.frag.wgsl", "post/fb_normal.frag.wgsl", "post/fb_pos.frag.wgsl", "post/fb_mask.frag.wgsl"];
+		const postShaders: [string, Uniforms][] = [
+			["", new Uniforms()], 
+			["post/base.frag.wgsl", new Uniforms()], 
+			["post/ps1.frag.wgsl", new PostPS1Uniforms()], 
+			["post/fb_depth.frag.wgsl", new Uniforms()], 
+			["post/fb_normal.frag.wgsl", new Uniforms()], 
+			["post/fb_pos.frag.wgsl", new Uniforms()], 
+			["post/fb_mask.frag.wgsl", new Uniforms()]
+		];
 		for (let postShader of postShaders) {
-			this.postSelect.options.add(new Option(postShader));
+			this.postSelect.options.add(new Option(postShader[0]));
 		}
 		this.postSelect.addEventListener("change", async (e) => {
-			await engine.setPost((e.target as HTMLSelectElement).value);
+			let value = (e.target as HTMLSelectElement).value;
+			await engine.setPost(value, postShaders.find((s) => s[0] == value)?.[1] || new Uniforms());
 		});
 		this.postSelect.addEventListener("keydown", (e) => {
 			if (e.key.length == 1 && !e.ctrlKey) {
@@ -50,15 +60,20 @@ export class Gui {
 		});
 	}
 
-	public updateInfo(deltaTime: number) {
-		this.info.textContent = `fps: ${(1/deltaTime).toFixed(2)}`;
+	public updateInfo(text: string) {
+		this.info.textContent = text;
 	}
 
 	public setScene(name: string) {
 		this.sceneSelect.value = name;
 	}
 
-	public setPost(path: string) {
+	public setPost(path: string, sceneShader: string) {
+		if (path == "") {
+			this.postSelect.value = "";
+			this.postSelect.options[0].label = `scene (${sceneShader})`;
+			return;
+		}
 		this.postSelect.value = path;
 	}
 }
