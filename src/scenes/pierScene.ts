@@ -1,3 +1,4 @@
+import type { CameraMode } from "../camera";
 import { Scene, WorldObject } from "../scene";
 import { type Uniforms, PostPS1Uniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
@@ -5,8 +6,9 @@ import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 export class PierScene extends Scene {
 	public name: string = "pier";
 	public resolution: Vec2 = new Vec2(320, 180);
-	public spawnPos: Vec3 = new Vec3(6, 1.2, -0.5);
+	public spawnPos: Vec3 = new Vec3(8, 1.8, -0.5);
 	public spawnRot: Vec2 = new Vec2(-Math.PI / 2.0, 0);
+	public cameraMode: CameraMode = "walk";
 
 	public postShader: string = "post/ps1.frag.wgsl";
 	public postUniforms: Uniforms = new PostPS1Uniforms();

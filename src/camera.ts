@@ -1,10 +1,14 @@
 import type { Action } from "./input";
 import { Vec2, Vec3, Mat4 } from "./vec";
 
+export const cameraModes = ["fly", "walk"] as const;
+export type CameraMode = typeof cameraModes[number];
+
 export class Camera {
 	private canvas: HTMLCanvasElement;
 	private speed: number = 4.0;
 	private fov: number = 90.0;
+	public mode: CameraMode = "fly";
 
 	private velocity: Vec3 = new Vec3();
 	public position: Vec3 = new Vec3();
@@ -25,25 +29,36 @@ export class Camera {
 
 	public updatePosition(actions: Set<Action>, deltaTime: number) {
 		let velocity = new Vec3();
+		let front = this.front;
+		let right = this.right;
+		let up = this.up;
+
+		if (this.mode == "walk") {
+			let normal = new Vec3(0, 1, 0);
+			front = front.add(normal.mul(-front.dot(normal))).normalize();
+			right = right.add(normal.mul(-right.dot(normal))).normalize();
+			up = new Vec3();
+		}
+
         for (let action of actions) {
 			switch (action) {
 				case "left":
-					velocity = velocity.add(this.right.mul(-1));
+					velocity = velocity.add(right.mul(-1));
 					break;
 				case "right":
-					velocity = velocity.add(this.right);
+					velocity = velocity.add(right);
 					break;
 				case "up":
-					velocity = velocity.add(this.up);
+					velocity = velocity.add(up);
 					break;
 				case "down":
-					velocity = velocity.add(this.up.mul(-1));
+					velocity = velocity.add(up.mul(-1));
 					break;
 				case "forward":
-					velocity = velocity.add(this.front);
+					velocity = velocity.add(front);
 					break;
 				case "backward":
-					velocity = velocity.add(this.front.mul(-1));
+					velocity = velocity.add(front.mul(-1));
 					break;
 			}
 		}

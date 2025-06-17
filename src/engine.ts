@@ -1,5 +1,5 @@
 import { Renderer } from "./renderer";
-import { Camera } from "./camera";
+import { Camera, type CameraMode } from "./camera";
 import { Input } from "./input";
 import { Scene } from "./scene";
 import { DebugScene } from "./scenes/debugScene";
@@ -40,7 +40,9 @@ export class Engine {
 		}
 		this.gui.setScene(this.scene.name);
 		this.gui.setPost("", this.scene.postShader);
+		this.gui.setMode(this.scene.cameraMode);
 		this.scene.init();
+		this.camera.mode = this.scene.cameraMode;
 		this.camera.position = this.scene.spawnPos;
 		this.camera.rotation = this.scene.spawnRot;
 		await this.renderer.loadScene(this.scene);
@@ -60,6 +62,11 @@ export class Engine {
 		}
 		await this.renderer.loadPost(this.scene);
 		this.loop();
+	}
+
+	public setMode(mode: CameraMode) {
+		this.camera.mode = mode;
+		this.gui.setMode(mode);
 	}
 
 	private update(time: number, deltaTime: number) {

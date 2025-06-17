@@ -1,3 +1,4 @@
+import type { CameraMode } from "./camera";
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
@@ -19,6 +20,7 @@ export class Scene {
 	public resolution: Vec2 = new Vec2(960, 540);
 	public spawnPos: Vec3 = new Vec3();
 	public spawnRot: Vec2 = new Vec2();
+	public cameraMode: CameraMode = "fly";
 
 	public worldObjects: WorldObject[] = [];
 
