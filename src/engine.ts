@@ -5,7 +5,7 @@ import { Scene } from "./scene";
 import { DebugScene } from "./scenes/debugScene";
 import { Gui } from "./gui";
 import { PierScene } from "./scenes/pierScene";
-import type { Uniforms } from "./uniforms";
+import { Uniforms } from "./uniforms";
 
 export class Engine {
 	private renderer: Renderer;
@@ -38,13 +38,18 @@ export class Engine {
 		} else {
 			this.scene = new Scene();
 		}
-		this.gui.setScene(this.scene.name);
-		this.gui.setPost("", this.scene.postShader);
-		this.gui.setMode(this.scene.cameraMode);
-		this.scene.init();
+		this.renderer.postShaderOverride = undefined;
+		this.renderer.postUniformsOverride = undefined;
+
 		this.camera.mode = this.scene.cameraMode;
 		this.camera.position = this.scene.spawnPos;
 		this.camera.rotation = this.scene.spawnRot;
+
+		this.gui.setScene(this.scene.name);
+		this.gui.setPost("", this.scene.postShader);
+		this.gui.setMode(this.scene.cameraMode);
+
+		this.scene.init();
 		await this.renderer.loadScene(this.scene);
 		this.loop();
 	}
