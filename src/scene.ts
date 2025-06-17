@@ -24,8 +24,6 @@ export class Scene {
 
 	public postShader: string = "post/base.frag.wgsl";
 	public postUniforms: Uniforms = new Uniforms();
-	public postShaderOverride?: string;
-	public postUniformsOverride?: Uniforms;
 
 	public init() {
 

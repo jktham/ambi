@@ -50,13 +50,13 @@ export class Engine {
 	public async setPost(path: string, uniforms: Uniforms) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
 		if (path == "") {
-			this.scene.postShaderOverride = undefined;
-			this.scene.postUniformsOverride = undefined;
-			this.gui.setPost("", this.scene.postShader);
+			this.renderer.postShaderOverride = undefined;
+			this.renderer.postUniformsOverride = undefined;
+			this.gui.setPost(path, this.scene.postShader);
 		} else {
-			this.scene.postShaderOverride = path;
-			this.scene.postUniformsOverride = uniforms;
-			this.gui.setPost(this.scene.postShaderOverride ?? this.scene.postShader, this.scene.postShader);
+			this.renderer.postShaderOverride = path;
+			this.renderer.postUniformsOverride = uniforms;
+			this.gui.setPost(path, this.scene.postShader);
 		}
 		await this.renderer.loadPost(this.scene);
 		this.loop();

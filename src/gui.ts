@@ -1,5 +1,5 @@
 import type { Engine } from "./engine";
-import { PostPS1Uniforms, Uniforms } from "./uniforms";
+import { Uniforms } from "./uniforms";
 
 export class Gui {
 	private info: HTMLSpanElement = document.getElementById("gui-info")! as HTMLSpanElement;
@@ -25,7 +25,6 @@ export class Gui {
 		const postShaders: [string, Uniforms][] = [
 			["", new Uniforms()], 
 			["post/base.frag.wgsl", new Uniforms()], 
-			["post/ps1.frag.wgsl", new PostPS1Uniforms()], 
 			["post/fb_depth.frag.wgsl", new Uniforms()], 
 			["post/fb_normal.frag.wgsl", new Uniforms()], 
 			["post/fb_pos.frag.wgsl", new Uniforms()], 
