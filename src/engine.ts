@@ -24,9 +24,9 @@ export class Engine {
 		this.gui = new Gui(this);
 	}
 
-	public async run() {
+	public async run(scene: string) {
 		await this.renderer.init();
-		await this.setScene("debug");
+		await this.setScene(scene);
 	}
 
 	public async setScene(name: string) {
@@ -36,6 +36,7 @@ export class Engine {
 		} else if (name == "pier") {
 			this.scene = new PierScene();
 		} else {
+			console.error(`no scene called ${name}`);
 			this.scene = new Scene();
 		}
 		this.renderer.postShaderOverride = undefined;
