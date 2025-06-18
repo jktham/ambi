@@ -10,7 +10,7 @@ export class PierScene extends Scene {
 	public spawnRot: Vec2 = new Vec2(-Math.PI / 2.0, 0);
 	public cameraMode: CameraMode = "walk";
 
-	public postShader: string = "post/ps1.frag.wgsl";
+	public postShader: string = "post/ps1_fog.frag.wgsl";
 	public postUniforms: Uniforms = new PostPS1Uniforms();
 
 	constructor() {
@@ -22,21 +22,21 @@ export class PierScene extends Scene {
 
 	public init() {
 		let pier = new WorldObject();
-		pier.mesh = "pier.obj";
+		pier.mesh = "pier/pier.obj";
 		pier.texture = "wood.jpg";
 		pier.fragShader = "world/ps1.frag.wgsl";
 		pier.vertShader = "world/ps1.vert.wgsl";
 		this.worldObjects.push(pier);
 
 		let water = new WorldObject();
-		water.mesh = "pier_water.obj";
+		water.mesh = "pier/water.obj";
 		water.texture = "snow.jpg";
 		water.fragShader = "world/ps1.frag.wgsl";
 		water.vertShader = "world/ps1.vert.wgsl";
 		this.worldObjects.push(water);
 
 		let ground = new WorldObject();
-		ground.mesh = "pier_ground.obj";
+		ground.mesh = "pier/ground.obj";
 		ground.texture = "ground.jpg";
 		ground.fragShader = "world/ps1.frag.wgsl";
 		ground.vertShader = "world/ps1.vert.wgsl";
@@ -52,7 +52,7 @@ export class PierScene extends Scene {
 
 		let snow = new WorldObject();
 		snow.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 0.01);
-		snow.mesh = "snow.obj";
+		snow.mesh = "pier/snow.obj";
 		snow.texture = "blank.png";
 		snow.color = new Vec4(0.9, 0.9, 0.9, 1.0);
 		snow.fragShader = "world/ps1.frag.wgsl";
@@ -72,7 +72,7 @@ export class PierScene extends Scene {
 		this.worldObjects.push(snow);
 
 		let lantern = new WorldObject();
-		lantern.mesh = "pier_lantern.obj";
+		lantern.mesh = "pier/lantern.obj";
 		lantern.texture = "concrete_bright.jpg";
 		lantern.color = new Vec4(1.0, 0.9, 0.0, 1.0);
 		lantern.mask = 255;
@@ -81,7 +81,7 @@ export class PierScene extends Scene {
 		this.worldObjects.push(lantern);
 
 		let lantern_holder = new WorldObject();
-		lantern_holder.mesh = "pier_lantern_holder.obj";
+		lantern_holder.mesh = "pier/lantern_holder.obj";
 		lantern_holder.texture = "metal.jpg";
 		lantern_holder.color = new Vec4(0.2, 0.2, 0.2, 1.0);
 		lantern_holder.fragShader = "world/ps1.frag.wgsl";
