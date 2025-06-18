@@ -55,7 +55,8 @@ export class PierScene extends Scene {
 		snow.mesh = "snow.obj";
 		snow.texture = "blank.png";
 		snow.color = new Vec4(0.9, 0.9, 0.9, 1.0);
-		snow.vertShader = "world/instanced.vert.wgsl";
+		snow.fragShader = "world/ps1.frag.wgsl";
+		snow.vertShader = "world/ps1_instanced.vert.wgsl";
 		snow.vertUniforms = new InstancedUniforms();
 		(snow.vertUniforms as InstancedUniforms).instanceCount = 1000;
 		for (let i=0; i<(snow.vertUniforms as InstancedUniforms).instanceCount; i++) {
@@ -69,6 +70,23 @@ export class PierScene extends Scene {
 			(snow.vertUniforms as InstancedUniforms).normals.push(model.transpose());
 		}
 		this.worldObjects.push(snow);
+
+		let lantern = new WorldObject();
+		lantern.mesh = "pier_lantern.obj";
+		lantern.texture = "concrete_bright.jpg";
+		lantern.color = new Vec4(1.0, 0.9, 0.0, 1.0);
+		lantern.mask = 255;
+		lantern.fragShader = "world/ps1.frag.wgsl";
+		lantern.vertShader = "world/ps1.vert.wgsl";
+		this.worldObjects.push(lantern);
+
+		let lantern_holder = new WorldObject();
+		lantern_holder.mesh = "pier_lantern_holder.obj";
+		lantern_holder.texture = "metal.jpg";
+		lantern_holder.color = new Vec4(0.2, 0.2, 0.2, 1.0);
+		lantern_holder.fragShader = "world/ps1.frag.wgsl";
+		lantern_holder.vertShader = "world/ps1.vert.wgsl";
+		this.worldObjects.push(lantern_holder);
 	}
 
 	public update(time: number, deltaTime: number) {
