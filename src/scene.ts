@@ -3,6 +3,7 @@ import { Uniforms } from "./uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class WorldObject {
+	public id: string = "";
 	public mesh: string = "triangle.json";
 	public texture: string = "test.png";
 	public color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
@@ -22,10 +23,10 @@ export class Scene {
 	public spawnRot: Vec2 = new Vec2();
 	public cameraMode: CameraMode = "fly";
 
-	public worldObjects: WorldObject[] = [];
-
 	public postShader: string = "post/base.frag.wgsl";
 	public postUniforms: Uniforms = new Uniforms();
+
+	public worldObjects: WorldObject[] = [];
 
 	public init() {
 
@@ -33,5 +34,15 @@ export class Scene {
 
 	public update(time: number, deltaTime: number) {
 		
+	}
+
+	public getObject(id: string): WorldObject | undefined {
+		let found = this.worldObjects.find((obj) => obj.id == id);
+		return found;
+	}
+
+	public getAllObjects(id: string): WorldObject[] {
+		let found = this.worldObjects.filter((obj) => obj.id == id);
+		return found;
 	}
 }

@@ -30,6 +30,7 @@ export class DebugScene extends Scene {
 		this.worldObjects.push(obj);
 
 		obj = new WorldObject();
+		obj.id = "monke_instanced";
 		obj.mesh = "monke.obj";
 		obj.vertShader = "world/instanced.vert.wgsl";
 		obj.vertUniforms = new InstancedUniforms();
@@ -60,10 +61,11 @@ export class DebugScene extends Scene {
 		this.worldObjects[0].model = this.worldObjects[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
 		this.worldObjects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
 
-		for (let i=0; i<(this.worldObjects[3].vertUniforms as InstancedUniforms).instanceCount; i++) {
-			let model = (this.worldObjects[3].vertUniforms as InstancedUniforms).models[i].mul(Mat4.rotate(new Vec3(deltaTime, deltaTime, deltaTime)));
-			(this.worldObjects[3].vertUniforms as InstancedUniforms).models[i] = model;
-			(this.worldObjects[3].vertUniforms as InstancedUniforms).normals[i] = model.inverse().transpose();
+		let monkeUniforms = (this.getObject("monke_instanced")?.vertUniforms as InstancedUniforms);
+		for (let i=0; i<monkeUniforms.instanceCount; i++) {
+			let model = monkeUniforms.models[i].mul(Mat4.rotate(new Vec3(deltaTime, deltaTime, deltaTime)));
+			monkeUniforms.models[i] = model;
+			monkeUniforms.normals[i] = model.inverse().transpose();
 		}
 
 		let light = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);

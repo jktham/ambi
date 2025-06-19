@@ -51,6 +51,7 @@ export class PierScene extends Scene {
 		this.worldObjects.push(sky);
 
 		let snow = new WorldObject();
+		snow.id = "snow";
 		snow.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 0.01);
 		snow.mesh = "pier/snow.obj";
 		snow.texture = "blank.png";
@@ -90,15 +91,16 @@ export class PierScene extends Scene {
 	}
 
 	public update(time: number, deltaTime: number) {
-		for (let i=0; i<(this.worldObjects[4].vertUniforms as InstancedUniforms).instanceCount; i++) {
-			let model = (this.worldObjects[4].vertUniforms as InstancedUniforms).models[i];
+		let snowUniforms = (this.getObject("snow")?.vertUniforms as InstancedUniforms);
+		for (let i=0; i<snowUniforms.instanceCount; i++) {
+			let model = snowUniforms.models[i];
 			let fall = Mat4.translate(new Vec3(0, -0.2 * deltaTime, 0.1 * deltaTime));
 			model = model.mul(fall);
 			if (model.transform(new Vec3()).y < -2) {
 				model = model.mul(Mat4.translate(new Vec3(0, 10, -5)));
 			}
-			(this.worldObjects[4].vertUniforms as InstancedUniforms).models[i] = model;
-			(this.worldObjects[4].vertUniforms as InstancedUniforms).normals[i] = model.transpose();
+			snowUniforms.models[i] = model;
+			snowUniforms.normals[i] = model.transpose();
 		}
 	}
 }
