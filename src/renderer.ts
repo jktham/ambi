@@ -153,6 +153,7 @@ export class Renderer {
 
     public async loadScene(scene: Scene) {
         this.setResolution(scene.resolution);
+        await this.preloadResources(scene);
         await this.initWorld(scene);
         await this.initPost(scene);
     }
@@ -199,6 +200,19 @@ export class Renderer {
         (this.postUniformBuffer as any) = undefined;
         (this.postUniformBindGroup as any) = undefined;
         (this.postFrameBufferBindGroup as any) = undefined;
+    }
+
+    private async preloadResources(scene: Scene) {
+        let promises: Promise<any>[] = [];
+        for (let i=0; i<scene.worldObjects.length; i++) {
+            promises.push(this.resources.loadShader(scene.worldObjects[i].vertShader));
+            promises.push(this.resources.loadShader(scene.worldObjects[i].fragShader));
+            promises.push(this.resources.loadMesh(scene.worldObjects[i].mesh));
+            promises.push(this.resources.loadTexture(scene.worldObjects[i].texture));
+        }
+        promises.push(this.resources.loadShader("post/base.vert.wgsl"));
+        promises.push(this.resources.loadShader(this.postShaderOverride ?? scene.postShader));
+        await Promise.all(promises);
     }
 
     private async initWorld(scene: Scene) {
