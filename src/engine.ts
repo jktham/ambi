@@ -6,6 +6,7 @@ import { DebugScene } from "./scenes/debugScene";
 import { Gui } from "./gui";
 import { PierScene } from "./scenes/pierScene";
 import { Uniforms } from "./uniforms";
+import { BrutalScene } from "./scenes/brutalScene";
 
 export class Engine {
 	private renderer: Renderer;
@@ -35,6 +36,8 @@ export class Engine {
 			this.scene = new DebugScene();
 		} else if (name == "pier") {
 			this.scene = new PierScene();
+		} else if (name == "brutal") {
+			this.scene = new BrutalScene();
 		} else {
 			console.error(`no scene called ${name}`);
 			this.scene = new Scene();

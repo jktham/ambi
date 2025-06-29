@@ -74,7 +74,7 @@ export class PierScene extends Scene {
 
 		let lantern = new WorldObject();
 		lantern.mesh = "pier/lantern.obj";
-		lantern.texture = "concrete_bright.jpg";
+		lantern.texture = "cracked.jpg";
 		lantern.color = new Vec4(1.0, 0.9, 0.0, 1.0);
 		lantern.mask = 255;
 		lantern.fragShader = "world/ps1.frag.wgsl";
