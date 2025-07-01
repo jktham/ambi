@@ -203,16 +203,18 @@ export class Renderer {
     }
 
     private async preloadResources(scene: Scene) {
-        let promises: Promise<any>[] = [];
         for (let i=0; i<scene.worldObjects.length; i++) {
-            promises.push(this.resources.loadShader(scene.worldObjects[i].vertShader));
-            promises.push(this.resources.loadShader(scene.worldObjects[i].fragShader));
-            promises.push(this.resources.loadMesh(scene.worldObjects[i].mesh));
-            promises.push(this.resources.loadTexture(scene.worldObjects[i].texture));
+            let objectPromises: Promise<any>[] = [];
+            objectPromises.push(this.resources.loadShader(scene.worldObjects[i].vertShader));
+            objectPromises.push(this.resources.loadShader(scene.worldObjects[i].fragShader));
+            objectPromises.push(this.resources.loadMesh(scene.worldObjects[i].mesh));
+            objectPromises.push(this.resources.loadTexture(scene.worldObjects[i].texture));
+            await Promise.all(objectPromises);
         }
-        promises.push(this.resources.loadShader("post/base.vert.wgsl"));
-        promises.push(this.resources.loadShader(this.postShaderOverride ?? scene.postShader));
-        await Promise.all(promises);
+        let scenePromises: Promise<any>[] = [];
+        scenePromises.push(this.resources.loadShader("post/base.vert.wgsl"));
+        scenePromises.push(this.resources.loadShader(this.postShaderOverride ?? scene.postShader));
+        await Promise.all(scenePromises);
     }
 
     private async initWorld(scene: Scene) {
