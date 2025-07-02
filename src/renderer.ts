@@ -17,7 +17,8 @@ export class Renderer {
     private normalMaskFrameBuffer!: GPUTexture;
 
     private pipelines: GPURenderPipeline[] = [];
-    private vertexBuffers: GPUBuffer[] = [];
+    private vertexBuffers: Map<string, GPUBuffer> = new Map();
+    private textureBuffers: Map<string, GPUTexture> = new Map();
     private baseUniformBuffers: GPUBuffer[] = [];
     private vertUniformBuffers: GPUBuffer[] = [];
     private fragUniformBuffers: GPUBuffer[] = [];
@@ -177,13 +178,13 @@ export class Renderer {
     }
 
     private destroyWorldBuffers() {
-        this.vertexBuffers.map(b => b.destroy());
+        this.vertexBuffers.forEach(b => b.destroy());
         this.baseUniformBuffers.map(b => b.destroy());
         this.vertUniformBuffers.map(b => b.destroy());
         this.fragUniformBuffers.map(b => b.destroy());
 
         this.pipelines = [];
-        this.vertexBuffers = [];
+        this.vertexBuffers = new Map();
         this.baseUniformBuffers = [];
         this.vertUniformBuffers = [];
         this.fragUniformBuffers = [];
@@ -270,13 +271,16 @@ export class Renderer {
             }));
 
             // vertex buffer
-            const vertexData = await this.resources.loadMesh(scene.worldObjects[i].mesh);
-            this.vertexBuffers.push(this.device.createBuffer({
-                label: "vertex buffer",
-                size: vertexData.byteLength,
-                usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-            }));
-            this.device.queue.writeBuffer(this.vertexBuffers[i], 0, vertexData);
+            if (!this.vertexBuffers.has(scene.worldObjects[i].mesh)) {
+                const vertexData = await this.resources.loadMesh(scene.worldObjects[i].mesh);
+                let vertexBuffer = this.device.createBuffer({
+                    label: "vertex buffer",
+                    size: vertexData.byteLength,
+                    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+                });
+                this.device.queue.writeBuffer(vertexBuffer, 0, vertexData);
+                this.vertexBuffers.set(scene.worldObjects[i].mesh, vertexBuffer);
+            }
 
             // uniforms
             const baseUniformLength = new BaseUniforms().size();
@@ -322,26 +326,30 @@ export class Renderer {
             }));
 
             // textures
-            const textureData = await this.resources.loadTexture(scene.worldObjects[i].texture);
-            const textureBuffer = this.device.createTexture({
-                label: "texture buffer",
-                size: [textureData.width, textureData.height],
-                format: "rgba8unorm",
-                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
-            });
-            this.device.queue.writeTexture(
-                {texture: textureBuffer},
-                textureData.data,
-                {bytesPerRow: 4 * textureData.width},
-                {width: textureData.width, height: textureData.height}
-            );
+            if (!this.textureBuffers.has(scene.worldObjects[i].texture)) {
+                const textureData = await this.resources.loadTexture(scene.worldObjects[i].texture);
+                let textureBuffer = this.device.createTexture({
+                    label: "texture buffer",
+                    size: [textureData.width, textureData.height],
+                    format: "rgba8unorm",
+                    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+                });
+                this.device.queue.writeTexture(
+                    {texture: textureBuffer},
+                    textureData.data,
+                    {bytesPerRow: 4 * textureData.width},
+                    {width: textureData.width, height: textureData.height}
+                );
+
+                this.textureBuffers.set(scene.worldObjects[i].texture, textureBuffer);
+            }
 
             const sampler = this.device.createSampler();
             this.textureBindGroups.push(this.device.createBindGroup({
                 layout: this.pipelines[i].getBindGroupLayout(1),
                 entries: [
                     { binding: 0, resource: sampler },
-                    { binding: 1, resource: textureBuffer.createView() },
+                    { binding: 1, resource: this.textureBuffers.get(scene.worldObjects[i].texture)!.createView() },
                 ],
             }));
         }
@@ -448,11 +456,17 @@ export class Renderer {
         const encoder = this.device.createCommandEncoder({ label: "render encoder" });
         const pass = encoder.beginRenderPass(this.renderPassDescriptor);
         for (let i=0; i<scene.worldObjects.length; i++) {
+            let vertexBuffer = this.vertexBuffers.get(scene.worldObjects[i].mesh);
+            if (!vertexBuffer) {
+                console.error(`missing vertex buffer ${scene.worldObjects[i].mesh}`);
+                continue;
+            }
+
             pass.setPipeline(this.pipelines[i]);
-            pass.setVertexBuffer(0, this.vertexBuffers[i]);
+            pass.setVertexBuffer(0, vertexBuffer);
             pass.setBindGroup(0, this.uniformBindGroups[i]);
             pass.setBindGroup(1, this.textureBindGroups[i]);
-            pass.draw(this.vertexBuffers[i].size / 4 / 12, (scene.worldObjects[i].vertUniforms as InstancedUniforms).instanceCount ?? 1);
+            pass.draw(vertexBuffer.size / 4 / 12, (scene.worldObjects[i].vertUniforms as InstancedUniforms).instanceCount ?? 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);
