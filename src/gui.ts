@@ -60,6 +60,7 @@ export class Gui {
 
 		this.keyboardInput.addEventListener("input", (e) => {
 			let key = (e.target as HTMLInputElement).value.toLowerCase();
+			let shift = (e.target as HTMLInputElement).value != key;
 			(e.target as HTMLInputElement).value = "";
 
 			dispatchEvent(new KeyboardEvent("keydown", {key: key}));
@@ -71,6 +72,18 @@ export class Gui {
 			this.inputKeyUpHandles.set(key, setTimeout(() => {
 				dispatchEvent(new KeyboardEvent("keyup", {key: key}));
 			}, 500));
+
+			if (shift) {
+				dispatchEvent(new KeyboardEvent("keydown", {key: "shift"}));
+
+				let handle = this.inputKeyUpHandles.get("shift");
+				if (handle) {
+					clearTimeout(handle);
+				}
+				this.inputKeyUpHandles.set("shift", setTimeout(() => {
+					dispatchEvent(new KeyboardEvent("keyup", {key: "shift"}));
+				}, 500));
+			}
 		});
 	}
 
