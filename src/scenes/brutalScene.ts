@@ -47,10 +47,13 @@ export class BrutalScene extends Scene {
 	}
 }
 
+const sockets = ["path", "none"] as const;
+type Socket = typeof sockets[number];
+
 type Tile = {
 	mesh: string;
 	rotation: number; // 0-3
-	constraints: number[]; // NESW
+	sockets: Socket[]; // NESW
 	weight: number;
 }
 
@@ -65,35 +68,35 @@ function getTiles(): Tile[] {
 		let t: Tile = {
 			mesh: "brutal/tiles/path_straight.obj",
 			rotation: r,
-			constraints: [1, 0, 1, 0],
+			sockets: ["path", "none", "path", "none"],
 			weight: 1.5
 		};
 		tiles.push(t);
 		t = {
 			mesh: "brutal/tiles/path_cross.obj",
 			rotation: r,
-			constraints: [1, 1, 1, 1],
+			sockets: ["path", "path", "path", "path"],
 			weight: 1
 		};
 		tiles.push(t);
 		t = {
 			mesh: "brutal/tiles/path_fork.obj",
 			rotation: r,
-			constraints: [0, 1, 1, 1],
+			sockets: ["none", "path", "path", "path"],
 			weight: 1
 		};
 		tiles.push(t);
 		t = {
 			mesh: "brutal/tiles/path_end.obj",
 			rotation: r,
-			constraints: [0, 0, 1, 0],
+			sockets: ["none", "none", "path", "none"],
 			weight: 1
 		};
 		tiles.push(t);
 		t = {
 			mesh: "brutal/tiles/path_turn.obj",
 			rotation: r,
-			constraints: [0, 1, 1, 0],
+			sockets: ["none", "path", "path", "none"],
 			weight: 2
 		};
 		tiles.push(t);
@@ -143,9 +146,18 @@ function generateCells(size: number, tiles: Tile[]): Cell[][] {
 			let collapseCoords = minCoords[Math.floor(Math.random() * minCoords.length)];
 			let collapseCell = cells[collapseCoords[0]][collapseCoords[1]];
 
-			let weightedRandom = collapseCell.candidates.map((t) => Math.random() * t.weight);
-			let choice = weightedRandom.indexOf(Math.max(...weightedRandom));
-			collapseCell.candidates = [collapseCell.candidates[choice]];
+			let weightSum = collapseCell.candidates.map((t) => t.weight).reduce((weight, sum) => weight + sum);
+			let weightPrefix = collapseCell.candidates.map((t) => t.weight / weightSum);
+			for (let i=1; i<weightPrefix.length; i++) {
+				weightPrefix[i] += weightPrefix[i-1];
+			}
+			let r = Math.random();
+			for (let i=0; i<weightPrefix.length; i++) {
+				if (r <= weightPrefix[i] || i == weightPrefix.length-1) {
+					collapseCell.candidates = [collapseCell.candidates[i]];
+					break;
+				}
+			}
 
 			let neighbors: (Cell|undefined)[] = [
 				collapseCoords[1]-1 >= 0 ? cells[collapseCoords[0]][collapseCoords[1]-1] : undefined, // N
@@ -158,7 +170,7 @@ function generateCells(size: number, tiles: Tile[]): Cell[][] {
 				let c = collapseCell.candidates[0];
 				if (!n) continue;
 
-				n.candidates = n.candidates.filter((t) => t.constraints[(i + t.rotation + 2) % 4] == c.constraints[(i + c.rotation) % 4]);
+				n.candidates = n.candidates.filter((t) => t.sockets[(i + t.rotation + 2) % 4] == c.sockets[(i + c.rotation) % 4]);
 			}
 		}
 	}
