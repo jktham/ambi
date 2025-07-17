@@ -15,8 +15,8 @@ export class BrutalScene extends Scene {
 		phong.lightColor = new Vec4(1.0, 0.2, 0.2, 1);
 		phong.specularFactor = 0.0;
 
-		const size = 11;
-		const scale = 1.0;
+		const size = 21;
+		const scale = 20.0;
 		let tiles = getTiles();
 		let cells = generateCells(size, tiles);
 
@@ -28,6 +28,7 @@ export class BrutalScene extends Scene {
 				let obj = new WorldObject();
 				obj.model = Mat4.trs(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
 				obj.mesh = tile.mesh;
+				obj.texture = "concrete.jpg";
 				obj.fragShader = "world/phong.frag.wgsl";
 				obj.fragUniforms = phong;
 				this.worldObjects.push(obj);
@@ -47,13 +48,13 @@ export class BrutalScene extends Scene {
 	}
 }
 
-const sockets = ["path", "none"] as const;
+const sockets = ["path", "none", "tower"] as const;
 type Socket = typeof sockets[number];
 
 type Tile = {
 	mesh: string;
 	rotation: number; // 0-3
-	sockets: Socket[]; // NESW
+	sockets: Socket[][]; // NESW
 	weight: number;
 }
 
@@ -68,36 +69,50 @@ function getTiles(): Tile[] {
 		let t: Tile = {
 			mesh: "brutal/tiles/path_straight.obj",
 			rotation: r,
-			sockets: ["path", "none", "path", "none"],
-			weight: 1.5
+			sockets: [["path"], ["none"], ["path"], ["none"]],
+			weight: 1.2
 		};
 		tiles.push(t);
 		t = {
 			mesh: "brutal/tiles/path_cross.obj",
 			rotation: r,
-			sockets: ["path", "path", "path", "path"],
-			weight: 1
+			sockets: [["path"], ["path"], ["path"], ["path"]],
+			weight: 0.5
 		};
 		tiles.push(t);
 		t = {
 			mesh: "brutal/tiles/path_fork.obj",
 			rotation: r,
-			sockets: ["none", "path", "path", "path"],
+			sockets: [["none"], ["path"], ["path"], ["path"]],
 			weight: 1
 		};
 		tiles.push(t);
 		t = {
 			mesh: "brutal/tiles/path_end.obj",
 			rotation: r,
-			sockets: ["none", "none", "path", "none"],
+			sockets: [["none"], ["none"], ["path"], ["none"]],
 			weight: 1
 		};
 		tiles.push(t);
 		t = {
 			mesh: "brutal/tiles/path_turn.obj",
 			rotation: r,
-			sockets: ["none", "path", "path", "none"],
+			sockets: [["none"], ["path"], ["path"], ["none"]],
 			weight: 2
+		};
+		tiles.push(t);
+		// t = {
+		// 	mesh: "brutal/tiles/plaza.obj",
+		// 	rotation: r,
+		// 	sockets: [["path", "none"], ["path", "none"], ["path", "none"], ["path", "none"]],
+		// 	weight: 0.05
+		// };
+		// tiles.push(t);
+		t = {
+			mesh: "brutal/tiles/tower.obj",
+			rotation: r,
+			sockets: [["path", "none"], ["path", "none"], ["path", "none"], ["path", "none"]],
+			weight: 0.05
 		};
 		tiles.push(t);
 	}
@@ -119,7 +134,7 @@ function generateCells(size: number, tiles: Tile[]): Cell[][] {
 
 	let maxEntropy = 0;
 	let iterations = 0;
-	while (maxEntropy != 1 && iterations < 1000) {
+	while (maxEntropy != 1 && iterations < 10000) {
 		iterations++;
 
 		maxEntropy = 1;
@@ -170,7 +185,11 @@ function generateCells(size: number, tiles: Tile[]): Cell[][] {
 				let c = collapseCell.candidates[0];
 				if (!n) continue;
 
-				n.candidates = n.candidates.filter((t) => t.sockets[(i + t.rotation + 2) % 4] == c.sockets[(i + c.rotation) % 4]);
+				n.candidates = n.candidates.filter((t) => {
+					for (let s of t.sockets[(i + t.rotation + 2) % 4]) {
+						if (c.sockets[(i + c.rotation) % 4].includes(s)) return true;
+					}
+				});
 			}
 		}
 	}
