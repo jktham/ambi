@@ -7,8 +7,10 @@ import { Gui } from "./gui";
 import { PierScene } from "./scenes/pierScene";
 import { Uniforms } from "./uniforms";
 import { BrutalScene } from "./scenes/brutalScene";
+import { Resources } from "./resources";
 
 export class Engine {
+	private resources: Resources;
 	private renderer: Renderer;
 	private camera: Camera;
 	private input: Input;
@@ -18,8 +20,9 @@ export class Engine {
 	private scheduledFrameHandle: number = 0;
 
 	constructor(canvas: HTMLCanvasElement) {
-		this.renderer = new Renderer(canvas);
-		this.camera = new Camera(canvas);
+		this.resources = new Resources();
+		this.renderer = new Renderer(canvas, this.resources);
+		this.camera = new Camera(canvas, this.resources);
 		this.input = new Input(canvas);
 		this.scene = new Scene();
 		this.gui = new Gui(this);
@@ -55,6 +58,7 @@ export class Engine {
 
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
+		await this.camera.loadColliders(this.scene.objects);
 		this.loop();
 	}
 

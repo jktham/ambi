@@ -1,3 +1,4 @@
+import { Vec3 } from "./vec";
 
 export class Resources {
 	private shaders: Map<string, string> = new Map();
@@ -46,6 +47,12 @@ export class Resources {
 				return new Float32Array();
 			}
 		}
+	}
+
+	public async loadCollider(name: string): Promise<Vec3[][]> {
+		let mesh = await this.loadMesh(name);
+		let collider = this.parseCollider(mesh);
+		return collider;
 	}
 
 	public async loadTexture(name: string): Promise<ImageData> {
@@ -158,6 +165,17 @@ export class Resources {
 			}
 		}
 		return f.flat(2);
+	}
+
+	private parseCollider(mesh: Float32Array): Vec3[][] {
+		let collider: Vec3[][] = [];
+		for (let i=0; i<mesh.length; i+=12*3) {
+			let v0 = new Vec3(mesh[i], mesh[i+1], mesh[i+2]);
+			let v1 = new Vec3(mesh[i+12], mesh[i+13], mesh[i+14]);
+			let v2 = new Vec3(mesh[i+24], mesh[i+25], mesh[i+26]);
+			collider.push([v0, v1, v2]);
+		}
+		return collider;
 	}
 
 	private async preprocessShader(file: string, path: string): Promise<string> {

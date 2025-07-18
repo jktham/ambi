@@ -6,28 +6,30 @@ export class DebugScene extends Scene {
 	public name: string = "debug";
 	
 	public init() {
-		this.worldObjects = [];
+		this.objects = [];
 
 		let obj = new WorldObject();
 		obj.model = Mat4.translate(new Vec3(0, 1, -1.5));
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.worldObjects.push(obj);
+		this.objects.push(obj);
 
 		obj = new WorldObject();
 		obj.model = Mat4.translate(new Vec3(-1, 0, -2));
 		obj.color = new Vec4(1.0, 0.0, 0.0, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.worldObjects.push(obj);
+		this.objects.push(obj);
 
 		obj = new WorldObject();
 		obj.model = Mat4.translate(new Vec3(1, 0, -2));
 		obj.mesh = "monke.obj";
+		obj.collider = "monke.obj";
+		obj.bbox = [obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
 		obj.mask = 200;
-		this.worldObjects.push(obj);
+		this.objects.push(obj);
 
 		obj = new WorldObject();
 		obj.id = "monke_instanced";
@@ -46,7 +48,7 @@ export class DebugScene extends Scene {
 			(obj.vertUniforms as InstancedUniforms).models.push(model);
 			(obj.vertUniforms as InstancedUniforms).normals.push(model.inverse().transpose());
 		}
-		this.worldObjects.push(obj);
+		this.objects.push(obj);
 
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 10);
@@ -54,12 +56,12 @@ export class DebugScene extends Scene {
 		obj.texture = "house.jpg";
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.worldObjects.push(obj);
+		this.objects.push(obj);
 	}
 
 	public update(time: number, deltaTime: number) {
-		this.worldObjects[0].model = this.worldObjects[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
-		this.worldObjects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
+		this.objects[0].model = this.objects[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
+		this.objects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
 
 		let monkeUniforms = (this.getObject("monke_instanced")?.vertUniforms as InstancedUniforms);
 		for (let i=0; i<monkeUniforms.instanceCount; i++) {
@@ -69,7 +71,7 @@ export class DebugScene extends Scene {
 		}
 
 		let light = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);
-		for (let obj of this.worldObjects) {
+		for (let obj of this.objects) {
 			(obj.fragUniforms as PhongUniforms).lightPos = light;
 		}
 	}

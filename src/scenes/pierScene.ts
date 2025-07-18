@@ -23,24 +23,25 @@ export class PierScene extends Scene {
 	public init() {
 		let pier = new WorldObject();
 		pier.mesh = "pier/pier.obj";
+		pier.collider = "pier/pier.obj";
 		pier.texture = "wood.jpg";
 		pier.fragShader = "world/ps1.frag.wgsl";
 		pier.vertShader = "world/ps1.vert.wgsl";
-		this.worldObjects.push(pier);
+		this.objects.push(pier);
 
 		let water = new WorldObject();
 		water.mesh = "pier/water.obj";
 		water.texture = "snow.jpg";
 		water.fragShader = "world/ps1.frag.wgsl";
 		water.vertShader = "world/ps1.vert.wgsl";
-		this.worldObjects.push(water);
+		this.objects.push(water);
 
 		let ground = new WorldObject();
 		ground.mesh = "pier/ground.obj";
 		ground.texture = "ground.jpg";
 		ground.fragShader = "world/ps1.frag.wgsl";
 		ground.vertShader = "world/ps1.vert.wgsl";
-		this.worldObjects.push(ground);
+		this.objects.push(ground);
 
 		let sky = new WorldObject();
 		sky.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
@@ -48,7 +49,7 @@ export class PierScene extends Scene {
 		sky.texture = "test.png";
 		sky.fragShader = "world/skybox.frag.wgsl";
 		sky.color = new Vec4(0.1, 0.1, 0.1, 1.0);
-		this.worldObjects.push(sky);
+		this.objects.push(sky);
 
 		let snow = new WorldObject();
 		snow.id = "snow";
@@ -70,7 +71,7 @@ export class PierScene extends Scene {
 			(snow.vertUniforms as InstancedUniforms).models.push(model);
 			(snow.vertUniforms as InstancedUniforms).normals.push(model.transpose());
 		}
-		this.worldObjects.push(snow);
+		this.objects.push(snow);
 
 		let lantern = new WorldObject();
 		lantern.mesh = "pier/lantern.obj";
@@ -79,7 +80,7 @@ export class PierScene extends Scene {
 		lantern.mask = 255;
 		lantern.fragShader = "world/ps1.frag.wgsl";
 		lantern.vertShader = "world/ps1.vert.wgsl";
-		this.worldObjects.push(lantern);
+		this.objects.push(lantern);
 
 		let lantern_holder = new WorldObject();
 		lantern_holder.mesh = "pier/lantern_holder.obj";
@@ -87,7 +88,7 @@ export class PierScene extends Scene {
 		lantern_holder.color = new Vec4(0.2, 0.2, 0.2, 1.0);
 		lantern_holder.fragShader = "world/ps1.frag.wgsl";
 		lantern_holder.vertShader = "world/ps1.vert.wgsl";
-		this.worldObjects.push(lantern_holder);
+		this.objects.push(lantern_holder);
 	}
 
 	public update(time: number, deltaTime: number) {

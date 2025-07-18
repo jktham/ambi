@@ -9,6 +9,8 @@ export class WorldObject {
 	public color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
 	public model: Mat4 = new Mat4();
 	public mask: number = 0.5;
+	public collider?: string = undefined;
+	public bbox?: [Vec3, Vec3] = undefined;
 
 	public vertShader: string = "world/base.vert.wgsl";
 	public fragShader: string = "world/base.frag.wgsl";
@@ -26,7 +28,7 @@ export class Scene {
 	public postShader: string = "post/base.frag.wgsl";
 	public postUniforms: Uniforms = new Uniforms();
 
-	public worldObjects: WorldObject[] = [];
+	public objects: WorldObject[] = [];
 
 	public init() {
 
@@ -37,12 +39,12 @@ export class Scene {
 	}
 
 	public getObject(id: string): WorldObject | undefined {
-		let found = this.worldObjects.find((obj) => obj.id == id);
+		let found = this.objects.find((obj) => obj.id == id);
 		return found;
 	}
 
 	public getAllObjects(id: string): WorldObject[] {
-		let found = this.worldObjects.filter((obj) => obj.id == id);
+		let found = this.objects.filter((obj) => obj.id == id);
 		return found;
 	}
 }

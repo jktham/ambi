@@ -31,15 +31,16 @@ export class Renderer {
     private postUniformBindGroup!: GPUBindGroup;
     private postFrameBufferBindGroup!: GPUBindGroup;
 
-    private resources: Resources = new Resources();
+    private resources: Resources;
 
 	public postShaderOverride?: string;
 	public postUniformsOverride?: Uniforms;
 
-    constructor(canvas: HTMLCanvasElement) {
+    constructor(canvas: HTMLCanvasElement, resources: Resources) {
         canvas.width = 960;
         canvas.height = 540;
 		this.canvas = canvas;
+        this.resources = resources;
     }
 
     public async init() {
@@ -204,12 +205,13 @@ export class Renderer {
     }
 
     private async preloadResources(scene: Scene) {
-        for (let i=0; i<scene.worldObjects.length; i++) {
+        for (let i=0; i<scene.objects.length; i++) {
             let objectPromises: Promise<any>[] = [];
-            objectPromises.push(this.resources.loadShader(scene.worldObjects[i].vertShader));
-            objectPromises.push(this.resources.loadShader(scene.worldObjects[i].fragShader));
-            objectPromises.push(this.resources.loadMesh(scene.worldObjects[i].mesh));
-            objectPromises.push(this.resources.loadTexture(scene.worldObjects[i].texture));
+            objectPromises.push(this.resources.loadShader(scene.objects[i].vertShader));
+            objectPromises.push(this.resources.loadShader(scene.objects[i].fragShader));
+            objectPromises.push(this.resources.loadMesh(scene.objects[i].mesh));
+            objectPromises.push(this.resources.loadTexture(scene.objects[i].texture));
+            if (scene.objects[i].collider) objectPromises.push(this.resources.loadMesh(scene.objects[i].collider!));
             await Promise.all(objectPromises);
         }
         let scenePromises: Promise<any>[] = [];
@@ -221,15 +223,15 @@ export class Renderer {
     private async initWorld(scene: Scene) {
         this.destroyWorldBuffers();
 
-        for (let i=0; i<scene.worldObjects.length; i++) {
+        for (let i=0; i<scene.objects.length; i++) {
             // pipeline
             const vertexShader = this.device.createShaderModule({
                 label: "vertex shader",
-                code: await this.resources.loadShader(scene.worldObjects[i].vertShader),
+                code: await this.resources.loadShader(scene.objects[i].vertShader),
             });
             const fragmentShader = this.device.createShaderModule({
                 label: "fragment shader",
-                code: await this.resources.loadShader(scene.worldObjects[i].fragShader),
+                code: await this.resources.loadShader(scene.objects[i].fragShader),
             });
             const depthStencilState: GPUDepthStencilState = {
                 depthWriteEnabled: true,
@@ -271,15 +273,15 @@ export class Renderer {
             }));
 
             // vertex buffer
-            if (!this.vertexBuffers.has(scene.worldObjects[i].mesh)) {
-                const vertexData = await this.resources.loadMesh(scene.worldObjects[i].mesh);
+            if (!this.vertexBuffers.has(scene.objects[i].mesh)) {
+                const vertexData = await this.resources.loadMesh(scene.objects[i].mesh);
                 let vertexBuffer = this.device.createBuffer({
                     label: "vertex buffer",
                     size: vertexData.byteLength,
                     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
                 });
                 this.device.queue.writeBuffer(vertexBuffer, 0, vertexData);
-                this.vertexBuffers.set(scene.worldObjects[i].mesh, vertexBuffer);
+                this.vertexBuffers.set(scene.objects[i].mesh, vertexBuffer);
             }
 
             // uniforms
@@ -290,25 +292,25 @@ export class Renderer {
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
             }));
 
-            const vertUniformLength = scene.worldObjects[i].vertUniforms.size();
-            const useStorageBuffer = (scene.worldObjects[i].vertUniforms as InstancedUniforms).instanceCount > 0;
+            const vertUniformLength = scene.objects[i].vertUniforms.size();
+            const useStorageBuffer = (scene.objects[i].vertUniforms as InstancedUniforms).instanceCount > 0;
             this.vertUniformBuffers.push(this.device.createBuffer({
                 label: "vert uniform buffer",
                 size: vertUniformLength * 4,
                 usage: (useStorageBuffer ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
             }));
             if (vertUniformLength > 0) {
-                this.device.queue.writeBuffer(this.vertUniformBuffers[i], 0, scene.worldObjects[i].vertUniforms.toArray());
+                this.device.queue.writeBuffer(this.vertUniformBuffers[i], 0, scene.objects[i].vertUniforms.toArray());
             }
 
-            const fragUniformLength = scene.worldObjects[i].fragUniforms.size();
+            const fragUniformLength = scene.objects[i].fragUniforms.size();
             this.fragUniformBuffers.push(this.device.createBuffer({
                 label: "frag uniform buffer",
                 size: fragUniformLength * 4,
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
             }));
             if (fragUniformLength > 0) {
-                this.device.queue.writeBuffer(this.fragUniformBuffers[i], 0, scene.worldObjects[i].fragUniforms.toArray());
+                this.device.queue.writeBuffer(this.fragUniformBuffers[i], 0, scene.objects[i].fragUniforms.toArray());
             }
 
             let uniformBindings: GPUBindGroupEntry[] = [];
@@ -326,8 +328,8 @@ export class Renderer {
             }));
 
             // textures
-            if (!this.textureBuffers.has(scene.worldObjects[i].texture)) {
-                const textureData = await this.resources.loadTexture(scene.worldObjects[i].texture);
+            if (!this.textureBuffers.has(scene.objects[i].texture)) {
+                const textureData = await this.resources.loadTexture(scene.objects[i].texture);
                 let textureBuffer = this.device.createTexture({
                     label: "texture buffer",
                     size: [textureData.width, textureData.height],
@@ -341,7 +343,7 @@ export class Renderer {
                     {width: textureData.width, height: textureData.height}
                 );
 
-                this.textureBuffers.set(scene.worldObjects[i].texture, textureBuffer);
+                this.textureBuffers.set(scene.objects[i].texture, textureBuffer);
             }
 
             const sampler = this.device.createSampler();
@@ -349,7 +351,7 @@ export class Renderer {
                 layout: this.pipelines[i].getBindGroupLayout(1),
                 entries: [
                     { binding: 0, resource: sampler },
-                    { binding: 1, resource: this.textureBuffers.get(scene.worldObjects[i].texture)!.createView() },
+                    { binding: 1, resource: this.textureBuffers.get(scene.objects[i].texture)!.createView() },
                 ],
             }));
         }
@@ -430,35 +432,35 @@ export class Renderer {
 
     public drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
         // update world buffers
-        for (let i=0; i<scene.worldObjects.length; i++) {
+        for (let i=0; i<scene.objects.length; i++) {
             let baseUniforms = new BaseUniforms();
             baseUniforms.time = time;
             baseUniforms.frame = frame;
-            baseUniforms.mask = scene.worldObjects[i].mask;
+            baseUniforms.mask = scene.objects[i].mask;
             baseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
-            baseUniforms.color = scene.worldObjects[i].color;
+            baseUniforms.color = scene.objects[i].color;
             baseUniforms.viewPos = camera.position;
-            baseUniforms.model = scene.worldObjects[i].model;
+            baseUniforms.model = scene.objects[i].model;
             baseUniforms.view = camera.view;
             baseUniforms.projection = camera.projection;
-            baseUniforms.normal = scene.worldObjects[i].model.inverse().transpose();
+            baseUniforms.normal = scene.objects[i].model.inverse().transpose();
             this.device.queue.writeBuffer(this.baseUniformBuffers[i], 0, baseUniforms.toArray());
 
-            if (scene.worldObjects[i].vertUniforms.size() > 0) {
-                this.device.queue.writeBuffer(this.vertUniformBuffers[i], 0, scene.worldObjects[i].vertUniforms.toArray());
+            if (scene.objects[i].vertUniforms.size() > 0) {
+                this.device.queue.writeBuffer(this.vertUniformBuffers[i], 0, scene.objects[i].vertUniforms.toArray());
             }
-            if (scene.worldObjects[i].fragUniforms.size() > 0) {
-                this.device.queue.writeBuffer(this.fragUniformBuffers[i], 0, scene.worldObjects[i].fragUniforms.toArray());
+            if (scene.objects[i].fragUniforms.size() > 0) {
+                this.device.queue.writeBuffer(this.fragUniformBuffers[i], 0, scene.objects[i].fragUniforms.toArray());
             }
         }
 
         // draw world
         const encoder = this.device.createCommandEncoder({ label: "render encoder" });
         const pass = encoder.beginRenderPass(this.renderPassDescriptor);
-        for (let i=0; i<scene.worldObjects.length; i++) {
-            let vertexBuffer = this.vertexBuffers.get(scene.worldObjects[i].mesh);
+        for (let i=0; i<scene.objects.length; i++) {
+            let vertexBuffer = this.vertexBuffers.get(scene.objects[i].mesh);
             if (!vertexBuffer) {
-                console.error(`missing vertex buffer ${scene.worldObjects[i].mesh}`);
+                console.error(`missing vertex buffer ${scene.objects[i].mesh}`);
                 continue;
             }
 
@@ -466,7 +468,7 @@ export class Renderer {
             pass.setVertexBuffer(0, vertexBuffer);
             pass.setBindGroup(0, this.uniformBindGroups[i]);
             pass.setBindGroup(1, this.textureBindGroups[i]);
-            pass.draw(vertexBuffer.size / 4 / 12, (scene.worldObjects[i].vertUniforms as InstancedUniforms).instanceCount ?? 1);
+            pass.draw(vertexBuffer.size / 4 / 12, (scene.objects[i].vertUniforms as InstancedUniforms).instanceCount ?? 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);

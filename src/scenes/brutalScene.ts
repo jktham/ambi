@@ -28,10 +28,12 @@ export class BrutalScene extends Scene {
 				let obj = new WorldObject();
 				obj.model = Mat4.trs(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
 				obj.mesh = tile.mesh;
+				obj.collider = tile.mesh;
+				obj.bbox = [obj.model.transform(new Vec3()).sub(scale/2), obj.model.transform(new Vec3()).add(scale/2)];
 				obj.texture = "concrete.jpg";
 				obj.fragShader = "world/phong.frag.wgsl";
 				obj.fragUniforms = phong;
-				this.worldObjects.push(obj);
+				this.objects.push(obj);
 			}
 		}
 
@@ -40,7 +42,7 @@ export class BrutalScene extends Scene {
 		sun.mesh = "sphere.obj";
 		sun.texture = "blank.png";
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);
-		this.worldObjects.push(sun);
+		this.objects.push(sun);
 	}
 
 	public update(time: number, deltaTime: number) {

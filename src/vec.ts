@@ -18,11 +18,27 @@ export class Vec2 {
 		}
 	}
 
+	public sub(op: number | Vec2): Vec2 {
+		if (op instanceof Vec2) {
+			return new Vec2(...this.data.map((v, i) => v - op.data[i]));
+		} else {
+			return new Vec2(...this.data.map(v => v - op));
+		}
+	}
+
 	public mul(op: number | Vec2): Vec2 {
 		if (op instanceof Vec2) {
 			return new Vec2(...this.data.map((v, i) => v * op.data[i]));
 		} else {
 			return new Vec2(...this.data.map(v => v * op));
+		}
+	}
+
+	public div(op: number | Vec2): Vec2 {
+		if (op instanceof Vec2) {
+			return new Vec2(...this.data.map((v, i) => v / op.data[i]));
+		} else {
+			return new Vec2(...this.data.map(v => v / op));
 		}
 	}
 
@@ -61,11 +77,27 @@ export class Vec3 {
 		}
 	}
 
+	public sub(op: number | Vec3): Vec3 {
+		if (op instanceof Vec3) {
+			return new Vec3(...this.data.map((v, i) => v - op.data[i]));
+		} else {
+			return new Vec3(...this.data.map(v => v - op));
+		}
+	}
+
 	public mul(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
 			return new Vec3(...this.data.map((v, i) => v * op.data[i]));
 		} else {
 			return new Vec3(...this.data.map(v => v * op));
+		}
+	}
+
+	public div(op: number | Vec3): Vec3 {
+		if (op instanceof Vec3) {
+			return new Vec3(...this.data.map((v, i) => v / op.data[i]));
+		} else {
+			return new Vec3(...this.data.map(v => v / op));
 		}
 	}
 
@@ -115,11 +147,27 @@ export class Vec4 {
 		}
 	}
 
+	public sub(op: number | Vec4): Vec4 {
+		if (op instanceof Vec4) {
+			return new Vec4(...this.data.map((v, i) => v - op.data[i]));
+		} else {
+			return new Vec4(...this.data.map(v => v - op));
+		}
+	}
+
 	public mul(op: number | Vec4): Vec4 {
 		if (op instanceof Vec4) {
 			return new Vec4(...this.data.map((v, i) => v * op.data[i]));
 		} else {
 			return new Vec4(...this.data.map(v => v * op));
+		}
+	}
+
+	public div(op: number | Vec4): Vec4 {
+		if (op instanceof Vec4) {
+			return new Vec4(...this.data.map((v, i) => v / op.data[i]));
+		} else {
+			return new Vec4(...this.data.map(v => v / op));
 		}
 	}
 
