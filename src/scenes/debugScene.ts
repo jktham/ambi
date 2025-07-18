@@ -32,7 +32,7 @@ export class DebugScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new WorldObject();
-		obj.id = "monke_instanced";
+		obj.tag = "monke_instanced";
 		obj.mesh = "monke.obj";
 		obj.vertShader = "world/instanced.vert.wgsl";
 		obj.vertUniforms = new InstancedUniforms();
@@ -73,6 +73,18 @@ export class DebugScene extends Scene {
 		let light = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);
 		for (let obj of this.objects) {
 			(obj.fragUniforms as PhongUniforms).lightPos = light;
+		}
+
+		if (time > 3 && this.getAllObjects("added_after_init").length == 0) {
+			let obj = new WorldObject();
+			obj.tag = "added_after_init";
+			obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 1);
+			obj.mesh = "monke.obj";
+			obj.collider = "monke.obj";
+			obj.bbox = [obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)];
+			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragUniforms = new PhongUniforms();
+			this.objects.push(obj);
 		}
 	}
 }

@@ -3,7 +3,8 @@ import { Uniforms } from "./uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class WorldObject {
-	public id: string = "";
+	public id: number;
+	public tag: string = "";
 	public mesh: string = "triangle.json";
 	public texture: string = "test.png";
 	public color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
@@ -16,6 +17,10 @@ export class WorldObject {
 	public fragShader: string = "world/base.frag.wgsl";
 	public vertUniforms: Uniforms = new Uniforms();
 	public fragUniforms: Uniforms = new Uniforms();
+
+	constructor() {
+		this.id = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+	}
 }
 
 export class Scene {
@@ -38,13 +43,13 @@ export class Scene {
 		
 	}
 
-	public getObject(id: string): WorldObject | undefined {
-		let found = this.objects.find((obj) => obj.id == id);
+	public getObject(tag: string): WorldObject | undefined {
+		let found = this.objects.find((obj) => obj.tag == tag);
 		return found;
 	}
 
-	public getAllObjects(id: string): WorldObject[] {
-		let found = this.objects.filter((obj) => obj.id == id);
+	public getAllObjects(tag: string): WorldObject[] {
+		let found = this.objects.filter((obj) => obj.tag == tag);
 		return found;
 	}
 }

@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
 import { Resources } from "./resources";
-import type { Scene } from "./scene";
+import type { Scene, WorldObject } from "./scene";
 import { BaseUniforms, InstancedUniforms, PostBaseUniforms, Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
 
@@ -16,14 +16,14 @@ export class Renderer {
     private posDepthFrameBuffer!: GPUTexture;
     private normalMaskFrameBuffer!: GPUTexture;
 
-    private pipelines: GPURenderPipeline[] = [];
+    private pipelines: Map<number, GPURenderPipeline> = new Map();
     private vertexBuffers: Map<string, GPUBuffer> = new Map();
+    private baseUniformBuffers: Map<number, GPUBuffer> = new Map();
+    private vertUniformBuffers: Map<number, GPUBuffer> = new Map();
+    private fragUniformBuffers: Map<number, GPUBuffer> = new Map();
+    private uniformBindGroups: Map<number, GPUBindGroup> = new Map();
     private textureBuffers: Map<string, GPUTexture> = new Map();
-    private baseUniformBuffers: GPUBuffer[] = [];
-    private vertUniformBuffers: GPUBuffer[] = [];
-    private fragUniformBuffers: GPUBuffer[] = [];
-    private uniformBindGroups: GPUBindGroup[] = [];
-    private textureBindGroups: GPUBindGroup[] = [];
+    private textureBindGroups: Map<number, GPUBindGroup> = new Map();
 
     private postPipeline!: GPURenderPipeline;
     private postBaseUniformBuffer!: GPUBuffer;
@@ -180,17 +180,17 @@ export class Renderer {
 
     private destroyWorldBuffers() {
         this.vertexBuffers.forEach(b => b.destroy());
-        this.baseUniformBuffers.map(b => b.destroy());
-        this.vertUniformBuffers.map(b => b.destroy());
-        this.fragUniformBuffers.map(b => b.destroy());
+        this.baseUniformBuffers.forEach(b => b.destroy());
+        this.vertUniformBuffers.forEach(b => b.destroy());
+        this.fragUniformBuffers.forEach(b => b.destroy());
 
-        this.pipelines = [];
+        this.pipelines = new Map();
         this.vertexBuffers = new Map();
-        this.baseUniformBuffers = [];
-        this.vertUniformBuffers = [];
-        this.fragUniformBuffers = [];
-        this.uniformBindGroups = [];
-        this.textureBindGroups = [];
+        this.baseUniformBuffers = new Map();
+        this.vertUniformBuffers = new Map();
+        this.fragUniformBuffers = new Map();
+        this.uniformBindGroups = new Map();
+        this.textureBindGroups = new Map();
     }
 
     private destroyPostBuffers() {
@@ -205,13 +205,13 @@ export class Renderer {
     }
 
     private async preloadResources(scene: Scene) {
-        for (let i=0; i<scene.objects.length; i++) {
+        for (let object of scene.objects) {
             let objectPromises: Promise<any>[] = [];
-            objectPromises.push(this.resources.loadShader(scene.objects[i].vertShader));
-            objectPromises.push(this.resources.loadShader(scene.objects[i].fragShader));
-            objectPromises.push(this.resources.loadMesh(scene.objects[i].mesh));
-            objectPromises.push(this.resources.loadTexture(scene.objects[i].texture));
-            if (scene.objects[i].collider) objectPromises.push(this.resources.loadMesh(scene.objects[i].collider!));
+            objectPromises.push(this.resources.loadShader(object.vertShader));
+            objectPromises.push(this.resources.loadShader(object.fragShader));
+            objectPromises.push(this.resources.loadMesh(object.mesh));
+            objectPromises.push(this.resources.loadTexture(object.texture));
+            if (object.collider) objectPromises.push(this.resources.loadMesh(object.collider!));
             await Promise.all(objectPromises);
         }
         let scenePromises: Promise<any>[] = [];
@@ -223,138 +223,179 @@ export class Renderer {
     private async initWorld(scene: Scene) {
         this.destroyWorldBuffers();
 
-        for (let i=0; i<scene.objects.length; i++) {
-            // pipeline
-            const vertexShader = this.device.createShaderModule({
-                label: "vertex shader",
-                code: await this.resources.loadShader(scene.objects[i].vertShader),
-            });
-            const fragmentShader = this.device.createShaderModule({
-                label: "fragment shader",
-                code: await this.resources.loadShader(scene.objects[i].fragShader),
-            });
-            const depthStencilState: GPUDepthStencilState = {
-                depthWriteEnabled: true,
-                depthCompare: 'less' as GPUCompareFunction,
-                format: 'depth24plus-stencil8' as GPUTextureFormat,
-            };
-
-            this.pipelines.push(this.device.createRenderPipeline({
-                label: "render pipeline",
-                layout: "auto",
-                vertex: {
-                    module: vertexShader,
-                    buffers: [
-                        {
-                            arrayStride: 12 * 4,
-                            attributes: [
-                                {shaderLocation: 0, offset: 0, format: "float32x3"}, // pos
-                                {shaderLocation: 1, offset: 3 * 4, format: "float32x3"}, // normal
-                                {shaderLocation: 2, offset: 6 * 4, format: "float32x4"}, // color
-                                {shaderLocation: 3, offset: 10 * 4, format: "float32x2"}, // uv
-                            ]
-                        }
-                    ]
-                },
-                fragment: {
-                    module: fragmentShader,
-                    targets: [
-                        { format: "rgba8unorm" }, // color
-                        { format: "rgba32float" }, // posDepth
-                        { format: "rgba8unorm" }, // normalMask
-                    ]
-                },
-                depthStencil: depthStencilState,
-                primitive: {
-                    topology: "triangle-list",
-                    frontFace: "ccw",
-                    cullMode: "none"
-                }
-            }));
-
-            // vertex buffer
-            if (!this.vertexBuffers.has(scene.objects[i].mesh)) {
-                const vertexData = await this.resources.loadMesh(scene.objects[i].mesh);
-                let vertexBuffer = this.device.createBuffer({
-                    label: "vertex buffer",
-                    size: vertexData.byteLength,
-                    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-                });
-                this.device.queue.writeBuffer(vertexBuffer, 0, vertexData);
-                this.vertexBuffers.set(scene.objects[i].mesh, vertexBuffer);
-            }
-
-            // uniforms
-            const baseUniformLength = new BaseUniforms().size();
-            this.baseUniformBuffers.push(this.device.createBuffer({
-                label: "base uniform buffer",
-                size: baseUniformLength * 4,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-            }));
-
-            const vertUniformLength = scene.objects[i].vertUniforms.size();
-            const useStorageBuffer = (scene.objects[i].vertUniforms as InstancedUniforms).instanceCount > 0;
-            this.vertUniformBuffers.push(this.device.createBuffer({
-                label: "vert uniform buffer",
-                size: vertUniformLength * 4,
-                usage: (useStorageBuffer ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
-            }));
-            if (vertUniformLength > 0) {
-                this.device.queue.writeBuffer(this.vertUniformBuffers[i], 0, scene.objects[i].vertUniforms.toArray());
-            }
-
-            const fragUniformLength = scene.objects[i].fragUniforms.size();
-            this.fragUniformBuffers.push(this.device.createBuffer({
-                label: "frag uniform buffer",
-                size: fragUniformLength * 4,
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-            }));
-            if (fragUniformLength > 0) {
-                this.device.queue.writeBuffer(this.fragUniformBuffers[i], 0, scene.objects[i].fragUniforms.toArray());
-            }
-
-            let uniformBindings: GPUBindGroupEntry[] = [];
-            uniformBindings.push({ binding: 0, resource: { buffer: this.baseUniformBuffers[i] }});
-            if (vertUniformLength > 0) {
-                uniformBindings.push({ binding: 1, resource: { buffer: this.vertUniformBuffers[i] }});
-            }
-            if (fragUniformLength > 0) {
-                uniformBindings.push({ binding: 2, resource: { buffer: this.fragUniformBuffers[i] }});
-            }
-
-            this.uniformBindGroups.push(this.device.createBindGroup({
-                layout: this.pipelines[i].getBindGroupLayout(0),
-                entries: uniformBindings,
-            }));
-
-            // textures
-            if (!this.textureBuffers.has(scene.objects[i].texture)) {
-                const textureData = await this.resources.loadTexture(scene.objects[i].texture);
-                let textureBuffer = this.device.createTexture({
-                    label: "texture buffer",
-                    size: [textureData.width, textureData.height],
-                    format: "rgba8unorm",
-                    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
-                });
-                this.device.queue.writeTexture(
-                    {texture: textureBuffer},
-                    textureData.data,
-                    {bytesPerRow: 4 * textureData.width},
-                    {width: textureData.width, height: textureData.height}
-                );
-
-                this.textureBuffers.set(scene.objects[i].texture, textureBuffer);
-            }
-
-            const sampler = this.device.createSampler();
-            this.textureBindGroups.push(this.device.createBindGroup({
-                layout: this.pipelines[i].getBindGroupLayout(1),
-                entries: [
-                    { binding: 0, resource: sampler },
-                    { binding: 1, resource: this.textureBuffers.get(scene.objects[i].texture)!.createView() },
-                ],
-            }));
+        for (let object of scene.objects) {
+            this.initObject(object);
         }
+    }
+
+    private async initObject(object: WorldObject) {
+        // pipeline
+        if (!this.pipelines.has(object.id)) { // turns out we have to make one per object due to layout auto bindgroup constraints
+            const pipeline = await this.createPipeline(object.vertShader, object.fragShader);
+            this.pipelines.set(object.id, pipeline);
+        }
+        const pipeline = this.pipelines.get(object.id)!;
+
+        // vertex buffer
+        if (!this.vertexBuffers.has(object.mesh)) {
+            const vertexBuffer = await this.createVertexBuffer(object.mesh);
+            this.vertexBuffers.set(object.mesh, vertexBuffer);
+        }
+
+        // uniforms
+        if (!this.baseUniformBuffers.has(object.id)) {
+            const [baseUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindGroup] = await this.createUniformBuffers(object.vertUniforms, object.fragUniforms, pipeline);
+            this.baseUniformBuffers.set(object.id, baseUniformBuffer);
+            this.vertUniformBuffers.set(object.id, vertUniformBuffer);
+            this.fragUniformBuffers.set(object.id, fragUniformBuffer);
+            this.uniformBindGroups.set(object.id, uniformBindGroup);
+        }
+
+        // textures
+        if (!this.textureBuffers.has(object.texture)) {
+            const textureBuffer = await this.createTextureBuffer(object.texture, pipeline);
+            this.textureBuffers.set(object.texture, textureBuffer);
+        }
+        if (!this.textureBindGroups.has(object.id)) {
+            const textureBuffer = this.textureBuffers.get(object.texture)!;
+            const textureBindGroup = await this.createTextureBindGroup(textureBuffer, pipeline);
+            this.textureBindGroups.set(object.id, textureBindGroup);
+        }
+    }
+
+    private async createPipeline(vertShader: string, fragShader: string): Promise<GPURenderPipeline> {
+        const vertexShader = this.device.createShaderModule({
+            label: "vertex shader",
+            code: await this.resources.loadShader(vertShader),
+        });
+        const fragmentShader = this.device.createShaderModule({
+            label: "fragment shader",
+            code: await this.resources.loadShader(fragShader),
+        });
+        const depthStencilState: GPUDepthStencilState = {
+            depthWriteEnabled: true,
+            depthCompare: 'less' as GPUCompareFunction,
+            format: 'depth24plus-stencil8' as GPUTextureFormat,
+        };
+        const pipeline = this.device.createRenderPipeline({
+            label: "render pipeline",
+            layout: "auto",
+            vertex: {
+                module: vertexShader,
+                buffers: [
+                    {
+                        arrayStride: 12 * 4,
+                        attributes: [
+                            {shaderLocation: 0, offset: 0, format: "float32x3"}, // pos
+                            {shaderLocation: 1, offset: 3 * 4, format: "float32x3"}, // normal
+                            {shaderLocation: 2, offset: 6 * 4, format: "float32x4"}, // color
+                            {shaderLocation: 3, offset: 10 * 4, format: "float32x2"}, // uv
+                        ]
+                    }
+                ]
+            },
+            fragment: {
+                module: fragmentShader,
+                targets: [
+                    { format: "rgba8unorm" }, // color
+                    { format: "rgba32float" }, // posDepth
+                    { format: "rgba8unorm" }, // normalMask
+                ]
+            },
+            depthStencil: depthStencilState,
+            primitive: {
+                topology: "triangle-list",
+                frontFace: "ccw",
+                cullMode: "none"
+            }
+        });
+        return pipeline;
+    }
+
+    private async createVertexBuffer(mesh: string): Promise<GPUBuffer> {
+        const vertexData = await this.resources.loadMesh(mesh);
+        const vertexBuffer = this.device.createBuffer({
+            label: "vertex buffer",
+            size: vertexData.byteLength,
+            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        });
+        this.device.queue.writeBuffer(vertexBuffer, 0, vertexData);
+        return vertexBuffer;
+    }
+
+    private async createUniformBuffers(vertUniforms: Uniforms, fragUniforms: Uniforms, pipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBuffer, GPUBindGroup]> {
+        const baseUniformLength = new BaseUniforms().size();
+        const baseUniformBuffer = this.device.createBuffer({
+            label: "base uniform buffer",
+            size: baseUniformLength * 4,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+
+        const vertUniformLength = vertUniforms.size();
+        const useStorageBuffer = (vertUniforms as InstancedUniforms).instanceCount > 0;
+        const vertUniformBuffer = this.device.createBuffer({
+            label: "vert uniform buffer",
+            size: vertUniformLength * 4,
+            usage: (useStorageBuffer ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
+        });
+        if (vertUniformLength > 0) {
+            this.device.queue.writeBuffer(vertUniformBuffer, 0, vertUniforms.toArray());
+        }
+
+        const fragUniformLength = fragUniforms.size();
+        const fragUniformBuffer = this.device.createBuffer({
+            label: "frag uniform buffer",
+            size: fragUniformLength * 4,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+        if (fragUniformLength > 0) {
+            this.device.queue.writeBuffer(fragUniformBuffer, 0, fragUniforms.toArray());
+        }
+
+        let uniformBindings: GPUBindGroupEntry[] = [];
+        uniformBindings.push({ binding: 0, resource: { buffer: baseUniformBuffer }});
+        if (vertUniformLength > 0) {
+            uniformBindings.push({ binding: 1, resource: { buffer: vertUniformBuffer }});
+        }
+        if (fragUniformLength > 0) {
+            uniformBindings.push({ binding: 2, resource: { buffer: fragUniformBuffer }});
+        }
+
+        const uniformBindGroup = this.device.createBindGroup({
+            layout: pipeline.getBindGroupLayout(0),
+            entries: uniformBindings,
+        });
+
+        return [baseUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindGroup];
+    }
+
+    private async createTextureBuffer(texture: string, pipeline: GPURenderPipeline): Promise<GPUTexture> {
+        const textureData = await this.resources.loadTexture(texture);
+        const textureBuffer = this.device.createTexture({
+            label: "texture buffer",
+            size: [textureData.width, textureData.height],
+            format: "rgba8unorm",
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+        });
+        this.device.queue.writeTexture(
+            {texture: textureBuffer},
+            textureData.data,
+            {bytesPerRow: 4 * textureData.width},
+            {width: textureData.width, height: textureData.height}
+        );
+        return textureBuffer;
+    }
+
+    private async createTextureBindGroup(textureBuffer: GPUTexture, pipeline: GPURenderPipeline): Promise<GPUBindGroup> {
+        const sampler = this.device.createSampler();
+        const textureBindGroup = this.device.createBindGroup({
+            layout: pipeline.getBindGroupLayout(1),
+            entries: [
+                { binding: 0, resource: sampler },
+                { binding: 1, resource: textureBuffer.createView() },
+            ],
+        });
+        return textureBindGroup;
     }
 
     private async initPost(scene: Scene) {
@@ -430,45 +471,63 @@ export class Renderer {
         });
     }
 
-    public drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
+    public async drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
+        // initialize new objects
+        for (let object of scene.objects) {
+            if (!this.baseUniformBuffers.has(object.id)) {
+                await this.initObject(object);
+            }
+        }
+
         // update world buffers
-        for (let i=0; i<scene.objects.length; i++) {
+        for (let object of scene.objects) {
             let baseUniforms = new BaseUniforms();
             baseUniforms.time = time;
             baseUniforms.frame = frame;
-            baseUniforms.mask = scene.objects[i].mask;
+            baseUniforms.mask = object.mask;
             baseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
-            baseUniforms.color = scene.objects[i].color;
+            baseUniforms.color = object.color;
             baseUniforms.viewPos = camera.position;
-            baseUniforms.model = scene.objects[i].model;
+            baseUniforms.model = object.model;
             baseUniforms.view = camera.view;
             baseUniforms.projection = camera.projection;
-            baseUniforms.normal = scene.objects[i].model.inverse().transpose();
-            this.device.queue.writeBuffer(this.baseUniformBuffers[i], 0, baseUniforms.toArray());
+            baseUniforms.normal = object.model.inverse().transpose();
 
-            if (scene.objects[i].vertUniforms.size() > 0) {
-                this.device.queue.writeBuffer(this.vertUniformBuffers[i], 0, scene.objects[i].vertUniforms.toArray());
+            const baseUniformBuffer = this.baseUniformBuffers.get(object.id);
+            const vertUniformBuffer = this.vertUniformBuffers.get(object.id);
+            const fragUniformBuffer = this.fragUniformBuffers.get(object.id);
+            if (!baseUniformBuffer || !vertUniformBuffer || !fragUniformBuffer) {
+                console.error(`missing uniform buffers ${object.id}`);
+                continue;
             }
-            if (scene.objects[i].fragUniforms.size() > 0) {
-                this.device.queue.writeBuffer(this.fragUniformBuffers[i], 0, scene.objects[i].fragUniforms.toArray());
+
+            this.device.queue.writeBuffer(baseUniformBuffer, 0, baseUniforms.toArray());
+            if (object.vertUniforms.size() > 0) {
+                this.device.queue.writeBuffer(vertUniformBuffer, 0, object.vertUniforms.toArray());
+            }
+            if (object.fragUniforms.size() > 0) {
+                this.device.queue.writeBuffer(fragUniformBuffer, 0, object.fragUniforms.toArray());
             }
         }
 
         // draw world
         const encoder = this.device.createCommandEncoder({ label: "render encoder" });
         const pass = encoder.beginRenderPass(this.renderPassDescriptor);
-        for (let i=0; i<scene.objects.length; i++) {
-            let vertexBuffer = this.vertexBuffers.get(scene.objects[i].mesh);
-            if (!vertexBuffer) {
-                console.error(`missing vertex buffer ${scene.objects[i].mesh}`);
+        for (let object of scene.objects) {
+            const pipeline = this.pipelines.get(object.id);
+            const vertexBuffer = this.vertexBuffers.get(object.mesh);
+            const uniformBindGroup = this.uniformBindGroups.get(object.id);
+            const textureBindGroup = this.textureBindGroups.get(object.id);
+            if (!pipeline || !vertexBuffer || !uniformBindGroup || !textureBindGroup) {
+                console.error(`missing object resources ${object.id}, ${object.mesh}`);
                 continue;
             }
 
-            pass.setPipeline(this.pipelines[i]);
+            pass.setPipeline(pipeline);
             pass.setVertexBuffer(0, vertexBuffer);
-            pass.setBindGroup(0, this.uniformBindGroups[i]);
-            pass.setBindGroup(1, this.textureBindGroups[i]);
-            pass.draw(vertexBuffer.size / 4 / 12, (scene.objects[i].vertUniforms as InstancedUniforms).instanceCount ?? 1);
+            pass.setBindGroup(0, uniformBindGroup);
+            pass.setBindGroup(1, textureBindGroup);
+            pass.draw(vertexBuffer.size / 4 / 12, (object.vertUniforms as InstancedUniforms).instanceCount ?? 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);
