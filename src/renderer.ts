@@ -462,7 +462,7 @@ export class Renderer {
 
         // framebuffer textures
         this.postFrameBufferBindGroup = this.device.createBindGroup({
-            layout: this.postPipeline.getBindGroupLayout(2),
+            layout: this.postPipeline.getBindGroupLayout(1),
             entries: [
                 { binding: 0, resource: this.colorFrameBuffer.createView() },
                 { binding: 1, resource: this.posDepthFrameBuffer.createView() },
@@ -550,7 +550,7 @@ export class Renderer {
         const postPass = postEncoder.beginRenderPass(this.postRenderPassDescriptor);
         postPass.setPipeline(this.postPipeline);
         postPass.setBindGroup(0, this.postUniformBindGroup);
-        postPass.setBindGroup(2, this.postFrameBufferBindGroup);
+        postPass.setBindGroup(1, this.postFrameBufferBindGroup);
         postPass.draw(6);
         postPass.end();
         this.device.queue.submit([postEncoder.finish()]);
