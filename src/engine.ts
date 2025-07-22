@@ -8,6 +8,7 @@ import { PierScene } from "./scenes/pierScene";
 import { Uniforms } from "./uniforms";
 import { BrutalScene } from "./scenes/brutalScene";
 import { Resources } from "./resources";
+import { BabelScene } from "./scenes/babelScene";
 
 export class Engine {
 	private resources: Resources;
@@ -41,6 +42,8 @@ export class Engine {
 			this.scene = new PierScene();
 		} else if (name == "brutal") {
 			this.scene = new BrutalScene();
+		} else if (name == "babel") {
+			this.scene = new BabelScene();
 		} else {
 			console.error(`no scene called ${name}`);
 			this.scene = new Scene();

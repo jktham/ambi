@@ -11,6 +11,10 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = u_base.time;
 	let pixel: vec2u = vec2u(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
-	let m = f32(data.mask) / 255.0;
-	return vec4f(m, m, m, 1.0);
+	let m = data.mask;
+	let r = ((m * 3) ^ (m << 5) ^ (m << 2)) & 0xff;
+	let g = ((m * 5) ^ (m << 7) ^ (m << 4)) & 0xff;
+	let b = ((m * 7) ^ (m << 9) ^ (m << 6)) & 0xff;
+	let color = vec3f(f32(r) / 255.0, f32(g) / 255.0, f32(b) / 255.0);
+	return vec4f(color, 1.0);
 }
