@@ -54,10 +54,10 @@ export class Renderer {
         try {
             var adapter = await navigator.gpu?.requestAdapter(); // may throw error in firefox
             const device = await adapter?.requestDevice();
-            if (!device) {
+            if (!adapter || !device) {
                 throw new Error("no webgpu device");
             }
-            if (device.adapterInfo.isFallbackAdapter) {
+            if (adapter?.info?.isFallbackAdapter) {
                 alert("fallback to cpu simulated device, bad performance likely, try chrome://flags/#enable-vulkan");
             }
             this.device = device;
