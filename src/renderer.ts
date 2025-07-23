@@ -205,26 +205,31 @@ export class Renderer {
     }
 
     private async preloadResources(scene: Scene) {
+        let shaders = new Set<string>();
+        let meshes = new Set<string>();
+        let textures = new Set<string>();
         for (let object of scene.objects) {
-            let objectPromises: Promise<any>[] = [];
-            objectPromises.push(this.resources.loadShader(object.vertShader));
-            objectPromises.push(this.resources.loadShader(object.fragShader));
-            objectPromises.push(this.resources.loadMesh(object.mesh));
-            objectPromises.push(this.resources.loadTexture(object.texture));
-            if (object.collider) objectPromises.push(this.resources.loadMesh(object.collider!));
-            await Promise.all(objectPromises);
+            shaders.add(object.vertShader);
+            shaders.add(object.fragShader);
+            meshes.add(object.mesh);
+            textures.add(object.texture);
+            if (object.collider) meshes.add(object.collider);
         }
-        let scenePromises: Promise<any>[] = [];
-        scenePromises.push(this.resources.loadShader("post/base.vert.wgsl"));
-        scenePromises.push(this.resources.loadShader(this.postShaderOverride ?? scene.postShader));
-        await Promise.all(scenePromises);
+        shaders.add("post/base.vert.wgsl");
+        shaders.add(this.postShaderOverride ?? scene.postShader);
+
+        let promises: Promise<any>[] = [];
+        promises.push(...[...shaders].map((s) => this.resources.loadShader(s)));
+        promises.push(...[...meshes].map((m) => this.resources.loadMesh(m)));
+        promises.push(...[...textures].map((t) => this.resources.loadTexture(t)));
+        await Promise.all(promises);
     }
 
     private async initWorld(scene: Scene) {
         this.destroyWorldBuffers();
 
         for (let object of scene.objects) {
-            this.initObject(object);
+            await this.initObject(object);
         }
     }
 
@@ -519,7 +524,7 @@ export class Renderer {
             const uniformBindGroup = this.uniformBindGroups.get(object.id);
             const textureBindGroup = this.textureBindGroups.get(object.id);
             if (!pipeline || !vertexBuffer || !uniformBindGroup || !textureBindGroup) {
-                console.error(`missing object resources ${object.id}, ${object.mesh}`);
+                console.error(`missing object resources ${object.id}, ${object.mesh}, ${object.texture}`);
                 continue;
             }
 
