@@ -43,6 +43,15 @@ export class BabelScene extends Scene {
 
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
+		obj.mesh = "cube.obj";
+		obj.texture = "test.png";
+		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = new PhongUniforms();
+		this.objects.push(obj);
+
+		obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.texture = "test.png";
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
