@@ -337,11 +337,10 @@ export class Renderer {
         });
 
         const vertUniformLength = vertUniforms.size();
-        const useStorageBuffer = (vertUniforms as InstancedUniforms).instanceCount > 0;
         const vertUniformBuffer = this.device.createBuffer({
             label: "vert uniform buffer",
             size: vertUniformLength * 4,
-            usage: (useStorageBuffer ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
+            usage: ((vertUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (vertUniformLength > 0) {
             this.device.queue.writeBuffer(vertUniformBuffer, 0, vertUniforms.toArray());
@@ -351,7 +350,7 @@ export class Renderer {
         const fragUniformBuffer = this.device.createBuffer({
             label: "frag uniform buffer",
             size: fragUniformLength * 4,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            usage: ((fragUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (fragUniformLength > 0) {
             this.device.queue.writeBuffer(fragUniformBuffer, 0, fragUniforms.toArray());
@@ -448,7 +447,7 @@ export class Renderer {
         this.postUniformBuffer = this.device.createBuffer({
             label: "post uniform buffer",
             size: postUniformLength * 4,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            usage: ((postUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (postUniformLength > 0) {
             this.device.queue.writeBuffer(this.postUniformBuffer, 0, postUniforms.toArray());

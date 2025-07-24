@@ -1,6 +1,7 @@
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class Uniforms {
+	public useStorageBuffer = false;
 	
 	public size(): number {
 		return 0;
@@ -68,6 +69,7 @@ export class PhongUniforms extends Uniforms {
 }
 
 export class InstancedUniforms extends Uniforms {
+	public useStorageBuffer = true;
 	public instanceCount = 0;
 	public models: Mat4[] = [];
 	public normals: Mat4[] = [];
@@ -119,6 +121,25 @@ export class PostPS1Uniforms extends Uniforms {
 		data[0] = this.fogStart;
 		data[1] = this.fogEnd;
 		data.subarray(4, 4+4).set(this.fogColor.data);
+		return data;
+	}
+}
+
+export class PostOutlineUniforms extends Uniforms {
+	public useStorageBuffer = true;
+	public scale = new Array<number>(16).fill(1);
+	public mode = new Array<number>(16).fill(0);
+	public color = new Array<Vec4>(16).fill(new Vec4(1, 1, 1, 1));
+
+	public size(): number {
+		return 96;
+	}
+
+	public toArray(): Float32Array {
+		let data = new Float32Array(this.size());
+		data.subarray(0, 16).set(this.scale);
+		data.subarray(16, 32).set(this.mode);
+		data.subarray(32, 96).set(this.color.map(c => c.data).flat());
 		return data;
 	}
 }

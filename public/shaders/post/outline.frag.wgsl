@@ -1,6 +1,13 @@
 #import "../shared.wgsl"
 
+struct PostOutlineUniforms {
+	scale: array<f32, 16>,
+	mode: array<f32, 16>,
+	color: array<vec4f, 16>,
+};
+
 @group(0) @binding(0) var<uniform> u_base: PostBaseUniforms;
+@group(0) @binding(1) var<storage, read> u_outline: PostOutlineUniforms;
 
 @group(1) @binding(0) var fb_color: texture_storage_2d<rgba8unorm, read>;
 @group(1) @binding(1) var fb_pos_depth: texture_storage_2d<rgba32float, read>;
@@ -16,7 +23,7 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	const sobel_h = mat3x3f(-1, 0, 1, -2, 0, 2, -1, 0, 1);
 
 	const N = 3;
-	const S = 2;
+	let S = i32(u_outline.scale[data.mask]);
 	var normal_v = 0.0;
 	var normal_h = 0.0;
 	var depth_v = 0.0;
@@ -60,22 +67,9 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	// color = vec4f(0.0);
 	if (depth_edge > 2.0 || // large dist to reduce flat horizon
 		(depth_edge > 0.1 && abs(mask_sum - f32(mask)) > 0.01) || // shorter dist when different mask
-		(min_dot < 0.01 && normal_edge > 0.62 && depth_edge > 0.0 && mask == 0) // orthogonal self edges
+		(u_outline.mode[mask] == 1 && (normal_edge > 0.0 || depth_edge > 2.0)) // self edges mode
 	) {
-		switch mask {
-			case 1: {
-				color = vec4f(1.0, 0.0, 0.0, 1.0);
-			}
-			case 2: {
-				color = vec4f(0.0, 1.0, 0.0, 1.0);
-			}
-			case 3: {
-				color = vec4f(0.0, 0.0, 1.0, 1.0);
-			}
-			default: {
-				color = vec4f(1.0, 1.0, 1.0, 1.0);
-			}
-		}
+		color = u_outline.color[mask];
 	}
 	return color;
 }

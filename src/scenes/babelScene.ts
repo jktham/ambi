@@ -1,12 +1,28 @@
 import { Scene, WorldObject } from "../scene";
-import { PhongUniforms } from "../uniforms";
-import { Mat4, Vec3, Vec4 } from "../vec";
+import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
+import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class BabelScene extends Scene {
 	public name: string = "babel";
 	public spawnPos: Vec3 = new Vec3(0, 0, 5);
 
 	public postShader: string = "post/outline.frag.wgsl";
+	public resolution: Vec2 = new Vec2(1920, 1080);
+
+	constructor() {
+		super();
+		let u = new PostOutlineUniforms();
+		u.scale[0] = 2;
+		u.scale[1] = 1;
+		u.scale[2] = 2;
+		u.scale[3] = 8;
+		u.mode[0] = 1;
+		u.mode[1] = 1;
+		u.color[1] = new Vec4(1, 0, 0, 1);
+		u.color[2] = new Vec4(0, 1, 0, 1);
+		u.color[3] = new Vec4(0, 0, 1, 1);
+		this.postUniforms = u;
+	}
 	
 	public init() {
 		this.objects = [];
