@@ -23,7 +23,7 @@ export class PierScene extends Scene {
 	init() {
 		let pier = new WorldObject();
 		pier.mesh = "pier/pier.obj";
-		pier.collider = "pier/pier.obj";
+		pier.collider = "pier/collider.obj";
 		pier.textures = ["wood.jpg"];
 		pier.fragShader = "world/ps1.frag.wgsl";
 		pier.vertShader = "world/ps1.vert.wgsl";
@@ -69,7 +69,7 @@ export class PierScene extends Scene {
 				1
 			);
 			(snow.vertUniforms as InstancedUniforms).models.push(model);
-			(snow.vertUniforms as InstancedUniforms).normals.push(model.transpose());
+			(snow.vertUniforms as InstancedUniforms).normals.push(model.inverse().transpose());
 		}
 		this.objects.push(snow);
 
