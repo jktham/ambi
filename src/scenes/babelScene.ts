@@ -30,7 +30,7 @@ export class BabelScene extends Scene {
 		let obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
-		obj.texture = "test.png";
+		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.mask = 1;
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -40,7 +40,7 @@ export class BabelScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
-		obj.texture = "test.png";
+		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.mask = 2;
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -50,7 +50,7 @@ export class BabelScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
-		obj.texture = "test.png";
+		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.mask = 3;
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -60,7 +60,7 @@ export class BabelScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
-		obj.texture = "test.png";
+		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
@@ -69,7 +69,7 @@ export class BabelScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
-		obj.texture = "test.png";
+		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();

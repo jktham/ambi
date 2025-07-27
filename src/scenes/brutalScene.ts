@@ -30,7 +30,7 @@ export class BrutalScene extends Scene {
 				obj.mesh = tile.mesh;
 				obj.collider = tile.mesh;
 				obj.bbox = [obj.model.transform(new Vec3()).sub(scale/2), obj.model.transform(new Vec3()).add(scale/2)];
-				obj.texture = "concrete.jpg";
+				obj.textures = ["concrete.jpg"];
 				obj.fragShader = "world/phong.frag.wgsl";
 				obj.fragUniforms = phong;
 				this.objects.push(obj);
@@ -40,7 +40,7 @@ export class BrutalScene extends Scene {
 		let sun = new WorldObject();
 		sun.model = Mat4.trs(phong.lightPos, new Vec3(), 20.0);
 		sun.mesh = "sphere.obj";
-		sun.texture = "blank.png";
+		sun.textures = ["blank.png"];
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);
 		this.objects.push(sun);
 	}

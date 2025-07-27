@@ -8,16 +8,23 @@
 @group(2) @binding(1) var fb_pos_depth: texture_storage_2d<rgba32float, read>;
 @group(2) @binding(2) var fb_normal_mask: texture_storage_2d<rgba8unorm, read>;
 
+fn noise(xy: vec2f, seed: f32) -> f32 {
+	let PHI = 1.61803398874989484820459; 
+	return fract(tan(distance(xy*PHI, xy)*seed)*xy.x);
+}
+
 @fragment 
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
 	_ = u_base.time;
 	let pixel: vec2u = vec2u(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
-	let m = data.mask;
-	let r = ((m * 3) ^ (m << 5) ^ (m << 2)) & 0xff;
-	let g = ((m * 5) ^ (m << 7) ^ (m << 4)) & 0xff;
-	let b = ((m * 7) ^ (m << 9) ^ (m << 6)) & 0xff;
-	let color = vec3f(f32(r) / 255.0, f32(g) / 255.0, f32(b) / 255.0);
-	return vec4f(color, 1.0);
+	
+	let threshold = 0.5;
+	let lum_factors = vec4f(0.2126, 0.7152, 0.0722, 0.0);
+	var lum = dot(data.color, lum_factors);
+	lum += noise(vec2f(pixel), 1.0) - 0.5;
+	let quantized = select(vec4f(0.0, 0.0, 0.0, 1.0), vec4f(1.0, 1.0, 1.0, 1.0), lum >= threshold);
+
+	return quantized;
 }

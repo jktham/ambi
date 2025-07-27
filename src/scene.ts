@@ -6,7 +6,7 @@ export class WorldObject {
 	public id: number;
 	public tag: string = "";
 	public mesh: string = "triangle.json";
-	public texture: string = "test.png";
+	public textures: string[] = ["test.png"];
 	public color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
 	public model: Mat4 = new Mat4();
 	public mask: number = 0.5;
@@ -32,6 +32,7 @@ export class Scene {
 
 	public postShader: string = "post/base.frag.wgsl";
 	public postUniforms: Uniforms = new Uniforms();
+	public postTextures: string[] = [];
 
 	public objects: WorldObject[] = [];
 

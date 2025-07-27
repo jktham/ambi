@@ -24,6 +24,7 @@ export class DebugScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.translate(new Vec3(1, 0, -2));
 		obj.mesh = "monke.obj";
+		obj.textures = ["test.png"];
 		obj.collider = "monke.obj";
 		obj.bbox = [obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)];
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -53,7 +54,7 @@ export class DebugScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 10);
 		obj.mesh = "quad.json";
-		obj.texture = "house.jpg";
+		obj.textures = ["house.jpg"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
 		this.objects.push(obj);
