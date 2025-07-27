@@ -3,11 +3,11 @@ import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class BabelScene extends Scene {
-	public name: string = "babel";
-	public spawnPos: Vec3 = new Vec3(0, 0, 5);
+	name = "babel";
+	spawnPos = new Vec3(0, 0, 5);
 
-	public postShader: string = "post/outline.frag.wgsl";
-	public resolution: Vec2 = new Vec2(1920, 1080);
+	postShader = "post/outline.frag.wgsl";
+	resolution = new Vec2(1920, 1080);
 
 	constructor() {
 		super();
@@ -24,7 +24,7 @@ export class BabelScene extends Scene {
 		this.postUniforms = u;
 	}
 	
-	public init() {
+	init() {
 		this.objects = [];
 
 		let obj = new WorldObject();
@@ -76,7 +76,7 @@ export class BabelScene extends Scene {
 		this.objects.push(obj);
 	}
 
-	public update(time: number, deltaTime: number) {
+	update(time: number, deltaTime: number) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		for (let obj of this.objects) {
 			(obj.fragUniforms as PhongUniforms).lightPos = lightPos;

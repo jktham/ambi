@@ -16,23 +16,24 @@ type Collision = {
 
 export class Camera {
 	private canvas: HTMLCanvasElement;
-	private speed: number = 4.0;
-	private fov: number = 90.0;
-	public mode: CameraMode = "fly";
-
 	private resources: Resources;
-	private objects: WorldObject[] = [];
-	private colliders: Map<string, Vec3[][]> = new Map();
 
-	private velocity: Vec3 = new Vec3();
-	public position: Vec3 = new Vec3();
-	public rotation: Vec2 = new Vec2();
+	speed: number = 4.0;
+	fov: number = 90.0;
+	mode: CameraMode = "fly";
 
+	velocity: Vec3 = new Vec3();
+	position: Vec3 = new Vec3();
+	rotation: Vec2 = new Vec2();
 	private front: Vec3 = new Vec3();
 	private right: Vec3 = new Vec3();
 	private up: Vec3 = new Vec3();
-	public view: Mat4 = new Mat4();
-	public projection: Mat4 = new Mat4();
+
+	view: Mat4 = new Mat4();
+	projection: Mat4 = new Mat4();
+
+	private objects: WorldObject[] = [];
+	private colliders: Map<string, Vec3[][]> = new Map();
 
 	constructor(canvas: HTMLCanvasElement, resources: Resources) {
 		this.canvas = canvas;
@@ -42,7 +43,7 @@ export class Camera {
 		this.updateProjection();
 	}
 
-	public updatePosition(actions: Set<Action>, deltaTime: number) {
+	updatePosition(actions: Set<Action>, deltaTime: number) {
 		let velocity = new Vec3();
 		let front = this.front;
 		let right = this.right;
@@ -90,7 +91,7 @@ export class Camera {
 		this.updateView();
 	}
 
-	public updateRotation(cursorChange: Vec2) {
+	updateRotation(cursorChange: Vec2) {
 		this.rotation.x += cursorChange.x / 400.0 * Math.PI;
 		this.rotation.y += cursorChange.y / 400.0 * Math.PI;
 		this.rotation.y = Math.min(Math.max(this.rotation.y, -Math.PI/2 + 0.01), Math.PI/2 - 0.01);
@@ -119,7 +120,7 @@ export class Camera {
 		]);
 	}
 
-	public async loadColliders(objects: WorldObject[]) {
+	async loadColliders(objects: WorldObject[]) {
 		this.objects = objects;
 		for (let object of this.objects) {
 			if (object.collider && !this.colliders.has(object.collider)) {

@@ -1,7 +1,7 @@
 import type { Camera } from "./camera";
 import { Resources } from "./resources";
 import type { Scene, WorldObject } from "./scene";
-import { BaseUniforms, InstancedUniforms, PostBaseUniforms, Uniforms } from "./uniforms";
+import { BaseUniforms, PostBaseUniforms, Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
 
 export class Renderer {
@@ -34,8 +34,8 @@ export class Renderer {
 
     private resources: Resources;
 
-	public postShaderOverride?: string;
-	public postUniformsOverride?: Uniforms;
+	postShaderOverride?: string;
+	postUniformsOverride?: Uniforms;
 
     constructor(canvas: HTMLCanvasElement, resources: Resources) {
         canvas.width = 960;
@@ -44,7 +44,7 @@ export class Renderer {
         this.resources = resources;
     }
 
-    public async init() {
+    async init() {
         await this.getGPUDevice();
         this.configureCanvas();
         this.createFrameBufferTextures();
@@ -154,18 +154,18 @@ export class Renderer {
         });
     }
 
-    public async loadScene(scene: Scene) {
+    async loadScene(scene: Scene) {
         this.setResolution(scene.resolution);
         await this.preloadResources(scene);
         await this.initWorld(scene);
         await this.initPost(scene);
     }
 
-    public async loadPost(scene: Scene) {
+    async loadPost(scene: Scene) {
         await this.initPost(scene);
     }
 
-    public setResolution(resolution: Vec2) {
+    private setResolution(resolution: Vec2) {
         this.canvas.width = resolution.x;
         this.canvas.height = resolution.y;
         this.destroyFrameBufferTextures();
@@ -269,6 +269,30 @@ export class Renderer {
             const textureBindGroup = await this.createTextureBindGroup(textureBuffers, pipeline);
             this.textureBindGroups.set(object.id, textureBindGroup);
         }
+    }
+
+    private async initPost(scene: Scene) {
+        this.destroyPostBuffers();
+
+        // post pipeline
+        this.postPipeline = await this.createPostPipeline(this.postShaderOverride ?? scene.postShader);
+
+        // post uniforms
+        [this.postBaseUniformBuffer, this.postUniformBuffer, this.postUniformBindGroup] = await this.createPostUniformBuffers(this.postUniformsOverride ?? scene.postUniforms, this.postPipeline);
+
+        // framebuffer textures
+        this.postFrameBufferBindGroup = this.createPostFrameBufferBindGroup(this.postPipeline);
+
+        // post textures
+        for (let texture of scene.postTextures) {
+            if (!this.textureBuffers.has(texture)) {
+                const textureBuffer = await this.createTextureBuffer(texture, this.postPipeline);
+                this.textureBuffers.set(texture, textureBuffer);
+            }
+        }
+        const textureBuffers = scene.postTextures.map(texture => this.textureBuffers.get(texture)!);
+        const textureBindGroup = await this.createTextureBindGroup(this.postShaderOverride !== undefined ? [] : textureBuffers, this.postPipeline);
+        this.postTextureBindGroup = textureBindGroup;
     }
 
     private async createPipeline(vertShader: string, fragShader: string): Promise<GPURenderPipeline> {
@@ -485,31 +509,7 @@ export class Renderer {
         return postFrameBufferBindGroup;
     }
 
-    private async initPost(scene: Scene) {
-        this.destroyPostBuffers();
-
-        // post pipeline
-        this.postPipeline = await this.createPostPipeline(this.postShaderOverride ?? scene.postShader);
-
-        // post uniforms
-        [this.postBaseUniformBuffer, this.postUniformBuffer, this.postUniformBindGroup] = await this.createPostUniformBuffers(this.postUniformsOverride ?? scene.postUniforms, this.postPipeline);
-
-        // framebuffer textures
-        this.postFrameBufferBindGroup = this.createPostFrameBufferBindGroup(this.postPipeline);
-
-        // post textures
-        for (let texture of scene.postTextures) {
-            if (!this.textureBuffers.has(texture)) {
-                const textureBuffer = await this.createTextureBuffer(texture, this.postPipeline);
-                this.textureBuffers.set(texture, textureBuffer);
-            }
-        }
-        const textureBuffers = scene.postTextures.map(texture => this.textureBuffers.get(texture)!);
-        const textureBindGroup = await this.createTextureBindGroup(this.postShaderOverride !== undefined ? [] : textureBuffers, this.postPipeline);
-        this.postTextureBindGroup = textureBindGroup;
-    }
-
-    public async drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
+    async drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
         // initialize new objects
         for (let object of scene.objects) {
             if (!this.baseUniformBuffers.has(object.id)) {
@@ -565,7 +565,7 @@ export class Renderer {
             pass.setVertexBuffer(0, vertexBuffer);
             pass.setBindGroup(0, uniformBindGroup);
             pass.setBindGroup(1, textureBindGroup);
-            pass.draw(vertexBuffer.size / 4 / 12, (object.vertUniforms as InstancedUniforms).instanceCount ?? 1);
+            pass.draw(vertexBuffer.size / 4 / 12, object.vertUniforms.instanceCount || 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);

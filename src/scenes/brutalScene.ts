@@ -4,12 +4,12 @@ import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 
 export class BrutalScene extends Scene {
-	public name: string = "brutal";
-	public cameraMode: CameraMode = "walk";
-	public spawnPos: Vec3 = new Vec3(0, 2.0, 0);
-	public postShader: string = "post/noise.frag.wgsl";
+	name = "brutal";
+	cameraMode = "walk" as CameraMode;
+	spawnPos = new Vec3(0, 2.0, 0);
+	postShader = "post/noise.frag.wgsl";
 
-	public init() {
+	init() {
 		let phong = new PhongUniforms();
 		phong.lightPos = new Vec3(100, 300, 200);
 		phong.lightColor = new Vec4(1.0, 0.2, 0.2, 1);
@@ -45,7 +45,7 @@ export class BrutalScene extends Scene {
 		this.objects.push(sun);
 	}
 
-	public update(time: number, deltaTime: number) {
+	update(time: number, deltaTime: number) {
 		
 	}
 }

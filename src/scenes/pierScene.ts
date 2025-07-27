@@ -1,17 +1,17 @@
 import type { CameraMode } from "../camera";
 import { Scene, WorldObject } from "../scene";
-import { type Uniforms, InstancedUniforms, PostPS1Uniforms } from "../uniforms";
+import { InstancedUniforms, PostPS1Uniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class PierScene extends Scene {
-	public name: string = "pier";
-	public resolution: Vec2 = new Vec2(320, 180);
-	public spawnPos: Vec3 = new Vec3(8, 1.8, -0.5);
-	public spawnRot: Vec2 = new Vec2(-Math.PI / 2.0, 0);
-	public cameraMode: CameraMode = "walk";
+	name = "pier";
+	resolution = new Vec2(320, 180);
+	spawnPos = new Vec3(8, 1.8, -0.5);
+	spawnRot = new Vec2(-Math.PI / 2.0, 0);
+	cameraMode = "walk" as CameraMode;
 
-	public postShader: string = "post/ps1_fog.frag.wgsl";
-	public postUniforms: Uniforms = new PostPS1Uniforms();
+	postShader = "post/ps1_fog.frag.wgsl";
+	postUniforms = new PostPS1Uniforms();
 
 	constructor() {
 		super();
@@ -20,7 +20,7 @@ export class PierScene extends Scene {
 		(this.postUniforms as PostPS1Uniforms).fogColor = new Vec4(0.60, 0.60, 0.60, 1.0);
 	}
 
-	public init() {
+	init() {
 		let pier = new WorldObject();
 		pier.mesh = "pier/pier.obj";
 		pier.collider = "pier/pier.obj";
@@ -91,7 +91,7 @@ export class PierScene extends Scene {
 		this.objects.push(lantern_holder);
 	}
 
-	public update(time: number, deltaTime: number) {
+	update(time: number, deltaTime: number) {
 		let snowUniforms = (this.getObject("snow")?.vertUniforms as InstancedUniforms);
 		for (let i=0; i<snowUniforms.instanceCount; i++) {
 			let model = snowUniforms.models[i];

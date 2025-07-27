@@ -3,9 +3,9 @@ import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 
 export class DebugScene extends Scene {
-	public name: string = "debug";
+	name = "debug";
 	
-	public init() {
+	init() {
 		this.objects = [];
 
 		let obj = new WorldObject();
@@ -60,7 +60,7 @@ export class DebugScene extends Scene {
 		this.objects.push(obj);
 	}
 
-	public update(time: number, deltaTime: number) {
+	update(time: number, deltaTime: number) {
 		this.objects[0].model = this.objects[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
 		this.objects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
 

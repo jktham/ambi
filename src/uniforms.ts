@@ -1,34 +1,35 @@
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class Uniforms {
-	public useStorageBuffer = false;
+	useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag
+	instanceCount = 0; // draw instanced if > 0
 	
-	public size(): number {
-		return 0;
+	size(): number {
+		return 0; // * 4 bytes
 	}
 
-	public toArray(): Float32Array {
+	toArray(): Float32Array {
 		return new Float32Array(this.size());
 	}
 }
 
 export class BaseUniforms extends Uniforms {
-	public time = 0;
-	public frame = 0;
-	public mask = 0;
-	public resolution = new Vec2();
-	public color = new Vec4();
-	public viewPos = new Vec3();
-	public model = new Mat4();
-	public view = new Mat4();
-	public projection = new Mat4();
-	public normal = new Mat4();
+	time = 0;
+	frame = 0;
+	mask = 0;
+	resolution = new Vec2();
+	color = new Vec4();
+	viewPos = new Vec3();
+	model = new Mat4();
+	view = new Mat4();
+	projection = new Mat4();
+	normal = new Mat4();
 
-	public size(): number {
+	size(): number {
 		return 80;
 	}
 
-	public toArray(): Float32Array {
+	toArray(): Float32Array {
 		let data = new Float32Array(this.size());
 		data[0] = this.time;
 		data[1] = this.frame;
@@ -45,18 +46,18 @@ export class BaseUniforms extends Uniforms {
 }
 
 export class PhongUniforms extends Uniforms {
-	public ambientFactor = 0.1;
-	public diffuseFactor = 0.6;
-	public specularFactor = 0.3;
-	public specularExponent = 32.0;
-	public lightPos = new Vec3();
-	public lightColor = new Vec4(1.0, 1.0, 1.0, 1.0);
+	ambientFactor = 0.1;
+	diffuseFactor = 0.6;
+	specularFactor = 0.3;
+	specularExponent = 32.0;
+	lightPos = new Vec3();
+	lightColor = new Vec4(1.0, 1.0, 1.0, 1.0);
 
-	public size(): number {
+	size(): number {
 		return 12;
 	}
 
-	public toArray(): Float32Array {
+	toArray(): Float32Array {
 		let data = new Float32Array(this.size());
 		data[0] = this.ambientFactor;
 		data[1] = this.diffuseFactor;
@@ -69,16 +70,16 @@ export class PhongUniforms extends Uniforms {
 }
 
 export class InstancedUniforms extends Uniforms {
-	public useStorageBuffer = true;
-	public instanceCount = 0;
-	public models: Mat4[] = [];
-	public normals: Mat4[] = [];
+	useStorageBuffer = true;
+	instanceCount = 0;
+	models: Mat4[] = [];
+	normals: Mat4[] = [];
 
-	public size(): number {
+	size(): number {
 		return 4 + 32*this.instanceCount;
 	}
 
-	public toArray(): Float32Array {
+	toArray(): Float32Array {
 		let data = new Float32Array(this.size());
 		data[0] = this.instanceCount;
 		for (let i=0; i<this.instanceCount; i++) {
@@ -90,15 +91,15 @@ export class InstancedUniforms extends Uniforms {
 }
 
 export class PostBaseUniforms extends Uniforms {
-	public time = 0;
-	public frame = 0;
-	public resolution = new Vec2();
+	time = 0;
+	frame = 0;
+	resolution = new Vec2();
 
-	public size(): number {
+	size(): number {
 		return 4;
 	}
 
-	public toArray(): Float32Array {
+	toArray(): Float32Array {
 		let data = new Float32Array(this.size());
 		data[0] = this.time;
 		data[1] = this.frame;
@@ -108,15 +109,15 @@ export class PostBaseUniforms extends Uniforms {
 }
 
 export class PostPS1Uniforms extends Uniforms {
-	public fogStart = 0.0;
-	public fogEnd = 10.0;
-	public fogColor = new Vec4(0.6, 0.6, 0.6, 1.0);
+	fogStart = 0.0;
+	fogEnd = 10.0;
+	fogColor = new Vec4(0.6, 0.6, 0.6, 1.0);
 
-	public size(): number {
+	size(): number {
 		return 8;
 	}
 
-	public toArray(): Float32Array {
+	toArray(): Float32Array {
 		let data = new Float32Array(this.size());
 		data[0] = this.fogStart;
 		data[1] = this.fogEnd;
@@ -126,16 +127,16 @@ export class PostPS1Uniforms extends Uniforms {
 }
 
 export class PostOutlineUniforms extends Uniforms {
-	public useStorageBuffer = true;
-	public scale = new Array<number>(16).fill(1);
-	public mode = new Array<number>(16).fill(0);
-	public color = new Array<Vec4>(16).fill(new Vec4(1, 1, 1, 1));
+	useStorageBuffer = true;
+	scale = new Array<number>(16).fill(1);
+	mode = new Array<number>(16).fill(0);
+	color = new Array<Vec4>(16).fill(new Vec4(1, 1, 1, 1));
 
-	public size(): number {
+	size(): number {
 		return 96;
 	}
 
-	public toArray(): Float32Array {
+	toArray(): Float32Array {
 		let data = new Float32Array(this.size());
 		data.subarray(0, 16).set(this.scale);
 		data.subarray(16, 32).set(this.mode);

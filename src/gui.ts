@@ -87,15 +87,15 @@ export class Gui {
 		});
 	}
 
-	public updateInfo(text: string) {
+	updateInfo(text: string) {
 		this.info.textContent = text;
 	}
 
-	public setScene(name: string) {
+	setScene(name: string) {
 		this.sceneSelect.value = name;
 	}
 
-	public setPost(path: string, sceneShader: string) {
+	setPost(path: string, sceneShader: string) {
 		if (path == "") {
 			this.postSelect.value = "";
 			this.postSelect.options[0].label = `scene (${sceneShader})`;
@@ -104,7 +104,7 @@ export class Gui {
 		this.postSelect.value = path;
 	}
 
-	public setMode(mode: CameraMode) {
+	setMode(mode: CameraMode) {
 		this.modeSelect.value = mode;
 	}
 }

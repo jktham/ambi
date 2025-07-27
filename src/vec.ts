@@ -1,16 +1,16 @@
 export class Vec2 {
-	public data: number[];
+	data: number[];
 
 	constructor(x: number = 0, y: number = 0) {
 		this.data = [x, y];
 	}
 
-	public get x(): number {return this.data[0]};
-	public get y(): number {return this.data[1]};
-	public set x(value: number) {this.data[0] = value};
-	public set y(value: number) {this.data[1] = value};
+	get x(): number {return this.data[0]};
+	get y(): number {return this.data[1]};
+	set x(value: number) {this.data[0] = value};
+	set y(value: number) {this.data[1] = value};
 
-	public add(op: number | Vec2): Vec2 {
+	add(op: number | Vec2): Vec2 {
 		if (op instanceof Vec2) {
 			return new Vec2(...this.data.map((v, i) => v + op.data[i]));
 		} else {
@@ -18,7 +18,7 @@ export class Vec2 {
 		}
 	}
 
-	public sub(op: number | Vec2): Vec2 {
+	sub(op: number | Vec2): Vec2 {
 		if (op instanceof Vec2) {
 			return new Vec2(...this.data.map((v, i) => v - op.data[i]));
 		} else {
@@ -26,7 +26,7 @@ export class Vec2 {
 		}
 	}
 
-	public mul(op: number | Vec2): Vec2 {
+	mul(op: number | Vec2): Vec2 {
 		if (op instanceof Vec2) {
 			return new Vec2(...this.data.map((v, i) => v * op.data[i]));
 		} else {
@@ -34,7 +34,7 @@ export class Vec2 {
 		}
 	}
 
-	public div(op: number | Vec2): Vec2 {
+	div(op: number | Vec2): Vec2 {
 		if (op instanceof Vec2) {
 			return new Vec2(...this.data.map((v, i) => v / op.data[i]));
 		} else {
@@ -42,34 +42,34 @@ export class Vec2 {
 		}
 	}
 
-	public dot(op: Vec2): number {
+	dot(op: Vec2): number {
 		return this.data.map((v, i) => v * op.data[i]).reduce((sum, v) => sum + v, 0);
 	}
 
-	public length(): number {
+	length(): number {
 		return Math.sqrt(this.data.map(v => v**2).reduce((sum, v) => sum + v, 0));
 	}
 
-	public normalize(): Vec2 {
+	normalize(): Vec2 {
 		return this.mul(1/this.length());
 	}
 }
 
 export class Vec3 {
-	public data: number[];
+	data: number[];
 
 	constructor(x: number = 0, y: number = 0, z: number = 0) {
 		this.data = [x, y, z];
 	}
 
-	public get x(): number {return this.data[0]};
-	public get y(): number {return this.data[1]};
-	public get z(): number {return this.data[2]};
-	public set x(value: number) {this.data[0] = value};
-	public set y(value: number) {this.data[1] = value};
-	public set z(value: number) {this.data[2] = value};
+	get x(): number {return this.data[0]};
+	get y(): number {return this.data[1]};
+	get z(): number {return this.data[2]};
+	set x(value: number) {this.data[0] = value};
+	set y(value: number) {this.data[1] = value};
+	set z(value: number) {this.data[2] = value};
 
-	public add(op: number | Vec3): Vec3 {
+	add(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
 			return new Vec3(...this.data.map((v, i) => v + op.data[i]));
 		} else {
@@ -77,7 +77,7 @@ export class Vec3 {
 		}
 	}
 
-	public sub(op: number | Vec3): Vec3 {
+	sub(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
 			return new Vec3(...this.data.map((v, i) => v - op.data[i]));
 		} else {
@@ -85,7 +85,7 @@ export class Vec3 {
 		}
 	}
 
-	public mul(op: number | Vec3): Vec3 {
+	mul(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
 			return new Vec3(...this.data.map((v, i) => v * op.data[i]));
 		} else {
@@ -93,7 +93,7 @@ export class Vec3 {
 		}
 	}
 
-	public div(op: number | Vec3): Vec3 {
+	div(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
 			return new Vec3(...this.data.map((v, i) => v / op.data[i]));
 		} else {
@@ -101,11 +101,11 @@ export class Vec3 {
 		}
 	}
 
-	public dot(op: Vec3): number {
+	dot(op: Vec3): number {
 		return this.data.map((v, i) => v * op.data[i]).reduce((sum, v) => sum + v, 0);
 	}
 	
-	public cross(op: Vec3): Vec3 {
+	cross(op: Vec3): Vec3 {
 		return new Vec3(
 			this.y * op.z - this.z * op.y, 
 			this.z * op.x - this.x * op.z, 
@@ -113,33 +113,33 @@ export class Vec3 {
 		);
 	}
 
-	public length(): number {
+	length(): number {
 		return Math.sqrt(this.data.map(v => v**2).reduce((sum, v) => sum + v, 0));
 	}
 
-	public normalize(): Vec3 {
+	normalize(): Vec3 {
 		if (this.length() == 0) { return this };
 		return this.mul(1/this.length());
 	}
 }
 
 export class Vec4 {
-	public data: number[];
+	data: number[];
 
 	constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
 		this.data = [x, y, z, w];
 	}
 
-	public get x(): number {return this.data[0]};
-	public get y(): number {return this.data[1]};
-	public get z(): number {return this.data[2]};
-	public get w(): number {return this.data[3]};
-	public set x(value: number) {this.data[0] = value};
-	public set y(value: number) {this.data[1] = value};
-	public set z(value: number) {this.data[2] = value};
-	public set w(value: number) {this.data[3] = value};
+	get x(): number {return this.data[0]};
+	get y(): number {return this.data[1]};
+	get z(): number {return this.data[2]};
+	get w(): number {return this.data[3]};
+	set x(value: number) {this.data[0] = value};
+	set y(value: number) {this.data[1] = value};
+	set z(value: number) {this.data[2] = value};
+	set w(value: number) {this.data[3] = value};
 
-	public add(op: number | Vec4): Vec4 {
+	add(op: number | Vec4): Vec4 {
 		if (op instanceof Vec4) {
 			return new Vec4(...this.data.map((v, i) => v + op.data[i]));
 		} else {
@@ -147,7 +147,7 @@ export class Vec4 {
 		}
 	}
 
-	public sub(op: number | Vec4): Vec4 {
+	sub(op: number | Vec4): Vec4 {
 		if (op instanceof Vec4) {
 			return new Vec4(...this.data.map((v, i) => v - op.data[i]));
 		} else {
@@ -155,7 +155,7 @@ export class Vec4 {
 		}
 	}
 
-	public mul(op: number | Vec4): Vec4 {
+	mul(op: number | Vec4): Vec4 {
 		if (op instanceof Vec4) {
 			return new Vec4(...this.data.map((v, i) => v * op.data[i]));
 		} else {
@@ -163,7 +163,7 @@ export class Vec4 {
 		}
 	}
 
-	public div(op: number | Vec4): Vec4 {
+	div(op: number | Vec4): Vec4 {
 		if (op instanceof Vec4) {
 			return new Vec4(...this.data.map((v, i) => v / op.data[i]));
 		} else {
@@ -171,21 +171,21 @@ export class Vec4 {
 		}
 	}
 
-	public dot(op: Vec4): number {
+	dot(op: Vec4): number {
 		return this.data.map((v, i) => v * op.data[i]).reduce((sum, v) => sum + v, 0);
 	}
 
-	public length(): number {
+	length(): number {
 		return Math.sqrt(this.data.map(v => v**2).reduce((sum, v) => sum + v, 0));
 	}
 
-	public normalize(): Vec4 {
+	normalize(): Vec4 {
 		return this.mul(1/this.length());
 	}
 }
 
 export class Mat4 {
-	public data: number[];
+	data: number[];
 
 	constructor(data?: number[]) {
 		if (!data) {
@@ -202,7 +202,7 @@ export class Mat4 {
 		}
 	}
 
-	public mul(op: number | Mat4): Mat4 {
+	mul(op: number | Mat4): Mat4 {
 		if (op instanceof Mat4) {
 			let result: number[] = new Array(16).fill(0);
 			for(let k=0; k<=12; k+=4){
@@ -218,7 +218,7 @@ export class Mat4 {
 		}
 	}
 
-	public transform(op: Vec3): Vec3 {
+	transform(op: Vec3): Vec3 {
 		return new Vec3(
 			this.data[0] * op.x + this.data[1] * op.y + this.data[2] * op.z + this.data[3] * 1,
 			this.data[4] * op.x + this.data[5] * op.y + this.data[6] * op.z + this.data[7] * 1,
@@ -226,7 +226,7 @@ export class Mat4 {
 		);
 	}
 
-	public inverse(): Mat4 {
+	inverse(): Mat4 {
 		let r: number[] = new Array(16).fill(0);
 		let m = this.data;
 
@@ -256,7 +256,7 @@ export class Mat4 {
 		return new Mat4(r);
 	}
 
-	public transpose(): Mat4 {
+	transpose(): Mat4 {
 		let m = this.data;
 		return new Mat4([
 			m[0], m[4], m[8], m[12], 
@@ -266,7 +266,7 @@ export class Mat4 {
 		]);
 	}
 
-	public static translate(offset: Vec3): Mat4 {
+	static translate(offset: Vec3): Mat4 {
 		return new Mat4([
 			1, 0, 0, offset.x, 
 			0, 1, 0, offset.y, 
@@ -275,7 +275,7 @@ export class Mat4 {
 		]);
 	}
 
-	public static scale(factor: number | Vec3): Mat4 {
+	static scale(factor: number | Vec3): Mat4 {
 		if (factor instanceof Vec3) {
 			return new Mat4([
 				factor.x, 0, 0, 0, 
@@ -293,7 +293,7 @@ export class Mat4 {
 		}
 	}
 
-	public static rotate(euler: Vec3): Mat4 {
+	static rotate(euler: Vec3): Mat4 {
 		let X = new Mat4([
 			1, 0, 0, 0, 
 			0, Math.cos(euler.x), -Math.sin(euler.x), 0, 
@@ -315,7 +315,7 @@ export class Mat4 {
 		return X.mul(Y).mul(Z);
 	}
 
-	public static trs(translation: Vec3 = new Vec3(), rotation: Vec3 = new Vec3(), scale: number | Vec3 = 1) {
+	static trs(translation: Vec3 = new Vec3(), rotation: Vec3 = new Vec3(), scale: number | Vec3 = 1) {
 		let T = Mat4.translate(translation);
 		let R = Mat4.rotate(rotation);
 		let S = Mat4.scale(scale);

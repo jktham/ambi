@@ -29,12 +29,12 @@ export class Engine {
 		this.gui = new Gui(this);
 	}
 
-	public async run(scene: string) {
+	async run(scene: string) {
 		await this.renderer.init();
 		await this.setScene(scene);
 	}
 
-	public async setScene(name: string) {
+	async setScene(name: string) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
 		if (name == "debug") {
 			this.scene = new DebugScene();
@@ -65,7 +65,7 @@ export class Engine {
 		this.loop();
 	}
 
-	public async setPost(path: string, uniforms: Uniforms) {
+	async setPost(path: string, uniforms: Uniforms) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
 		if (path == "") {
 			this.renderer.postShaderOverride = undefined;
@@ -80,7 +80,7 @@ export class Engine {
 		this.loop();
 	}
 
-	public setMode(mode: CameraMode) {
+	setMode(mode: CameraMode) {
 		this.camera.mode = mode;
 		this.gui.setMode(mode);
 	}
@@ -96,7 +96,7 @@ export class Engine {
         this.camera.updateRotation(this.input.cursorChange);
         this.input.resetChange();
 		this.scene.update(time, deltaTime);
-		this.gui.updateInfo(`fps: ${(1/deltaAvg).toFixed(2)}`);
+		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${this.scene.resolution.x}x${this.scene.resolution.y}, ${this.scene.objects.length} obj`);
 	}
 
 	private draw(time: number, frame: number) {

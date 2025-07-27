@@ -5,8 +5,9 @@ export type Action = typeof Actions[number];
 
 export class Input {
 	private canvas: HTMLCanvasElement;
-	public activeActions: Set<Action> = new Set();
-	public controls: Map<string, Action> = new Map([
+
+	activeActions: Set<Action> = new Set();
+	controls: Map<string, Action> = new Map([
 		["w", "forward"],
 		["s", "backward"],
 		["a", "left"],
@@ -15,7 +16,8 @@ export class Input {
 		["f", "down"],
 		["shift", "sprint"],
 	]);
-	public cursorChange: Vec2 = new Vec2();
+
+	cursorChange: Vec2 = new Vec2();
 	private previousTouch?: Touch;
 
 	constructor(canvas: HTMLCanvasElement) {
@@ -61,7 +63,7 @@ export class Input {
 		});
 	}
 
-	public resetChange() {
+	resetChange() {
 		this.cursorChange = new Vec2();
 	}
 
