@@ -1,6 +1,6 @@
 import type { CameraMode } from "../camera";
 import { Scene, WorldObject } from "../scene";
-import { PhongUniforms } from "../uniforms";
+import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 
 export class BrutalScene extends Scene {
@@ -20,21 +20,41 @@ export class BrutalScene extends Scene {
 		let tiles = getTiles();
 		let cells = generateCells(size, tiles);
 
+		let instanceModels: Map<string, Mat4[]> = new Map();
+		for (let tile of tiles) {
+			instanceModels.set(tile.mesh, []);
+		}
+
 		for (let i=0; i<size; i++) {
 			for (let j=0; j<size; j++) {
 				let tile = cells[i][j].candidates[0];
 				if (!tile) continue;
 
-				let obj = new WorldObject();
-				obj.model = Mat4.trs(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
-				obj.mesh = tile.mesh;
-				obj.collider = tile.mesh;
-				obj.bbox = [obj.model.transform(new Vec3()).sub(scale/2), obj.model.transform(new Vec3()).add(scale/2)];
-				obj.textures = ["concrete.jpg"];
-				obj.fragShader = "world/phong.frag.wgsl";
-				obj.fragUniforms = phong;
-				this.objects.push(obj);
+				let colliderObj = new WorldObject();
+				colliderObj.visible = false;
+				colliderObj.model = Mat4.trs(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
+				colliderObj.collider = tile.mesh;
+				colliderObj.bbox = [colliderObj.model.transform(new Vec3()).sub(scale/2), colliderObj.model.transform(new Vec3()).add(scale/2)];
+				this.objects.push(colliderObj);
+
+				instanceModels.get(tile.mesh)!.push(colliderObj.model);
 			}
+		}
+
+		for (let [mesh, models] of instanceModels.entries()) {
+			let u = new InstancedUniforms();
+			u.models = models;
+			u.normals = models.map(m => m.inverse().transpose());
+			u.instanceCount = models.length;
+
+			let tileObj = new WorldObject();
+			tileObj.mesh = mesh;
+			tileObj.textures = ["concrete.jpg"];
+			tileObj.fragShader = "world/phong.frag.wgsl";
+			tileObj.fragUniforms = phong;
+			tileObj.vertShader = "world/instanced.vert.wgsl";
+			tileObj.vertUniforms = u;
+			this.objects.push(tileObj);
 		}
 
 		let sun = new WorldObject();

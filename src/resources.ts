@@ -4,6 +4,7 @@ export class Resources {
 	private shaders: Map<string, string> = new Map();
 	private meshes: Map<string, Float32Array> = new Map();
 	private textures: Map<string, ImageData> = new Map();
+	private colliders: Map<string, Vec3[][]> = new Map();
 
 	async loadShader(name: string): Promise<string> {
 		let cached = this.shaders.get(name);
@@ -50,9 +51,14 @@ export class Resources {
 	}
 
 	async loadCollider(name: string): Promise<Vec3[][]> {
-		let mesh = await this.loadMesh(name);
-		let collider = this.parseCollider(mesh);
-		return collider;
+		let cached = this.colliders.get(name);
+		if (cached) {
+			return cached;
+		} else {
+			let mesh = await this.loadMesh(name);
+			let collider = this.parseCollider(mesh);
+			return collider;
+		}
 	}
 
 	async loadTexture(name: string): Promise<ImageData> {
@@ -195,5 +201,6 @@ export class Resources {
 		this.shaders.clear();
 		this.meshes.clear();
 		this.textures.clear();
+		this.colliders.clear();
 	}
 }

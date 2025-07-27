@@ -5,6 +5,7 @@ import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 export class WorldObject {
 	id: number;
 	tag: string = "";
+	visible: boolean = true;
 
 	mesh: string = "triangle.json";
 	textures: string[] = ["test.png"];

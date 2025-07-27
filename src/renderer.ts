@@ -230,6 +230,9 @@ export class Renderer {
         this.destroyWorldBuffers();
 
         for (let object of scene.objects) {
+            if (!object.visible) {
+                continue;
+            }
             await this.initObject(object);
         }
     }
@@ -512,6 +515,9 @@ export class Renderer {
     async drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
         // initialize new objects
         for (let object of scene.objects) {
+            if (!object.visible) {
+                continue;
+            }
             if (!this.baseUniformBuffers.has(object.id)) {
                 await this.initObject(object);
             }
@@ -519,6 +525,9 @@ export class Renderer {
 
         // update world buffers
         for (let object of scene.objects) {
+            if (!object.visible) {
+                continue;
+            }
             let baseUniforms = new BaseUniforms();
             baseUniforms.time = time;
             baseUniforms.frame = frame;
@@ -552,12 +561,15 @@ export class Renderer {
         const encoder = this.device.createCommandEncoder({ label: "render encoder" });
         const pass = encoder.beginRenderPass(this.renderPassDescriptor);
         for (let object of scene.objects) {
+            if (!object.visible) {
+                continue;
+            }
             const pipeline = this.pipelines.get(object.id);
             const vertexBuffer = this.vertexBuffers.get(object.mesh);
             const uniformBindGroup = this.uniformBindGroups.get(object.id);
             const textureBindGroup = this.textureBindGroups.get(object.id);
             if (!pipeline || !vertexBuffer || !uniformBindGroup || !textureBindGroup) {
-                console.error(`missing object resources ${object.id}, ${object.mesh}, ${object.textures}`);
+                console.error(`missing object resources ${object.id}, ${object.tag}, ${object.mesh}, ${object.textures}`);
                 continue;
             }
 

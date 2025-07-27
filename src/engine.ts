@@ -36,7 +36,9 @@ export class Engine {
 
 	async setScene(name: string) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
-		if (name == "debug") {
+		if (name == "none") {
+			this.scene = new Scene();
+		} else if (name == "debug") {
 			this.scene = new DebugScene();
 		} else if (name == "pier") {
 			this.scene = new PierScene();
@@ -96,7 +98,7 @@ export class Engine {
         this.camera.updateRotation(this.input.cursorChange);
         this.input.resetChange();
 		this.scene.update(time, deltaTime);
-		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${this.scene.resolution.x}x${this.scene.resolution.y}, ${this.scene.objects.length} obj`);
+		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${this.scene.resolution.x}x${this.scene.resolution.y}, ${this.scene.objects.length} (${this.scene.objects.filter(o => o.visible).length}) obj`);
 	}
 
 	private draw(time: number, frame: number) {
