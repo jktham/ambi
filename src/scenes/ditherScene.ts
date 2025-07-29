@@ -1,28 +1,14 @@
 import { Scene, WorldObject } from "../scene";
-import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
+import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
-export class BabelScene extends Scene {
-	name = "babel";
+export class DitherScene extends Scene {
+	name = "dither";
 	spawnPos = new Vec3(0, 0, 5);
 
-	postShader = "post/outline.frag.wgsl";
-	resolution = new Vec2(1920, 1080);
-
-	constructor() {
-		super();
-		let u = new PostOutlineUniforms();
-		u.scale[0] = 2;
-		u.scale[1] = 1;
-		u.scale[2] = 2;
-		u.scale[3] = 8;
-		u.mode[0] = 1;
-		u.mode[1] = 1;
-		u.color[1] = new Vec4(1, 0, 0, 1);
-		u.color[2] = new Vec4(0, 1, 0, 1);
-		u.color[3] = new Vec4(0, 0, 1, 1);
-		this.postUniforms = u;
-	}
+	postShader = "post/dither.frag.wgsl";
+	resolution = new Vec2(320, 180);
+	postTextures = ["noise/LDR_RGB1_0.png"];
 	
 	init() {
 		this.objects = [];

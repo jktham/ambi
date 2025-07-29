@@ -11,7 +11,7 @@ export class Gui {
 	private inputKeyUpHandles: Map<string, number> = new Map();
 
 	constructor(engine: Engine) {
-		const scenes = ["none", "debug", "pier", "brutal", "babel"];
+		const scenes = ["none", "debug", "pier", "brutal", "dither", "outline"];
 		for (let scene of scenes) {
 			this.sceneSelect.options.add(new Option(scene));
 		}

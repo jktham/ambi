@@ -422,7 +422,10 @@ export class Renderer {
     }
 
     private async createTextureBindGroup(textureBuffers: GPUTexture[], pipeline: GPURenderPipeline): Promise<GPUBindGroup> {
-        const sampler = this.device.createSampler();
+        const sampler = this.device.createSampler({
+            addressModeU: "repeat", 
+            addressModeV: "repeat"
+        });
         let textureEntries = textureBuffers.map((t, i) => { return { binding: i+1, resource: t.createView() }});
         const textureBindGroup = this.device.createBindGroup({
             label: "texture bindgroup",
