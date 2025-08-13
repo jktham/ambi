@@ -130,7 +130,7 @@ export class PostOutlineUniforms extends Uniforms {
 	useStorageBuffer = true;
 	scale = new Array<number>(16).fill(1);
 	mode = new Array<number>(16).fill(0);
-	color = new Array<Vec4>(16).fill(new Vec4(1, 1, 1, 1));
+	color = new Array<Vec4>(16).fill(new Vec4()).map(_ => new Vec4(1, 1, 1, 1));
 
 	size(): number {
 		return 96;

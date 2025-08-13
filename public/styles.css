@@ -16,12 +16,30 @@ canvas {
 }
 
 #gui {
+	display: flex;
+	flex-direction: row;
 	margin: 1rem;
+	gap: 1rem;
+}
+
+#gui-controls {
 	display: flex;
 	flex-direction: column;
 	gap: 0.25rem;
 }
 
-#gui > * {
-	width: fit-content;
+.row {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+#gui-uniforms {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+#gui-uniforms input {
+	max-width: 6rem;
 }

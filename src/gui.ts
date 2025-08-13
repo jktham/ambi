@@ -1,4 +1,5 @@
 import { cameraModes, type CameraMode } from "./camera";
+import { postShaders, scenes } from "./data";
 import type { Engine } from "./engine";
 import { Uniforms } from "./uniforms";
 
@@ -8,11 +9,12 @@ export class Gui {
 	private postSelect: HTMLSelectElement = document.getElementById("gui-post-select")! as HTMLSelectElement;
 	private modeSelect: HTMLSelectElement = document.getElementById("gui-mode-select")! as HTMLSelectElement;
 	private keyboardInput: HTMLInputElement = document.getElementById("gui-keyboard-input")! as HTMLInputElement;
+	private uniformConfig: HTMLDivElement = document.getElementById("gui-uniforms")! as HTMLDivElement;
+
 	private inputKeyUpHandles: Map<string, number> = new Map();
 
 	constructor(engine: Engine) {
-		const scenes = ["none", "debug", "pier", "brutal", "dither", "outline"];
-		for (let scene of scenes) {
+		for (let scene of scenes.keys()) {
 			this.sceneSelect.options.add(new Option(scene));
 		}
 		this.sceneSelect.addEventListener("change", async (e) => {
@@ -23,21 +25,12 @@ export class Gui {
 				e.preventDefault();
 			}
 		});
-
-		const postShaders: [string, Uniforms][] = [
-			["", new Uniforms()], 
-			["post/base.frag.wgsl", new Uniforms()], 
-			["post/fb_depth.frag.wgsl", new Uniforms()], 
-			["post/fb_normal.frag.wgsl", new Uniforms()], 
-			["post/fb_pos.frag.wgsl", new Uniforms()], 
-			["post/fb_mask.frag.wgsl", new Uniforms()]
-		];
-		for (let postShader of postShaders) {
-			this.postSelect.options.add(new Option(postShader[0]));
+		for (let postShader of postShaders.keys()) {
+			this.postSelect.options.add(new Option(postShader));
 		}
 		this.postSelect.addEventListener("change", async (e) => {
 			let value = (e.target as HTMLSelectElement).value;
-			await engine.setPost(value, postShaders.find((s) => s[0] == value)?.[1] || new Uniforms());
+			await engine.setPost(value, new (postShaders.get(value) ?? Uniforms));
 		});
 		this.postSelect.addEventListener("keydown", (e) => {
 			if (e.key.length == 1 && !e.ctrlKey) {
@@ -95,16 +88,100 @@ export class Gui {
 		this.sceneSelect.value = name;
 	}
 
-	setPost(path: string, sceneShader: string) {
-		if (path == "") {
-			this.postSelect.value = "";
+	setPost(currentShader: string, sceneShader: string, uniforms: Uniforms) {
+		this.postSelect.value = currentShader;
+		if (currentShader == "scene") {
 			this.postSelect.options[0].label = `scene (${sceneShader})`;
-			return;
 		}
-		this.postSelect.value = path;
+		this.initUniformConfig(uniforms);
 	}
 
 	setMode(mode: CameraMode) {
 		this.modeSelect.value = mode;
+	}
+
+	// this is awful i'll improve it at some point i hope
+	private initUniformConfig(uniforms: Uniforms) {
+		this.uniformConfig.textContent = "";
+		let name = document.createElement("span");
+		name.textContent = uniforms.constructor.name;
+		this.uniformConfig.appendChild(name);
+
+		for (let [k, v] of Object.entries(uniforms)) {
+			const blacklist = ["useStorageBuffer", "instanceCount"];
+			if (blacklist.includes(k)) {
+				continue;
+			}
+			let row = document.createElement("div");
+			let label = document.createElement("span");
+			let input = document.createElement("input");
+			row.className = "row";
+			label.textContent = k + ": ";
+
+			if (typeof v == "number") {
+				input.type = "number";
+				input.value = v.toString();
+				input.addEventListener("change", e => {
+					// @ts-ignore :)
+					uniforms[k] = Number((e.target as HTMLInputElement).value);
+				});
+				label.textContent += "number";
+
+			} else if (typeof v == "boolean") {
+				input.type = "checkbox";
+				input.checked = v;
+				input.addEventListener("change", e => {
+					// @ts-ignore :)
+					uniforms[k] = (e.target as HTMLInputElement).checked;
+				});
+				label.textContent += "boolean";
+
+			} else if (["Vec2", "Vec3", "Vec4", "Mat4"].includes(v.constructor.name)) {
+				input.type = "text";
+				input.value = v.data.toString();
+				input.addEventListener("change", e => {
+					// @ts-ignore :)
+					uniforms[k].data = (e.target as HTMLInputElement).value.split(",").map(Number);
+				});
+				label.textContent += v.constructor.name;
+
+			} else if (Array.isArray(v)) {
+				if (v.length > 0 && typeof v[0] == "number") {
+					input.type = "text";
+					input.value = v.join(";");
+					input.addEventListener("change", e => {
+						// @ts-ignore :)
+						uniforms[k] = (e.target as HTMLInputElement).value.split(";").map(Number);
+					});
+					label.textContent += "number[]";
+
+				} else if (v.length > 0 && typeof v[0] == "boolean") {
+					input.type = "text";
+					input.value = v.join(";");
+					input.addEventListener("change", e => {
+						// @ts-ignore :)
+						uniforms[k] = (e.target as HTMLInputElement).value.split(";").map(Boolean);
+					});
+					label.textContent += "boolean[]";
+
+				} else if (v.length > 0 && ["Vec2", "Vec3", "Vec4", "Mat4"].includes(v[0].constructor.name)) {
+					input.type = "text";
+					input.value = v.map(v => v.data.toString()).join(";");
+					input.addEventListener("change", e => {
+						let data = (e.target as HTMLInputElement).value.split(";").map(s => s.split(",").map(Number));
+						// @ts-ignore :)
+						for (let i=0; i<data.length; i++) {
+						// @ts-ignore :)
+							uniforms[k][i].data = data[i];
+						}
+					});
+					label.textContent += v[0].constructor.name + "[]";
+				}
+			}
+			
+			row.appendChild(label);
+			row.appendChild(input);
+			this.uniformConfig.appendChild(row);
+		}
 	}
 }

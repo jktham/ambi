@@ -12,11 +12,16 @@
       html5 canvas unsupported
     </canvas>
     <div id="gui">
-      <span id="gui-info">loading</span>
-      <span>scene: <select id="gui-scene-select"></select></span>
-      <span>post: <select id="gui-post-select"></select></span>
-      <span>mode: <select id="gui-mode-select"></select></span>
-      <input type="text" id="gui-keyboard-input" placeholder="mobile keyboard input :)">
+      <div id="gui-controls">
+        <span id="gui-info">loading</span>
+        <div class="row"><span>scene: </span><select id="gui-scene-select"></select></div>
+        <div class="row"><span>post: </span><select id="gui-post-select"></select></div>
+        <div class="row"><span>mode: </span><select id="gui-mode-select"></select></div>
+        <input type="text" id="gui-keyboard-input" placeholder="mobile keyboard input :)">
+      </div>
+      <div id="gui-uniforms">
+
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

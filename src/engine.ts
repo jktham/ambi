@@ -2,14 +2,10 @@ import { Renderer } from "./renderer";
 import { Camera, type CameraMode } from "./camera";
 import { Input } from "./input";
 import { Scene } from "./scene";
-import { DebugScene } from "./scenes/debugScene";
 import { Gui } from "./gui";
-import { PierScene } from "./scenes/pierScene";
 import { Uniforms } from "./uniforms";
-import { BrutalScene } from "./scenes/brutalScene";
 import { Resources } from "./resources";
-import { DitherScene } from "./scenes/ditherScene";
-import { OutlineScene } from "./scenes/outlineScene";
+import { scenes } from "./data";
 
 export class Engine {
 	private resources: Resources;
@@ -37,22 +33,15 @@ export class Engine {
 
 	async setScene(name: string) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
-		if (name == "none") {
-			this.scene = new Scene();
-		} else if (name == "debug") {
-			this.scene = new DebugScene();
-		} else if (name == "pier") {
-			this.scene = new PierScene();
-		} else if (name == "brutal") {
-			this.scene = new BrutalScene();
-		} else if (name == "dither") {
-			this.scene = new DitherScene();
-		} else if (name == "outline") {
-			this.scene = new OutlineScene();
+
+		let scene = scenes.get(name);
+		if (scene) {
+			this.scene = new scene();
 		} else {
 			console.error(`no scene called ${name}`);
 			this.scene = new Scene();
 		}
+
 		this.renderer.postShaderOverride = undefined;
 		this.renderer.postUniformsOverride = undefined;
 
@@ -61,7 +50,7 @@ export class Engine {
 		this.camera.rotation = this.scene.spawnRot;
 
 		this.gui.setScene(this.scene.name);
-		this.gui.setPost("", this.scene.postShader);
+		this.gui.setPost("scene", this.scene.postShader, this.scene.postUniforms);
 		this.gui.setMode(this.scene.cameraMode);
 
 		this.scene.init();
@@ -72,14 +61,14 @@ export class Engine {
 
 	async setPost(path: string, uniforms: Uniforms) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
-		if (path == "") {
+		if (path == "scene") {
 			this.renderer.postShaderOverride = undefined;
 			this.renderer.postUniformsOverride = undefined;
-			this.gui.setPost(path, this.scene.postShader);
+			this.gui.setPost(path, this.scene.postShader, this.scene.postUniforms);
 		} else {
 			this.renderer.postShaderOverride = path;
 			this.renderer.postUniformsOverride = uniforms;
-			this.gui.setPost(path, this.scene.postShader);
+			this.gui.setPost(path, this.scene.postShader, this.renderer.postUniformsOverride);
 		}
 		await this.renderer.loadPost(this.scene);
 		this.loop();
