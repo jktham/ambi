@@ -15,16 +15,17 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["outline", OutlineScene],
 ]);
 
-export const postShaders: Map<string, new () => Uniforms> = new Map([
-	["scene", Uniforms],
-	["post/base.frag.wgsl", Uniforms],
-	["post/fb_depth.frag.wgsl", Uniforms],
-	["post/fb_normal.frag.wgsl", Uniforms],
-	["post/fb_pos.frag.wgsl", Uniforms],
-	["post/fb_mask.frag.wgsl", Uniforms],
-	["post/ps1_fog.frag.wgsl", PostPS1Uniforms],
-	["post/outline.frag.wgsl", PostOutlineUniforms],
-	["post/noise.frag.wgsl", Uniforms],
-	["post/dither.frag.wgsl", Uniforms],
-	["post/test.frag.wgsl", Uniforms],
+// <path, [uniforms constructor, textures]>
+export const postShaders: Map<string, [new () => Uniforms, string[]]> = new Map([
+	["scene", [Uniforms, []]],
+	["post/base.frag.wgsl", [Uniforms, []]],
+	["post/fb_depth.frag.wgsl", [Uniforms, []]],
+	["post/fb_normal.frag.wgsl", [Uniforms, []]],
+	["post/fb_pos.frag.wgsl", [Uniforms, []]],
+	["post/fb_mask.frag.wgsl", [Uniforms, []]],
+	["post/ps1_fog.frag.wgsl", [PostPS1Uniforms, []]],
+	["post/outline.frag.wgsl", [PostOutlineUniforms, []]],
+	["post/noise.frag.wgsl", [Uniforms, []]],
+	["post/dither.frag.wgsl", [Uniforms, ["noise/blue_0.png"]]],
+	["post/test.frag.wgsl", [Uniforms, ["house.jpg"]]],
 ]);

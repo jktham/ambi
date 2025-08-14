@@ -1,5 +1,6 @@
 export class Vec2 {
 	data: number[];
+	size: number = 2;
 
 	constructor(x: number = 0, y: number = 0) {
 		this.data = [x, y];
@@ -57,6 +58,7 @@ export class Vec2 {
 
 export class Vec3 {
 	data: number[];
+	size: number = 3;
 
 	constructor(x: number = 0, y: number = 0, z: number = 0) {
 		this.data = [x, y, z];
@@ -125,6 +127,7 @@ export class Vec3 {
 
 export class Vec4 {
 	data: number[];
+	size: number = 4;
 
 	constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
 		this.data = [x, y, z, w];
@@ -186,6 +189,7 @@ export class Vec4 {
 
 export class Mat4 {
 	data: number[];
+	size: number = 16;
 
 	constructor(data?: number[]) {
 		if (!data) {

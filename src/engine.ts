@@ -44,14 +44,15 @@ export class Engine {
 
 		this.renderer.postShaderOverride = undefined;
 		this.renderer.postUniformsOverride = undefined;
+		this.renderer.postTexturesOverride = undefined;
 
 		this.camera.mode = this.scene.cameraMode;
 		this.camera.position = this.scene.spawnPos;
 		this.camera.rotation = this.scene.spawnRot;
 
 		this.gui.setScene(this.scene.name);
-		this.gui.setPost("scene", this.scene.postShader, this.scene.postUniforms);
-		this.gui.setMode(this.scene.cameraMode);
+		this.gui.setPost("scene", this.scene.postShader, this.scene.postUniforms, this.scene.postTextures);
+		this.gui.setCameraMode(this.scene.cameraMode);
 
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
@@ -59,24 +60,27 @@ export class Engine {
 		this.loop();
 	}
 
-	async setPost(path: string, uniforms: Uniforms) {
+	async setPost(path: string, uniforms: Uniforms, textures: string[]) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
 		if (path == "scene") {
 			this.renderer.postShaderOverride = undefined;
 			this.renderer.postUniformsOverride = undefined;
-			this.gui.setPost(path, this.scene.postShader, this.scene.postUniforms);
+			this.renderer.postTexturesOverride = textures?.length > 0 ? textures : undefined;
+			this.gui.setPost(path, this.scene.postShader, this.scene.postUniforms, this.renderer.postTexturesOverride ?? this.scene.postTextures);
+
 		} else {
 			this.renderer.postShaderOverride = path;
 			this.renderer.postUniformsOverride = uniforms;
-			this.gui.setPost(path, this.scene.postShader, this.renderer.postUniformsOverride);
+			this.renderer.postTexturesOverride = textures;
+			this.gui.setPost(path, this.scene.postShader, this.renderer.postUniformsOverride, this.renderer.postTexturesOverride);
 		}
 		await this.renderer.loadPost(this.scene);
 		this.loop();
 	}
 
-	setMode(mode: CameraMode) {
-		this.camera.mode = mode;
-		this.gui.setMode(mode);
+	setCameraMode(cameraMode: CameraMode) {
+		this.camera.mode = cameraMode;
+		this.gui.setCameraMode(cameraMode);
 	}
 
 	private update(time: number, deltaTime: number) {

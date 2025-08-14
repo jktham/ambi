@@ -8,7 +8,7 @@ export class DitherScene extends Scene {
 
 	postShader = "post/dither.frag.wgsl";
 	resolution = new Vec2(320, 180);
-	postTextures = ["noise/LDR_RGB1_0.png"];
+	postTextures = ["noise/blue_0.png"];
 	
 	init() {
 		this.objects = [];

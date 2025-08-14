@@ -18,6 +18,7 @@ canvas {
 #gui {
 	display: flex;
 	flex-direction: row;
+	flex-wrap: wrap;
 	margin: 1rem;
 	gap: 1rem;
 }

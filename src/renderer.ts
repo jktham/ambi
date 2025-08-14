@@ -36,6 +36,7 @@ export class Renderer {
 
 	postShaderOverride?: string;
 	postUniformsOverride?: Uniforms;
+	postTexturesOverride?: string[];
 
     constructor(canvas: HTMLCanvasElement, resources: Resources) {
         canvas.width = 960;
@@ -287,14 +288,14 @@ export class Renderer {
         this.postFrameBufferBindGroup = this.createPostFrameBufferBindGroup(this.postPipeline);
 
         // post textures
-        for (let texture of scene.postTextures) {
+        for (let texture of this.postTexturesOverride ?? scene.postTextures) {
             if (!this.textureBuffers.has(texture)) {
                 const textureBuffer = await this.createTextureBuffer(texture, this.postPipeline);
                 this.textureBuffers.set(texture, textureBuffer);
             }
         }
-        const textureBuffers = scene.postTextures.map(texture => this.textureBuffers.get(texture)!);
-        const textureBindGroup = await this.createTextureBindGroup(this.postShaderOverride !== undefined ? [] : textureBuffers, this.postPipeline);
+        const textureBuffers = (this.postTexturesOverride ?? scene.postTextures).map(texture => this.textureBuffers.get(texture)!);
+        const textureBindGroup = await this.createTextureBindGroup(textureBuffers, this.postPipeline);
         this.postTextureBindGroup = textureBindGroup;
     }
 
