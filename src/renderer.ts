@@ -37,6 +37,7 @@ export class Renderer {
 	postShaderOverride?: string;
 	postUniformsOverride?: Uniforms;
 	postTexturesOverride?: string[];
+    resolution: Vec2 = new Vec2();
 
     constructor(canvas: HTMLCanvasElement, resources: Resources) {
         canvas.width = 960;
@@ -166,7 +167,8 @@ export class Renderer {
         await this.initPost(scene);
     }
 
-    private setResolution(resolution: Vec2) {
+    setResolution(resolution: Vec2) {
+        this.resolution = resolution;
         this.canvas.width = resolution.x;
         this.canvas.height = resolution.y;
         this.destroyFrameBufferTextures();

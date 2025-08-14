@@ -6,6 +6,7 @@ import { Gui } from "./gui";
 import { Uniforms } from "./uniforms";
 import { Resources } from "./resources";
 import { scenes } from "./data";
+import type { Vec2 } from "./vec";
 
 export class Engine {
 	private resources: Resources;
@@ -50,9 +51,10 @@ export class Engine {
 		this.camera.position = this.scene.spawnPos;
 		this.camera.rotation = this.scene.spawnRot;
 
-		this.gui.setScene(this.scene.name);
-		this.gui.setPost("scene", this.scene.postShader, this.scene.postUniforms, this.scene.postTextures);
-		this.gui.setCameraMode(this.scene.cameraMode);
+		this.gui.updateScene(this.scene.name);
+		this.gui.updatePost("scene", this.scene.postShader, this.scene.postUniforms, this.scene.postTextures);
+		this.gui.updateCameraMode(this.scene.cameraMode);
+		this.gui.updateResolution(this.scene.resolution);
 
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
@@ -66,13 +68,13 @@ export class Engine {
 			this.renderer.postShaderOverride = undefined;
 			this.renderer.postUniformsOverride = undefined;
 			this.renderer.postTexturesOverride = textures?.length > 0 ? textures : undefined;
-			this.gui.setPost(path, this.scene.postShader, this.scene.postUniforms, this.renderer.postTexturesOverride ?? this.scene.postTextures);
+			this.gui.updatePost(path, this.scene.postShader, this.scene.postUniforms, this.renderer.postTexturesOverride ?? this.scene.postTextures);
 
 		} else {
 			this.renderer.postShaderOverride = path;
 			this.renderer.postUniformsOverride = uniforms;
 			this.renderer.postTexturesOverride = textures;
-			this.gui.setPost(path, this.scene.postShader, this.renderer.postUniformsOverride, this.renderer.postTexturesOverride);
+			this.gui.updatePost(path, this.scene.postShader, this.renderer.postUniformsOverride, this.renderer.postTexturesOverride);
 		}
 		await this.renderer.loadPost(this.scene);
 		this.loop();
@@ -80,7 +82,13 @@ export class Engine {
 
 	setCameraMode(cameraMode: CameraMode) {
 		this.camera.mode = cameraMode;
-		this.gui.setCameraMode(cameraMode);
+		this.gui.updateCameraMode(cameraMode);
+	}
+
+	async setResolution(resolution: Vec2) {
+		this.renderer.setResolution(resolution);
+		await this.renderer.loadPost(this.scene);
+		this.gui.updateResolution(resolution);
 	}
 
 	private update(time: number, deltaTime: number) {
@@ -94,7 +102,7 @@ export class Engine {
         this.camera.updateRotation(this.input.cursorChange);
         this.input.resetChange();
 		this.scene.update(time, deltaTime);
-		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${this.scene.resolution.x}x${this.scene.resolution.y}, ${this.scene.objects.length} (${this.scene.objects.filter(o => o.visible).length}) obj`);
+		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${this.renderer.resolution.x}x${this.renderer.resolution.y}, ${this.scene.objects.length} (${this.scene.objects.filter(o => o.visible).length}) obj`);
 	}
 
 	private draw(time: number, frame: number) {

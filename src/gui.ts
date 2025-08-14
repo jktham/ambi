@@ -2,6 +2,7 @@ import { cameraModes, type CameraMode } from "./camera";
 import { postShaders, scenes } from "./data";
 import type { Engine } from "./engine";
 import { Uniforms } from "./uniforms";
+import { Vec2 } from "./vec";
 
 export class Gui {
 	private engine: Engine;
@@ -9,6 +10,7 @@ export class Gui {
 	private sceneSelect: HTMLSelectElement = document.getElementById("gui-scene-select")! as HTMLSelectElement;
 	private postSelect: HTMLSelectElement = document.getElementById("gui-post-select")! as HTMLSelectElement;
 	private cameraModeSelect: HTMLSelectElement = document.getElementById("gui-camera-mode-select")! as HTMLSelectElement;
+	private resolutionInput: HTMLInputElement = document.getElementById("gui-resolution-input")! as HTMLInputElement;
 	private keyboardInput: HTMLInputElement = document.getElementById("gui-keyboard-input")! as HTMLInputElement;
 	private uniformConfig: HTMLDivElement = document.getElementById("gui-uniforms")! as HTMLDivElement;
 
@@ -55,6 +57,13 @@ export class Gui {
 			}
 		});
 
+		this.resolutionInput.addEventListener("change", async (e) => {
+			(e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.replace(/[^\dx]/g, "");
+			let data = (e.target as HTMLInputElement).value.split("x").map(Number);
+			let resolution = new Vec2(data[0] || 960, data[1] || 540);
+			await engine.setResolution(resolution);
+		});
+
 		this.keyboardInput.addEventListener("input", (e) => {
 			let key = (e.target as HTMLInputElement).value.toLowerCase();
 			let shift = (e.target as HTMLInputElement).value != key;
@@ -88,11 +97,11 @@ export class Gui {
 		this.info.textContent = text;
 	}
 
-	setScene(name: string) {
+	updateScene(name: string) {
 		this.sceneSelect.value = name;
 	}
 
-	setPost(currentShader: string, sceneShader: string, uniforms: Uniforms, textures: string[]) {
+	updatePost(currentShader: string, sceneShader: string, uniforms: Uniforms, textures: string[]) {
 		this.postSelect.value = currentShader;
 		if (currentShader == "scene") {
 			this.postSelect.options[0].label = `scene (${sceneShader})`;
@@ -100,8 +109,12 @@ export class Gui {
 		this.initUniformConfig(currentShader, uniforms, textures);
 	}
 
-	setCameraMode(cameraMode: CameraMode) {
+	updateCameraMode(cameraMode: CameraMode) {
 		this.cameraModeSelect.value = cameraMode;
+	}
+
+	updateResolution(resolution: Vec2) {
+		this.resolutionInput.value = `${resolution.x}x${resolution.y}`;
 	}
 
 	// this is awful i'll improve it at some point i hope

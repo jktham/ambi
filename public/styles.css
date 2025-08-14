@@ -42,5 +42,9 @@ canvas {
 }
 
 #gui-uniforms input {
-	max-width: 6rem;
+	max-width: 10rem;
+}
+
+#gui-resolution-input {
+	width: 6rem;
 }
