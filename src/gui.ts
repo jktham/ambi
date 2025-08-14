@@ -122,11 +122,11 @@ export class Gui {
 		this.uniformSizes.clear();
 		this.uniformConfig.textContent = "";
 		let name = document.createElement("span");
-		name.textContent = uniforms.constructor.name;
+		name.textContent = uniforms.name;
 		this.uniformConfig.appendChild(name);
 
 		for (let [k, v] of Object.entries(uniforms)) {
-			const blacklist = ["useStorageBuffer", "instanceCount"];
+			const blacklist = ["useStorageBuffer", "instanceCount", "name"];
 			if (blacklist.includes(k)) {
 				continue;
 			}
@@ -157,7 +157,7 @@ export class Gui {
 				});
 				label.textContent += "boolean";
 
-			} else if (["Vec2", "Vec3", "Vec4", "Mat4"].includes(v.constructor.name)) {
+			} else if ([2, 3, 4, 16].includes(v?.size)) {
 				input.type = "text";
 				input.value = v.data.toString();
 				input.addEventListener("change", e => {
@@ -165,7 +165,13 @@ export class Gui {
 					uniData[k].data = (e.target as HTMLInputElement).value.split(",").map(Number).concat(new Array(uniData[k].size).fill(0)).slice(0, uniData[k].size);
 					(e.target as HTMLInputElement).value = uniData[k].data.toString();
 				});
-				label.textContent += v.constructor.name;
+				let types: Map<number, string> = new Map([
+					[2, "vec2"],
+					[3, "vec3"],
+					[4, "vec4"],
+					[16, "mat4"],
+				]);
+				label.textContent += types.get(v?.size);
 
 			} else if (Array.isArray(v)) {
 				this.uniformSizes.set(k, uniData[k].length);
@@ -189,7 +195,7 @@ export class Gui {
 					});
 					label.textContent += `boolean[${this.uniformSizes.get(k)}]`;
 
-				} else if (v.length > 0 && ["Vec2", "Vec3", "Vec4", "Mat4"].includes(v[0].constructor.name)) {
+				} else if (v.length > 0 && [2, 3, 4, 16].includes(v[0]?.size)) {
 					input.type = "text";
 					input.value = v.map(v => v.data.join(",")).join("; ");
 					input.addEventListener("change", e => {
@@ -201,7 +207,13 @@ export class Gui {
 						}
 						(e.target as HTMLInputElement).value = uniData[k].map((v: any) => v.data.join(",")).join("; ");
 					});
-					label.textContent += `${v[0].constructor.name}[${this.uniformSizes.get(k)}]`;
+					let types: Map<number, string> = new Map([
+						[2, "vec2"],
+						[3, "vec3"],
+						[4, "vec4"],
+						[16, "mat4"],
+					]);
+					label.textContent += `${types.get(v[0]?.size)}[${this.uniformSizes.get(k)}]`;
 				}
 			}
 			

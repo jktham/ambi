@@ -1,6 +1,7 @@
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class Uniforms {
+	name = "Uniforms";
 	useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag
 	instanceCount = 0; // draw instanced if > 0
 	
@@ -14,6 +15,7 @@ export class Uniforms {
 }
 
 export class BaseUniforms extends Uniforms {
+	name = "BaseUniforms";
 	time = 0;
 	frame = 0;
 	mask = 0;
@@ -46,6 +48,7 @@ export class BaseUniforms extends Uniforms {
 }
 
 export class PhongUniforms extends Uniforms {
+	name = "PhongUniforms";
 	ambientFactor = 0.1;
 	diffuseFactor = 0.6;
 	specularFactor = 0.3;
@@ -70,6 +73,7 @@ export class PhongUniforms extends Uniforms {
 }
 
 export class InstancedUniforms extends Uniforms {
+	name = "InstancedUniforms";
 	useStorageBuffer = true;
 	instanceCount = 0;
 	models: Mat4[] = [];
@@ -91,6 +95,7 @@ export class InstancedUniforms extends Uniforms {
 }
 
 export class PostBaseUniforms extends Uniforms {
+	name = "PostBaseUniforms";
 	time = 0;
 	frame = 0;
 	resolution = new Vec2();
@@ -109,6 +114,7 @@ export class PostBaseUniforms extends Uniforms {
 }
 
 export class PostPS1Uniforms extends Uniforms {
+	name = "PostPS1Uniforms";
 	fogStart = 0.0;
 	fogEnd = 10.0;
 	fogColor = new Vec4(0.6, 0.6, 0.6, 1.0);
@@ -127,6 +133,7 @@ export class PostPS1Uniforms extends Uniforms {
 }
 
 export class PostOutlineUniforms extends Uniforms {
+	name = "PostOutlineUniforms";
 	useStorageBuffer = true;
 	scale = new Array<number>(16).fill(1);
 	mode = [1].concat(new Array<number>(16-1).fill(0));
