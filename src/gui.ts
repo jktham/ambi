@@ -91,6 +91,22 @@ export class Gui {
 				}, 500));
 			}
 		});
+
+		addEventListener("keydown", (e) => {
+			if ((e.target as HTMLElement).nodeName == "INPUT") {
+				return;
+			}
+			if (!isNaN(Number(e.key)) && Number(e.key) < this.sceneSelect.options.length) {
+				this.sceneSelect.value = this.sceneSelect.options[Number(e.key)].value;
+				this.sceneSelect.dispatchEvent(new Event("change"));
+			} else if (e.key.toLowerCase() == "p") {
+				this.postSelect.value = this.postSelect.options[(this.postSelect.selectedIndex + 1) % this.postSelect.options.length].value;
+				this.postSelect.dispatchEvent(new Event("change"));
+			} else if (e.key.toLowerCase() == "m") {
+				this.cameraModeSelect.value = this.cameraModeSelect.options[(this.cameraModeSelect.selectedIndex + 1) % this.cameraModeSelect.options.length].value;
+				this.cameraModeSelect.dispatchEvent(new Event("change"));
+			}
+		});
 	}
 
 	updateInfo(text: string) {
@@ -121,6 +137,10 @@ export class Gui {
 	private initUniformConfig(shader: string, uniforms: Uniforms, textures: string[]) {
 		this.uniformSizes.clear();
 		this.uniformConfig.textContent = "";
+		if (uniforms.size() == 0 && textures.length == 0) {
+			return;
+		}
+
 		let name = document.createElement("span");
 		name.textContent = uniforms.name;
 		this.uniformConfig.appendChild(name);

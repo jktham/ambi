@@ -23,14 +23,14 @@ export class Input {
 	constructor(canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
 		addEventListener("keydown", (e) => {
-			if ((e.target as HTMLElement).id == "gui-keyboard-input") {
+			if ((e.target as HTMLElement).nodeName == "INPUT") {
 				return;
 			}
 			let action = this.controls.get(e.key.toLowerCase());
 			if (action) this.activeActions.add(action);
 		});
 		addEventListener("keyup", (e) => {
-			if ((e.target as HTMLElement).id == "gui-keyboard-input") {
+			if ((e.target as HTMLElement).nodeName == "INPUT") {
 				return;
 			}
 			let action = this.controls.get(e.key.toLowerCase());
@@ -44,7 +44,7 @@ export class Input {
 				this.canvas.requestPointerLock();
 			}
 		});
-		addEventListener("mousemove", (e) => {
+		this.canvas.addEventListener("mousemove", (e) => {
 			if (document.pointerLockElement) {
 				this.cursorChange = new Vec2(this.cursorChange.x + e.movementX, this.cursorChange.y + e.movementY);
 			}
