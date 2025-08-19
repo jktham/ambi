@@ -1,5 +1,5 @@
 import { cameraModes, type CameraMode } from "./camera";
-import { postShaders, scenes } from "./data";
+import { postShaders, resolutionPresets, scenes } from "./data";
 import type { Engine } from "./engine";
 import { Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
@@ -10,7 +10,9 @@ export class Gui {
 	private sceneSelect: HTMLSelectElement = document.getElementById("gui-scene-select")! as HTMLSelectElement;
 	private postSelect: HTMLSelectElement = document.getElementById("gui-post-select")! as HTMLSelectElement;
 	private cameraModeSelect: HTMLSelectElement = document.getElementById("gui-camera-mode-select")! as HTMLSelectElement;
-	private resolutionInput: HTMLInputElement = document.getElementById("gui-resolution-input")! as HTMLInputElement;
+	private resolutionInputX: HTMLInputElement = document.getElementById("gui-resolution-input-x")! as HTMLInputElement;
+	private resolutionInputY: HTMLInputElement = document.getElementById("gui-resolution-input-y")! as HTMLInputElement;
+	private resolutionSelect: HTMLSelectElement = document.getElementById("gui-resolution-select")! as HTMLSelectElement;
 	private keyboardInput: HTMLInputElement = document.getElementById("gui-keyboard-input")! as HTMLInputElement;
 	private uniformConfig: HTMLDivElement = document.getElementById("gui-uniforms")! as HTMLDivElement;
 
@@ -57,11 +59,25 @@ export class Gui {
 			}
 		});
 
-		this.resolutionInput.addEventListener("change", async (e) => {
-			(e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.replace(/[^\dx]/g, "");
-			let data = (e.target as HTMLInputElement).value.split("x").map(Number);
-			let resolution = new Vec2(data[0] || 960, data[1] || 540);
+		[this.resolutionInputX, this.resolutionInputY].map(i => i.addEventListener("change", async (e) => {
+			let resolution = new Vec2(Math.max(1, Number(this.resolutionInputX.value) || 1), Math.max(1, Number(this.resolutionInputY.value) || 1));
 			await engine.setResolution(resolution);
+		}));
+
+		this.resolutionSelect.options.add(new Option("custom", ""));
+		for (let [k, v] of resolutionPresets) {
+			this.resolutionSelect.options.add(new Option(k, v));
+		}
+		this.resolutionSelect.addEventListener("change", async (e) => {
+			if (this.resolutionSelect.value == "") return;
+			let data = this.resolutionSelect.value.split("x").map(Number);
+			let resolution = new Vec2(data[0], data[1]);
+			await engine.setResolution(resolution);
+		});
+		this.resolutionSelect.addEventListener("keydown", (e) => {
+			if (e.key.length == 1 && !e.ctrlKey) {
+				e.preventDefault();
+			}
 		});
 
 		this.keyboardInput.addEventListener("input", (e) => {
@@ -130,7 +146,15 @@ export class Gui {
 	}
 
 	updateResolution(resolution: Vec2) {
-		this.resolutionInput.value = `${resolution.x}x${resolution.y}`;
+		this.resolutionInputX.value = resolution.x.toString();
+		this.resolutionInputY.value = resolution.y.toString();
+		let res = `${resolution.x}x${resolution.y}`;
+		if ([...resolutionPresets.values()].includes(res)) {
+			this.resolutionSelect.value = res;
+		} else {
+			this.resolutionSelect.value = "";
+		}
+		
 	}
 
 	// this is awful i'll improve it at some point i hope

@@ -29,3 +29,12 @@ export const postShaders: Map<string, [new () => Uniforms, string[]]> = new Map(
 	["post/dither.frag.wgsl", [Uniforms, ["noise/blue_0.png"]]],
 	["post/test.frag.wgsl", [Uniforms, ["house.jpg"]]],
 ]);
+
+export const resolutionPresets: Map<string, string> = new Map([
+	["divine", "1x1"],
+	["crusty", "80x45"],
+	["psx", "320x180"],
+	["mid", "960x540"],
+	["hd", "1920x1080"],
+	["4k", "3840x2160"],
+]);

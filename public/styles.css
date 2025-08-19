@@ -32,7 +32,11 @@ canvas {
 .row {
 	display: flex;
 	justify-content: space-between;
-	gap: 1rem;
+	gap: 0.25rem;
+}
+
+.row>*:first-child {
+	margin-right: 1rem;
 }
 
 #gui-uniforms {
@@ -45,6 +49,6 @@ canvas {
 	max-width: 10rem;
 }
 
-#gui-resolution-input {
-	width: 6rem;
+#gui-resolution-input-x, #gui-resolution-input-y {
+	width: 3rem;
 }
