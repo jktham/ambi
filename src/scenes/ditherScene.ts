@@ -62,7 +62,7 @@ export class DitherScene extends Scene {
 		this.objects.push(obj);
 	}
 
-	update(time: number, deltaTime: number) {
+	update(time: number, deltaTime: number, position: Vec3) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		for (let obj of this.objects) {
 			(obj.fragUniforms as PhongUniforms).lightPos = lightPos;

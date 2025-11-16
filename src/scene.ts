@@ -1,4 +1,5 @@
 import type { CameraMode } from "./camera";
+import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
@@ -38,12 +39,13 @@ export class Scene {
 	postTextures: string[] = [];
 
 	objects: WorldObject[] = [];
+	triggers: Trigger[] = [];
 
 	init() {
 
 	}
 
-	update(time: number, deltaTime: number) {
+	update(time: number, deltaTime: number, position: Vec3) {
 		
 	}
 

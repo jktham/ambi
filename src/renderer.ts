@@ -357,7 +357,7 @@ export class Renderer {
             size: vertexData.byteLength,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
         });
-        this.device.queue.writeBuffer(vertexBuffer, 0, vertexData);
+        this.device.queue.writeBuffer(vertexBuffer, 0, vertexData.buffer);
         return vertexBuffer;
     }
 
@@ -376,7 +376,7 @@ export class Renderer {
             usage: ((vertUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (vertUniformLength > 0) {
-            this.device.queue.writeBuffer(vertUniformBuffer, 0, vertUniforms.toArray());
+            this.device.queue.writeBuffer(vertUniformBuffer, 0, vertUniforms.toArray().buffer);
         }
 
         const fragUniformLength = fragUniforms.size();
@@ -386,7 +386,7 @@ export class Renderer {
             usage: ((fragUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (fragUniformLength > 0) {
-            this.device.queue.writeBuffer(fragUniformBuffer, 0, fragUniforms.toArray());
+            this.device.queue.writeBuffer(fragUniformBuffer, 0, fragUniforms.toArray().buffer);
         }
 
         let uniformBindings: GPUBindGroupEntry[] = [];
@@ -487,7 +487,7 @@ export class Renderer {
             usage: ((postUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (postUniformLength > 0) {
-            this.device.queue.writeBuffer(postUniformBuffer, 0, postUniforms.toArray());
+            this.device.queue.writeBuffer(postUniformBuffer, 0, postUniforms.toArray().buffer);
         }
 
         let postUniformBindings: GPUBindGroupEntry[] = [];
@@ -554,12 +554,12 @@ export class Renderer {
                 continue;
             }
 
-            this.device.queue.writeBuffer(baseUniformBuffer, 0, baseUniforms.toArray());
+            this.device.queue.writeBuffer(baseUniformBuffer, 0, baseUniforms.toArray().buffer);
             if (object.vertUniforms.size() > 0) {
-                this.device.queue.writeBuffer(vertUniformBuffer, 0, object.vertUniforms.toArray());
+                this.device.queue.writeBuffer(vertUniformBuffer, 0, object.vertUniforms.toArray().buffer);
             }
             if (object.fragUniforms.size() > 0) {
-                this.device.queue.writeBuffer(fragUniformBuffer, 0, object.fragUniforms.toArray());
+                this.device.queue.writeBuffer(fragUniformBuffer, 0, object.fragUniforms.toArray().buffer);
             }
         }
 
@@ -593,11 +593,11 @@ export class Renderer {
         postBaseUniforms.time = time;
         postBaseUniforms.frame = frame;
         postBaseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
-        this.device.queue.writeBuffer(this.postBaseUniformBuffer, 0, postBaseUniforms.toArray());
+        this.device.queue.writeBuffer(this.postBaseUniformBuffer, 0, postBaseUniforms.toArray().buffer);
 
         let postUniforms = this.postUniformsOverride ?? scene.postUniforms;
         if (postUniforms.size() > 0) {
-            this.device.queue.writeBuffer(this.postUniformBuffer, 0, postUniforms.toArray());
+            this.device.queue.writeBuffer(this.postUniformBuffer, 0, postUniforms.toArray().buffer);
         }
 
         // draw post

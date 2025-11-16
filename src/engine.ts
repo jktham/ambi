@@ -101,7 +101,10 @@ export class Engine {
         this.camera.updatePosition(this.input.activeActions, deltaTime);
         this.camera.updateRotation(this.input.cursorChange);
         this.input.resetChange();
-		this.scene.update(time, deltaTime);
+		this.scene.update(time, deltaTime, this.camera.position);
+		for (let trigger of this.scene.triggers) {
+			if (trigger.enabled) trigger.test(this.camera.position);
+		}
 		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${this.renderer.resolution.x}x${this.renderer.resolution.y}, ${this.scene.objects.length} (${this.scene.objects.filter(o => o.visible).length}) obj`);
 	}
 

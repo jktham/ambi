@@ -91,7 +91,7 @@ export class PierScene extends Scene {
 		this.objects.push(lantern_holder);
 	}
 
-	update(time: number, deltaTime: number) {
+	update(time: number, deltaTime: number, position: Vec3) {
 		let snowUniforms = (this.getObject("snow")?.vertUniforms as InstancedUniforms);
 		for (let i=0; i<snowUniforms.instanceCount; i++) {
 			let model = snowUniforms.models[i];

@@ -1,4 +1,5 @@
 import { Scene, WorldObject } from "../scene";
+import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 
@@ -26,7 +27,8 @@ export class DebugScene extends Scene {
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
 		obj.collider = "monke.obj";
-		obj.bbox = [obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)];
+		let monkeBbox: [Vec3, Vec3] = [obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)];
+		obj.bbox = monkeBbox;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
 		obj.mask = 200;
@@ -58,9 +60,17 @@ export class DebugScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
 		this.objects.push(obj);
+
+		this.triggers = [];
+		let t = new Trigger();
+		t.bbox = monkeBbox;
+		t.onEnter = () => console.log("enter");
+		t.onLeave = () => console.log("leave");
+		this.triggers.push(t);
+
 	}
 
-	update(time: number, deltaTime: number) {
+	update(time: number, deltaTime: number, position: Vec3) {
 		this.objects[0].model = this.objects[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
 		this.objects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
 

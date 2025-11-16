@@ -65,7 +65,7 @@ export class BrutalScene extends Scene {
 		this.objects.push(sun);
 	}
 
-	update(time: number, deltaTime: number) {
+	update(time: number, deltaTime: number, position: Vec3) {
 		
 	}
 }
