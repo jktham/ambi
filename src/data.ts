@@ -1,18 +1,20 @@
 import { Scene } from "./scene";
 import { BrutalScene } from "./scenes/brutalScene";
 import { DebugScene } from "./scenes/debugScene";
-import { DitherScene } from "./scenes/ditherScene";
-import { OutlineScene } from "./scenes/outlineScene";
+import { DebugDitherScene } from "./scenes/debugDitherScene";
+import { DebugOutlineScene } from "./scenes/debugOutlineScene";
 import { PierScene } from "./scenes/pierScene";
 import { PostOutlineUniforms, PostPS1Uniforms, Uniforms } from "./uniforms";
+import { MuseumScene } from "./scenes/museumScene";
 
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
-	["debug", DebugScene],
+	["museum", MuseumScene],
 	["pier", PierScene],
 	["brutal", BrutalScene],
-	["dither", DitherScene],
-	["outline", OutlineScene],
+	["debug", DebugScene],
+	["debug_dither", DebugDitherScene],
+	["debug_outline", DebugOutlineScene],
 ]);
 
 // <path, [uniforms constructor, textures]>

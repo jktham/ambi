@@ -7,15 +7,15 @@ export class Trigger {
 	onEnter?: Function;
 	onLeave?: Function;
 
-	test(pos: Vec3) {
+	async test(pos: Vec3) {
 		if (this.isInside(pos)) {
 			if (!this.active) {
-				this.onEnter?.();
+				await this.onEnter?.();
 				this.active = true;
 			}
 		} else {
 			if (this.active) {
-				this.onLeave?.();
+				await this.onLeave?.();
 				this.active = false;
 			}
 		}

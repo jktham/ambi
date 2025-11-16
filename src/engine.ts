@@ -64,6 +64,7 @@ export class Engine {
 
 	async setPost(path: string, uniforms: Uniforms, textures: string[]) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
+
 		if (path == "scene") {
 			this.renderer.postShaderOverride = undefined;
 			this.renderer.postUniformsOverride = undefined;
@@ -91,7 +92,7 @@ export class Engine {
 		this.gui.updateResolution(resolution);
 	}
 
-	private update(time: number, deltaTime: number) {
+	private async update(time: number, deltaTime: number) {
 		this.deltaHist.push(deltaTime);
 		if (this.deltaHist.length > 60) {
 			this.deltaHist.shift();
@@ -103,7 +104,7 @@ export class Engine {
         this.input.resetChange();
 		this.scene.update(time, deltaTime, this.camera.position);
 		for (let trigger of this.scene.triggers) {
-			if (trigger.enabled) trigger.test(this.camera.position);
+			if (trigger.enabled) await trigger.test(this.camera.position);
 		}
 		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${this.renderer.resolution.x}x${this.renderer.resolution.y}, ${this.scene.objects.length} (${this.scene.objects.filter(o => o.visible).length}) obj`);
 	}
@@ -116,7 +117,8 @@ export class Engine {
 		let frameRate = 60;
         let t0 = 0;
 		let f = 0;
-        const newFrame = (t: number) => {
+        const newFrame = async (t: number) => {
+			this.scheduledFrameHandle = requestAnimationFrame(newFrame);
             if (t0 == 0) {
                 t0 = t;
             }
@@ -124,10 +126,9 @@ export class Engine {
             if (frameRate == 0 || dt >= 1 / frameRate - 0.001) {
             	t0 = t;
 				f++;
-                this.update(t / 1000, dt);
+                await this.update(t / 1000, dt);
                 this.draw(t / 1000, f);
             }
-            this.scheduledFrameHandle = requestAnimationFrame(newFrame);
         }
 
         this.scheduledFrameHandle = requestAnimationFrame(newFrame);

@@ -108,11 +108,11 @@ export class Gui {
 			}
 		});
 
-		addEventListener("keydown", (e) => {
+		addEventListener("keydown", async (e) => {
 			if ((e.target as HTMLElement).nodeName == "INPUT") {
 				return;
 			}
-			if (!isNaN(Number(e.key)) && Number(e.key) < this.sceneSelect.options.length) {
+			if (!isNaN(Number(e.key)) && Number(e.key) < this.sceneSelect.options.length && e.key != " ") {
 				this.sceneSelect.value = this.sceneSelect.options[Number(e.key)].value;
 				this.sceneSelect.dispatchEvent(new Event("change"));
 			} else if (e.key.toLowerCase() == "p") {
@@ -121,6 +121,8 @@ export class Gui {
 			} else if (e.key.toLowerCase() == "m") {
 				this.cameraModeSelect.value = this.cameraModeSelect.options[(this.cameraModeSelect.selectedIndex + 1) % this.cameraModeSelect.options.length].value;
 				this.cameraModeSelect.dispatchEvent(new Event("change"));
+			} else if (e.key.toLowerCase() == "q") {
+				await engine.setScene("museum");
 			}
 		});
 	}
