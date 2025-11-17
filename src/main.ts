@@ -4,4 +4,4 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const params = new URLSearchParams(window.location.search);
 
 export const engine = new Engine(canvas);
-await engine.run(params.get("scene") || "pier");
+engine.run(params.get("scene") || "pier");
