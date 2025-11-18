@@ -7,10 +7,17 @@ html, body {
 	color: white;
 	font-family: sans-serif;
 	overscroll-behavior: none;
+	overflow: hidden;
 }
 
-canvas {
-	width: 100%;
+body {
+	display: flex;
+	flex-direction: column;
+}
+
+#canvas {
+	width: 100dvw;
+	height: auto;
 	aspect-ratio: 16/9;
 	image-rendering: pixelated;
 }
@@ -21,28 +28,35 @@ canvas {
 	flex-wrap: wrap;
 	margin: 1rem;
 	gap: 1rem;
+	overflow: auto;
 }
 
 #gui-controls {
 	display: flex;
 	flex-direction: column;
 	gap: 0.25rem;
+	width: 20rem;
 }
 
 .row {
 	display: flex;
-	justify-content: space-between;
 	gap: 0.25rem;
 }
 
+.row span {
+	white-space: nowrap;
+}
+
 .row>*:first-child {
-	margin-right: 1rem;
+	margin-right: auto;
+	padding-right: 1rem;
 }
 
 #gui-uniforms {
 	display: flex;
 	flex-direction: column;
 	gap: 0.25rem;
+	width: 20rem;
 }
 
 #gui-uniforms input {
@@ -51,4 +65,22 @@ canvas {
 
 #gui-resolution-input-x, #gui-resolution-input-y {
 	width: 3rem;
+}
+
+@media only screen and (min-aspect-ratio: 3/2) {
+	body {
+		flex-direction: row;
+		width: 100dvw;
+		height: auto;
+	}
+
+	#canvas {
+		width: calc(100dvw - 22rem);
+		height: auto;
+	}
+
+	#gui {
+		flex-direction: column;
+		width: 20rem;
+	}
 }
