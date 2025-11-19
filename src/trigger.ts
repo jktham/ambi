@@ -1,14 +1,15 @@
+import { Bbox } from "./bbox";
 import { Vec3 } from "./vec";
 
 export class Trigger {
-	bbox: [Vec3, Vec3] = [new Vec3(), new Vec3()];
+	bbox: Bbox = new Bbox();
 	enabled: boolean = true;
 	active: boolean = false;
 	onEnter?: Function;
 	onLeave?: Function;
 
 	async test(pos: Vec3) {
-		if (this.isInside(pos)) {
+		if (this.bbox.intersectsPoint(pos)) {
 			if (!this.active) {
 				await this.onEnter?.();
 				this.active = true;
@@ -19,17 +20,6 @@ export class Trigger {
 				this.active = false;
 			}
 		}
-	}
-
-	isInside(pos: Vec3): boolean {
-		let min = this.bbox[0];
-		let max = this.bbox[1];
-
-		return (
-			pos.x > min.x && pos.x < max.x &&
-			pos.y > min.y && pos.y < max.y &&
-			pos.z > min.z && pos.z < max.z
-		);
 	}
 	
 }

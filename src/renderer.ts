@@ -218,6 +218,7 @@ export class Renderer {
             meshes.add(object.mesh);
             object.textures.map(t => textures.add(t));
             if (object.collider) meshes.add(object.collider);
+            if (object.bbox?.mesh) meshes.add(object.bbox.mesh);
         }
         shaders.add("post/base.vert.wgsl");
         shaders.add(this.postShaderOverride ?? scene.postShader);
@@ -252,6 +253,13 @@ export class Renderer {
         if (!this.vertexBuffers.has(object.mesh)) {
             const vertexBuffer = await this.createVertexBuffer(object.mesh);
             this.vertexBuffers.set(object.mesh, vertexBuffer);
+        }
+
+        // bbox (this should go somewhere else probably but eh)
+        if (object.bbox && object.bbox.mesh !== undefined) {
+            let bbox = await this.resources.loadBbox(object.bbox.mesh);
+            object.bbox.min = bbox.min;
+            object.bbox.max = bbox.max;
         }
 
         // uniforms

@@ -9,12 +9,12 @@ import { scenes } from "./data";
 import type { Vec2 } from "./vec";
 
 export class Engine {
-	private resources: Resources;
-	private renderer: Renderer;
-	private camera: Camera;
-	private input: Input;
-	private scene: Scene;
-	private gui: Gui;
+	resources: Resources;
+	renderer: Renderer;
+	camera: Camera;
+	input: Input;
+	scene: Scene;
+	gui: Gui;
 	private deltaHist: number[] = [];
 	private scheduledFrameHandle: number = 0;
 

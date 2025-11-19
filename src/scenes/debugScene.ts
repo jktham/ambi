@@ -1,3 +1,4 @@
+import { Bbox } from "../bbox";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
@@ -27,12 +28,17 @@ export class DebugScene extends Scene {
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
 		obj.collider = "monke.obj";
-		let monkeBbox: [Vec3, Vec3] = [obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)];
-		obj.bbox = monkeBbox;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
 		obj.mask = 200;
+		
+		let monkeBbox = new Bbox();
+		monkeBbox.mesh = obj.mesh;
+		monkeBbox.model = obj.model;
+		obj.bbox = monkeBbox;
+
 		this.objects.push(obj);
+
 
 		obj = new WorldObject();
 		obj.tag = "monke_instanced";
@@ -92,7 +98,7 @@ export class DebugScene extends Scene {
 			obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 1);
 			obj.mesh = "monke.obj";
 			obj.collider = "monke.obj";
-			obj.bbox = [obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)];
+			obj.bbox = new Bbox([obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)]);
 			obj.fragShader = "world/phong.frag.wgsl";
 			obj.fragUniforms = new PhongUniforms();
 			this.objects.push(obj);

@@ -1,3 +1,4 @@
+import { Bbox } from "./bbox";
 import type { Action } from "./input";
 import type { Resources } from "./resources";
 import type { WorldObject } from "./scene";
@@ -155,21 +156,12 @@ export class Camera {
 
 	private getCollisions(position: Vec3, velocity: Vec3): Collision[] {
 		let collisions: Collision[] = [];
+		let cameraBbox = new Bbox([position.sub(velocity.length()*2), position.add(velocity.length()*2)]);
 
 		for (let object of this.objects) {
 			if (object.collider) {
 				if (object.bbox) {
-					let min = object.bbox[0];
-					let max = object.bbox[1];
-					let posMin = position.sub(velocity.length()*2);
-					let posMax = position.add(velocity.length()*2);
-					if (
-						posMax.x < min.x || posMin.x > max.x || 
-						posMax.y < min.y || posMin.y > max.y || 
-						posMax.z < min.z || posMin.z > max.z
-					) {
-						continue;
-					}
+					if (!object.bbox.intersectsBbox(cameraBbox)) continue;
 				}
 
 				let collider = this.colliders.get(object.collider);

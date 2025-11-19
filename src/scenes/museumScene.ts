@@ -1,3 +1,4 @@
+import { Bbox } from "../bbox";
 import { engine } from "../main";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
@@ -69,11 +70,10 @@ export class MuseumScene extends Scene {
 			this.objects.push(obj);
 
 			let t = new Trigger();
-			t.bbox = [
+			t.bbox = new Bbox([
 				positions[i].sub(new Vec3(1, 2, 0.4)),
 				positions[i].add(new Vec3(1, 2, 0.4)),
-			];
-			console.log(t.bbox)
+			]);
 			t.onEnter = async () => await engine.setScene(scenes[i]);
 			this.triggers.push(t);
 		}

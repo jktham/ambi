@@ -1,3 +1,4 @@
+import type { Bbox } from "./bbox";
 import type { CameraMode } from "./camera";
 import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
@@ -15,7 +16,7 @@ export class WorldObject {
 	mask: number = 0;
 	
 	collider?: string = undefined;
-	bbox?: [Vec3, Vec3] = undefined;
+	bbox?: Bbox = undefined;
 
 	vertShader: string = "world/base.vert.wgsl";
 	fragShader: string = "world/base.frag.wgsl";

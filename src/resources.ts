@@ -1,3 +1,4 @@
+import { Bbox } from "./bbox";
 import { Vec3 } from "./vec";
 
 export class Resources {
@@ -5,6 +6,7 @@ export class Resources {
 	private meshes: Map<string, Float32Array> = new Map();
 	private textures: Map<string, ImageData> = new Map();
 	private colliders: Map<string, Vec3[][]> = new Map();
+	private bboxes: Map<string, Bbox> = new Map();
 
 	async loadShader(name: string): Promise<string> {
 		let cached = this.shaders.get(name);
@@ -57,7 +59,21 @@ export class Resources {
 		} else {
 			let mesh = await this.loadMesh(name);
 			let collider = this.parseCollider(mesh);
+			this.colliders.set(name, collider);
 			return collider;
+		}
+	}
+
+	// returns new bbox without model or mesh, only use min/max
+	async loadBbox(name: string): Promise<Bbox> {
+		let cached = this.bboxes.get(name);
+		if (cached) {
+			return cached;
+		} else {
+			let mesh = await this.loadMesh(name);
+			let bbox = this.parseBbox(mesh);
+			this.bboxes.set(name, bbox);
+			return bbox;
 		}
 	}
 
@@ -182,6 +198,23 @@ export class Resources {
 			collider.push([v0, v1, v2]);
 		}
 		return collider;
+	}
+
+	private parseBbox(mesh: Float32Array): Bbox {
+		let min = new Vec3(Infinity, Infinity, Infinity);
+		let max = new Vec3(-Infinity, -Infinity, -Infinity);
+
+		for (let i=0; i<mesh.length; i+=12) {
+			let v = new Vec3(mesh[i], mesh[i+1], mesh[i+2]);
+			min.x = Math.min(min.x, v.x);
+			min.y = Math.min(min.y, v.y);
+			min.z = Math.min(min.z, v.z);
+			max.x = Math.max(max.x, v.x);
+			max.y = Math.max(max.y, v.y);
+			max.z = Math.max(max.z, v.z);
+		}
+
+		return new Bbox([min, max]);
 	}
 
 	private async preprocessShader(file: string, path: string): Promise<string> {

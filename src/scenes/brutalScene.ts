@@ -1,3 +1,4 @@
+import { Bbox } from "../bbox";
 import type { CameraMode } from "../camera";
 import { Scene, WorldObject } from "../scene";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
@@ -34,7 +35,7 @@ export class BrutalScene extends Scene {
 				colliderObj.visible = false;
 				colliderObj.model = Mat4.trs(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
 				colliderObj.collider = tile.mesh;
-				colliderObj.bbox = [colliderObj.model.transform(new Vec3()).sub(scale/2), colliderObj.model.transform(new Vec3()).add(scale/2)];
+				colliderObj.bbox = new Bbox([colliderObj.model.transform(new Vec3()).sub(scale/2), colliderObj.model.transform(new Vec3()).add(scale/2)]);
 				this.objects.push(colliderObj);
 
 				instanceModels.get(tile.mesh)!.push(colliderObj.model);
