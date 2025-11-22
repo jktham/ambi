@@ -220,6 +220,9 @@ export class Renderer {
             if (object.collider) meshes.add(object.collider);
             if (object.bbox?.mesh) meshes.add(object.bbox.mesh);
         }
+        for (let trigger of scene.triggers) {
+            if (trigger.bbox?.mesh) meshes.add(trigger.bbox.mesh);
+        }
         shaders.add("post/base.vert.wgsl");
         shaders.add(this.postShaderOverride ?? scene.postShader);
 
@@ -238,6 +241,13 @@ export class Renderer {
                 continue;
             }
             await this.initObject(object);
+        }
+        for (let trigger of scene.triggers) {
+            if (trigger.bbox && trigger.bbox.mesh !== undefined) {
+                let bbox = await this.resources.loadBbox(trigger.bbox.mesh);
+                trigger.bbox.min = bbox.min;
+                trigger.bbox.max = bbox.max;
+            }
         }
     }
 

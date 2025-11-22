@@ -3,7 +3,7 @@ import { engine } from "../main";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
-import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
+import { Vec2, Vec3, Vec4 } from "../vec";
 
 export class MuseumScene extends Scene {
 	name = "museum";
@@ -37,11 +37,6 @@ export class MuseumScene extends Scene {
 		this.objects.push(obj);
 
 		let scenes = ["debug", "pier", "brutal"];
-		let positions = [
-			new Vec3(-5, -0.01, -13),
-			new Vec3(0, -0.01, -13),
-			new Vec3(5, -0.01, -13),
-		];
 		let colors = [
 			new Vec4(1, 1, 1, 1),
 			new Vec4(1, 1, 1, 1),
@@ -50,9 +45,7 @@ export class MuseumScene extends Scene {
 
 		for (let i=0; i<scenes.length; i++) {
 			obj = new WorldObject();
-			obj.model = Mat4.translate(positions[i]);
-			obj.mesh = "museum/door.obj";
-			// obj.textures[0] = `doors/${scenes[i]}.png`;
+			obj.mesh = `museum/door_${i}.obj`;
 			obj.textures[0] = "blank.png";
 			obj.color = colors[i];
 			obj.fragShader = "world/noise.frag.wgsl";
@@ -60,9 +53,8 @@ export class MuseumScene extends Scene {
 			this.objects.push(obj);
 
 			obj = new WorldObject();
-			obj.model = Mat4.translate(positions[i]);
-			obj.mesh = "museum/doorframe.obj";
-			obj.collider = "museum/doorframe.obj";
+			obj.mesh = `museum/doorframe_${i}.obj`;
+			obj.collider = `museum/doorframe_${i}.obj`;
 			obj.textures[0] = "blank.png";
 			obj.mask = 2;
 			obj.fragShader = "world/phong.frag.wgsl";
@@ -70,12 +62,12 @@ export class MuseumScene extends Scene {
 			this.objects.push(obj);
 
 			let t = new Trigger();
-			t.bbox = new Bbox([
-				positions[i].sub(new Vec3(1, 2, 0.4)),
-				positions[i].add(new Vec3(1, 2, 0.4)),
-			]);
+			t.bbox = new Bbox();
+			t.bbox.mesh = `museum/door_${i}.obj`;
 			t.onEnter = async () => await engine.setScene(scenes[i]);
 			this.triggers.push(t);
+
+			console.log(t)
 		}
 
 	}

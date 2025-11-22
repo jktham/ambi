@@ -1,7 +1,7 @@
 import { Mat4, Vec3 } from "./vec";
 
 export class Bbox {
-	min: Vec3 = new Vec3(Infinity, Infinity, Infinity);
+	min: Vec3 = new Vec3(Infinity, Infinity, Infinity); // never intersects
 	max: Vec3 = new Vec3(-Infinity, -Infinity, -Infinity);
 	model: Mat4 = new Mat4();
 	mesh?: string;
