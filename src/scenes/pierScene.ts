@@ -59,18 +59,20 @@ export class PierScene extends Scene {
 		snow.color = new Vec4(0.9, 0.9, 0.9, 1.0);
 		snow.fragShader = "world/ps1.frag.wgsl";
 		snow.vertShader = "world/ps1_instanced.vert.wgsl";
-		snow.vertUniforms = new InstancedUniforms();
-		(snow.vertUniforms as InstancedUniforms).instanceCount = 1000;
-		for (let i=0; i<(snow.vertUniforms as InstancedUniforms).instanceCount; i++) {
+		
+		let snowUniforms = new InstancedUniforms();
+		snowUniforms.instanceCount = 1000;
+		for (let i=0; i<snowUniforms.instanceCount; i++) {
 			let range = 20;
 			let model = Mat4.trs(
 				new Vec3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2), 
 				new Vec3(0, Math.PI * Math.random() * 2, 0), 
 				1
 			);
-			(snow.vertUniforms as InstancedUniforms).models.push(model);
-			(snow.vertUniforms as InstancedUniforms).normals.push(model.inverse().transpose());
+			snowUniforms.models.push(model);
+			snowUniforms.normals.push(model.inverse().transpose());
 		}
+		snow.vertUniforms = snowUniforms;
 		this.objects.push(snow);
 
 		let lantern = new WorldObject();
@@ -101,7 +103,7 @@ export class PierScene extends Scene {
 				model = model.mul(Mat4.translate(new Vec3(0, 10, -5)));
 			}
 			snowUniforms.models[i] = model;
-			snowUniforms.normals[i] = model.transpose();
+			snowUniforms.normals[i] = model.inverse().transpose();
 		}
 	}
 }

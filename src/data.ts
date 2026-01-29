@@ -6,12 +6,14 @@ import { DebugOutlineScene } from "./scenes/debugOutlineScene";
 import { PierScene } from "./scenes/pierScene";
 import { PostOutlineUniforms, PostPS1Uniforms, Uniforms } from "./uniforms";
 import { MuseumScene } from "./scenes/museumScene";
+import { FieldScene } from "./scenes/fieldScene";
 
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
 	["museum", MuseumScene],
 	["pier", PierScene],
 	["brutal", BrutalScene],
+	["field", FieldScene],
 	["debug", DebugScene],
 	["debug_dither", DebugDitherScene],
 	["debug_outline", DebugOutlineScene],
