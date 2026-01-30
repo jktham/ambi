@@ -110,6 +110,7 @@ export class Engine {
 	}
 
 	private draw(time: number, frame: number) {
+		this.camera.updateView(); // in case position/rotation changed by update
 		this.renderer.drawScene(this.scene, this.camera, time, frame);
 	}
 

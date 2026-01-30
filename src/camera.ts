@@ -99,7 +99,7 @@ export class Camera {
 		this.updateView();
 	}
 
-	private updateView() {
+	updateView() {
 		this.front = Mat4.rotate(new Vec3(this.rotation.y, this.rotation.x, 0)).inverse().transform(new Vec3(0, 0, -1)).normalize();
 		this.right = this.front.cross(new Vec3(0, 1, 0)).normalize();
 		this.up = this.right.cross(this.front).normalize();
