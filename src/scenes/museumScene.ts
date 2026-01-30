@@ -1,16 +1,23 @@
 import { Bbox } from "../bbox";
+import type { CameraMode } from "../camera";
 import { engine } from "../main";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
-import { Vec2, Vec3, Vec4 } from "../vec";
+import { rnd } from "../utils";
+import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class MuseumScene extends Scene {
 	name = "museum";
 	resolution = new Vec2(1920, 1080);
-	cameraMode: "fly" | "walk" = "walk";
+	cameraMode: CameraMode = "walk";
+	spawnPos: Vec3 = new Vec3(0, 2, 0);
 	postShader = "post/outline.frag.wgsl";
 	postUniforms = new PostOutlineUniforms();
+
+	roomSlots: number[] = [0, 1, 2, 3, 4]; // CNESW
+	roomObjects: WorldObject[][] = [[], [], [], [], []];
+	roomTriggers: Trigger[][] = [[], [], [], [], []];
 
 	constructor() {
 		super();
@@ -27,52 +34,290 @@ export class MuseumScene extends Scene {
 		phong.diffuseFactor = 0.2;
 		phong.specularFactor = 0.0;
 
+		// room 0
+		let r = 0;
+		let [o, t] = this.createRoom(phong);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+		
+		[o, t] = this.createPortals(phong, [["pier", "field"], ["brutal", "debug"], ["pier", "field"], ["debug_dither", "debug_outline"]]);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+
+		// room 1
+		r = 1;
+		[o, t] = this.createRoom(phong);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+
 		let obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(1, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+
+		[o, t] = this.createPortals(phong, [["", ""], ["", ""], ["", ""], ["", ""], ["", ""]]);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+		
+		// room 2
+		r = 2;
+		[o, t] = this.createRoom(phong);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+
+		obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 1, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+		
+		[o, t] = this.createPortals(phong, [["", ""], ["", ""], ["", ""], ["", ""], ["", ""]]);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+
+		// room 3
+		r = 3;
+		[o, t] = this.createRoom(phong);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+
+		obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 1, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+		
+		[o, t] = this.createPortals(phong, [["", ""], ["", ""], ["", ""], ["", ""], ["", ""]]);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+
+		// room 4
+		r = 4;
+		[o, t] = this.createRoom(phong);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+
+		obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(1, 0, 1, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+		
+		[o, t] = this.createPortals(phong, [["", ""], ["", ""], ["", ""], ["", ""], ["", ""]]);
+		this.roomObjects[r].push(...o);
+		this.roomTriggers[r].push(...t);
+
+		// concat
+		this.applyRoomOffsets();
+		this.objects.push(...this.roomObjects.flat());
+		this.triggers.push(...this.roomTriggers.flat());
+	}
+
+	update(time: number, deltaTime: number, position: Vec3) {
+		if (position.z < -22) {
+			position.z += 44;
+			this.applyRoomOffsets(-1);
+			this.shuffleRooms(1);
+			this.applyRoomOffsets();
+		}
+		if (position.x > 22) {
+			position.x -= 44;
+			this.applyRoomOffsets(-1);
+			this.shuffleRooms(2);
+			this.applyRoomOffsets();
+		}
+		if (position.z > 22) {
+			position.z -= 44;
+			this.applyRoomOffsets(-1);
+			this.shuffleRooms(3);
+			this.applyRoomOffsets();
+		}
+		if (position.x < -22) {
+			position.x += 44;
+			this.applyRoomOffsets(-1);
+			this.shuffleRooms(4);
+			this.applyRoomOffsets();
+		}
+	}
+
+	applyRoomOffsets(factor: number = 1) {
+		let offsets = [
+			new Vec3(0, 0, 0),
+			new Vec3(0, 0, -44),
+			new Vec3(44, 0, 0),
+			new Vec3(0, 0, 44),
+			new Vec3(-44, 0, 0),
+		];
+		offsets = offsets.map(v => v.mul(factor));
+
+		for (let r=0; r<5; r++) {
+			let offset = offsets[this.roomSlots.findIndex(v => v == r)];
+			for (let obj of this.roomObjects[r]) {
+				obj.model = Mat4.translate(offset).mul(obj.model);
+			}
+			for (let t of this.roomTriggers[r]) {
+				t.bbox.model = Mat4.translate(offset).mul(t.bbox.model);
+			}
+		}
+	}
+
+	shuffleRooms(nextSlot: number) {
+		let currSlot = 0;
+		let prevSlot = [-1, 3, 4, 1, 2][nextSlot];
+
+		let currRoom = this.roomSlots[currSlot];
+		let nextRoom = this.roomSlots[nextSlot];
+
+		this.roomSlots[currSlot] = nextRoom;
+		this.roomSlots[prevSlot] = currRoom;
+
+		let freeSlots = [0, 1, 2, 3, 4].filter(s => s != currSlot && s != prevSlot);
+		let freeRooms = [0, 1, 2, 3, 4].filter(r => r != nextRoom && r != currRoom);
+
+		for (let slot of freeSlots) {
+			let randomRoom = freeRooms[Math.floor(rnd(0, freeRooms.length))];
+			freeRooms = freeRooms.filter(r => r != randomRoom);
+			this.roomSlots[slot] = randomRoom;
+		}
+	}
+
+	createRoom(phong: PhongUniforms): [WorldObject[], Trigger[]] {
+		let objects: WorldObject[] = [];
+		let triggers: Trigger[] = [];
+
+		let obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "museum/room.obj";
 		obj.collider = "museum/room.obj";
 		obj.textures[0] = "blank.png";
 		obj.mask = 0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
-		this.objects.push(obj);
-
-		let scenes = ["debug", "pier", "brutal"];
-		let colors = [
-			new Vec4(1, 1, 1, 1),
-			new Vec4(1, 1, 1, 1),
-			new Vec4(1, 1, 1, 1),
+		objects.push(obj);
+		
+		let positions = [
+			new Vec3(0, 0, -20),
+			new Vec3(20, 0, 0),
+			new Vec3(0, 0, 20),
+			new Vec3(-20, 0, 0),
 		];
-
-		for (let i=0; i<scenes.length; i++) {
-			obj = new WorldObject();
-			obj.mesh = `museum/door_${i}.obj`;
-			obj.textures[0] = "blank.png";
-			obj.color = colors[i];
-			obj.fragShader = "world/noise.frag.wgsl";
-			obj.mask = 1;
-			this.objects.push(obj);
-
-			obj = new WorldObject();
-			obj.mesh = `museum/doorframe_${i}.obj`;
-			obj.collider = `museum/doorframe_${i}.obj`;
+		let rotations = [
+			new Vec3(0, Math.PI * 0, 0),
+			new Vec3(0, Math.PI * 1.5, 0),
+			new Vec3(0, Math.PI * 1, 0),
+			new Vec3(0, Math.PI * 0.5, 0),
+		];
+		for (let i=0; i<4; i++) {
+			let obj = new WorldObject();
+			obj.model = Mat4.trs(positions[i], rotations[i], 1);
+			obj.mesh = `museum/tunnel.obj`;
+			obj.collider = `museum/tunnel.obj`;
 			obj.textures[0] = "blank.png";
 			obj.mask = 2;
 			obj.fragShader = "world/phong.frag.wgsl";
 			obj.fragUniforms = phong;
-			this.objects.push(obj);
-
-			let t = new Trigger();
-			t.bbox = new Bbox();
-			t.bbox.mesh = `museum/door_${i}.obj`;
-			t.onEnter = async () => await engine.setScene(scenes[i]);
-			this.triggers.push(t);
-
-			console.log(t)
+			objects.push(obj);
 		}
 
+		positions = [
+			new Vec3(17, 0, -17),
+			new Vec3(17, 0, 17),
+			new Vec3(-17, 0, 17),
+			new Vec3(-17, 0, -17),
+		];
+		for (let i=0; i<4; i++) {
+			let obj = new WorldObject();
+			obj.model = Mat4.translate(positions[i]);
+			obj.mesh = `museum/pillar.obj`;
+			obj.collider = `museum/pillar.obj`;
+			obj.textures[0] = "blank.png";
+			obj.mask = 2;
+			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragUniforms = phong;
+			objects.push(obj);
+		}
+
+		return [objects, triggers];
 	}
 
-	update(time: number, deltaTime: number, position: Vec3) {
-		
+	createPortals(phong: PhongUniforms, scenes: string[][]): [WorldObject[], Trigger[]] {
+		let objects: WorldObject[] = [];
+		let triggers: Trigger[] = [];
+
+		let positions = [
+			[new Vec3(-8, 0, -20), new Vec3(8, 0, -20)],
+			[new Vec3(20, 0, -8), new Vec3(20, 0, 8)],
+			[new Vec3(8, 0, 20), new Vec3(-8, 0, 20)],
+			[new Vec3(-20, 0, 8), new Vec3(-20, 0, -8)],
+		];
+		let rotations = [
+			new Vec3(0, Math.PI * 0, 0),
+			new Vec3(0, Math.PI * 1.5, 0),
+			new Vec3(0, Math.PI * 1, 0),
+			new Vec3(0, Math.PI * 0.5, 0),
+		];
+		for (let i=0; i<4; i++) {
+			for (let j=0; j<2; j++) {
+				if (scenes[i][j] == "") {
+					let obj = new WorldObject();
+					obj.model = Mat4.trs(positions[i][j], rotations[i], 1);
+					obj.mesh = `museum/portal_wall.obj`;
+					obj.collider = `museum/portal_wall.obj`;
+					obj.textures[0] = "blank.png";
+					obj.mask = 0;
+					obj.fragShader = "world/phong.frag.wgsl";
+					obj.fragUniforms = phong;
+					objects.push(obj);
+					continue;
+				}
+
+				let obj = new WorldObject();
+				obj.model = Mat4.trs(positions[i][j], rotations[i], 1);
+				obj.mesh = `museum/portal_h.obj`;
+				obj.textures[0] = "blank.png";
+				obj.fragShader = "world/noise.frag.wgsl";
+				obj.mask = 1;
+				objects.push(obj);
+
+				obj = new WorldObject();
+				obj.model = Mat4.trs(positions[i][j], rotations[i], 1);
+				obj.mesh = `museum/portal_frame.obj`;
+				obj.collider = `museum/portal_frame.obj`;
+				obj.textures[0] = "blank.png";
+				obj.mask = 2;
+				obj.fragShader = "world/phong.frag.wgsl";
+				obj.fragUniforms = phong;
+				objects.push(obj);
+
+				let t = new Trigger();
+				t.bbox = new Bbox();
+				t.bbox.model = Mat4.translate(positions[i][j]);
+				t.bbox.mesh = `museum/portal_${["h", "v", "h", "v"][i]}.obj`;
+				t.onEnter = async () => await engine.setScene(scenes[i][j]);
+				triggers.push(t);
+			}
+		}
+		return [objects, triggers];
 	}
 }

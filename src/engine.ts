@@ -106,11 +106,11 @@ export class Engine {
 		for (let trigger of this.scene.triggers) {
 			if (trigger.enabled) await trigger.test(this.camera.position);
 		}
+		this.camera.updateView(); // in case position/rotation changed by update
 		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${this.renderer.resolution.x}x${this.renderer.resolution.y}, ${this.scene.objects.length} (${this.scene.objects.filter(o => o.visible).length}) obj`);
 	}
 
 	private draw(time: number, frame: number) {
-		this.camera.updateView(); // in case position/rotation changed by update
 		this.renderer.drawScene(this.scene, this.camera, time, frame);
 	}
 
