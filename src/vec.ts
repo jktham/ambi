@@ -13,46 +13,48 @@ export class Vec2 {
 
 	add(op: number | Vec2): Vec2 {
 		if (op instanceof Vec2) {
-			return new Vec2(...this.data.map((v, i) => v + op.data[i]));
+			return new Vec2(this.x+op.x, this.y+op.y);
 		} else {
-			return new Vec2(...this.data.map(v => v + op));
+			return new Vec2(this.x+op, this.y+op);
 		}
 	}
 
 	sub(op: number | Vec2): Vec2 {
 		if (op instanceof Vec2) {
-			return new Vec2(...this.data.map((v, i) => v - op.data[i]));
+			return new Vec2(this.x-op.x, this.y-op.y);
 		} else {
-			return new Vec2(...this.data.map(v => v - op));
+			return new Vec2(this.x-op, this.y-op);
 		}
 	}
 
 	mul(op: number | Vec2): Vec2 {
 		if (op instanceof Vec2) {
-			return new Vec2(...this.data.map((v, i) => v * op.data[i]));
+			return new Vec2(this.x*op.x, this.y*op.y);
 		} else {
-			return new Vec2(...this.data.map(v => v * op));
+			return new Vec2(this.x*op, this.y*op);
 		}
 	}
 
 	div(op: number | Vec2): Vec2 {
 		if (op instanceof Vec2) {
-			return new Vec2(...this.data.map((v, i) => v / op.data[i]));
+			return new Vec2(this.x/op.x, this.y/op.y);
 		} else {
-			return new Vec2(...this.data.map(v => v / op));
+			return new Vec2(this.x/op, this.y/op);
 		}
 	}
 
 	dot(op: Vec2): number {
-		return this.data.map((v, i) => v * op.data[i]).reduce((sum, v) => sum + v, 0);
+		return this.x*op.x + this.y*op.y;
 	}
 
 	length(): number {
-		return Math.sqrt(this.data.map(v => v**2).reduce((sum, v) => sum + v, 0));
+		return Math.sqrt(this.x**2 + this.y**2);
 	}
 
 	normalize(): Vec2 {
-		return this.mul(1/this.length());
+		let len = this.length();
+		if (len == 0) { return this };
+		return this.mul(1/len);
 	}
 }
 
@@ -73,38 +75,38 @@ export class Vec3 {
 
 	add(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
-			return new Vec3(...this.data.map((v, i) => v + op.data[i]));
+			return new Vec3(this.x+op.x, this.y+op.y, this.z+op.z);
 		} else {
-			return new Vec3(...this.data.map(v => v + op));
+			return new Vec3(this.x+op, this.y+op, this.z+op);
 		}
 	}
 
 	sub(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
-			return new Vec3(...this.data.map((v, i) => v - op.data[i]));
+			return new Vec3(this.x-op.x, this.y-op.y, this.z-op.z);
 		} else {
-			return new Vec3(...this.data.map(v => v - op));
+			return new Vec3(this.x-op, this.y-op, this.z-op);
 		}
 	}
 
 	mul(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
-			return new Vec3(...this.data.map((v, i) => v * op.data[i]));
+			return new Vec3(this.x*op.x, this.y*op.y, this.z*op.z);
 		} else {
-			return new Vec3(...this.data.map(v => v * op));
+			return new Vec3(this.x*op, this.y*op, this.z*op);
 		}
 	}
 
 	div(op: number | Vec3): Vec3 {
 		if (op instanceof Vec3) {
-			return new Vec3(...this.data.map((v, i) => v / op.data[i]));
+			return new Vec3(this.x/op.x, this.y/op.y, this.z/op.z);
 		} else {
-			return new Vec3(...this.data.map(v => v / op));
+			return new Vec3(this.x/op, this.y/op, this.z/op);
 		}
 	}
 
 	dot(op: Vec3): number {
-		return this.data.map((v, i) => v * op.data[i]).reduce((sum, v) => sum + v, 0);
+		return this.x*op.x + this.y*op.y + this.z*op.z;
 	}
 	
 	cross(op: Vec3): Vec3 {
@@ -116,12 +118,13 @@ export class Vec3 {
 	}
 
 	length(): number {
-		return Math.sqrt(this.data.map(v => v**2).reduce((sum, v) => sum + v, 0));
+		return Math.sqrt(this.x**2 + this.y**2 + this.z**2);
 	}
 
 	normalize(): Vec3 {
-		if (this.length() == 0) { return this };
-		return this.mul(1/this.length());
+		let len = this.length();
+		if (len == 0) { return this };
+		return this.mul(1/len);
 	}
 }
 
@@ -144,46 +147,48 @@ export class Vec4 {
 
 	add(op: number | Vec4): Vec4 {
 		if (op instanceof Vec4) {
-			return new Vec4(...this.data.map((v, i) => v + op.data[i]));
+			return new Vec4(this.x+op.x, this.y+op.y, this.z+op.z);
 		} else {
-			return new Vec4(...this.data.map(v => v + op));
+			return new Vec4(this.x+op, this.y+op, this.z+op);
 		}
 	}
 
 	sub(op: number | Vec4): Vec4 {
 		if (op instanceof Vec4) {
-			return new Vec4(...this.data.map((v, i) => v - op.data[i]));
+			return new Vec4(this.x-op.x, this.y-op.y, this.z-op.z, this.w-op.w);
 		} else {
-			return new Vec4(...this.data.map(v => v - op));
+			return new Vec4(this.x-op, this.y-op, this.z-op, this.w-op);
 		}
 	}
 
 	mul(op: number | Vec4): Vec4 {
 		if (op instanceof Vec4) {
-			return new Vec4(...this.data.map((v, i) => v * op.data[i]));
+			return new Vec4(this.x*op.x, this.y*op.y, this.z*op.z, this.w*op.w);
 		} else {
-			return new Vec4(...this.data.map(v => v * op));
+			return new Vec4(this.x*op, this.y*op, this.z*op, this.w*op);
 		}
 	}
 
 	div(op: number | Vec4): Vec4 {
 		if (op instanceof Vec4) {
-			return new Vec4(...this.data.map((v, i) => v / op.data[i]));
+			return new Vec4(this.x/op.x, this.y/op.y, this.z/op.z, this.w/op.w);
 		} else {
-			return new Vec4(...this.data.map(v => v / op));
+			return new Vec4(this.x/op, this.y/op, this.z/op, this.w/op);
 		}
 	}
 
 	dot(op: Vec4): number {
-		return this.data.map((v, i) => v * op.data[i]).reduce((sum, v) => sum + v, 0);
+		return this.x*op.x + this.y*op.y + this.z*op.z + this.w*op.w;
 	}
 
 	length(): number {
-		return Math.sqrt(this.data.map(v => v**2).reduce((sum, v) => sum + v, 0));
+		return Math.sqrt(this.x**2 + this.y**2 + this.z**2 + this.w**2);
 	}
 
 	normalize(): Vec4 {
-		return this.mul(1/this.length());
+		let len = this.length();
+		if (len == 0) { return this };
+		return this.mul(1/len);
 	}
 }
 
@@ -208,17 +213,31 @@ export class Mat4 {
 
 	mul(op: number | Mat4): Mat4 {
 		if (op instanceof Mat4) {
-			let result: number[] = new Array(16).fill(0);
-			for(let k=0; k<=12; k+=4){
-				for(let i=0; i<4; i++){
-					for (let j=0, b=0; j<4; j++, b+=4){
-						result[k+i] += this.data[k+j] * op.data[b+i];
-					}
-				}
-			}
-			return new Mat4(result);
+			return new Mat4([
+				this.data[0] * op.data[0] + this.data[1] * op.data[4] + this.data[2] * op.data[8] + this.data[3] * op.data[12],
+				this.data[0] * op.data[1] + this.data[1] * op.data[5] + this.data[2] * op.data[9] + this.data[3] * op.data[13],
+				this.data[0] * op.data[2] + this.data[1] * op.data[6] + this.data[2] * op.data[10] + this.data[3] * op.data[14],
+				this.data[0] * op.data[3] + this.data[1] * op.data[7] + this.data[2] * op.data[11] + this.data[3] * op.data[15],
+				this.data[4] * op.data[0] + this.data[5] * op.data[4] + this.data[6] * op.data[8] + this.data[7] * op.data[12],
+				this.data[4] * op.data[1] + this.data[5] * op.data[5] + this.data[6] * op.data[9] + this.data[7] * op.data[13],
+				this.data[4] * op.data[2] + this.data[5] * op.data[6] + this.data[6] * op.data[10] + this.data[7] * op.data[14],
+				this.data[4] * op.data[3] + this.data[5] * op.data[7] + this.data[6] * op.data[11] + this.data[7] * op.data[15],
+				this.data[8] * op.data[0] + this.data[9] * op.data[4] + this.data[10] * op.data[8] + this.data[11] * op.data[12],
+				this.data[8] * op.data[1] + this.data[9] * op.data[5] + this.data[10] * op.data[9] + this.data[11] * op.data[13],
+				this.data[8] * op.data[2] + this.data[9] * op.data[6] + this.data[10] * op.data[10] + this.data[11] * op.data[14],
+				this.data[8] * op.data[3] + this.data[9] * op.data[7] + this.data[10] * op.data[11] + this.data[11] * op.data[15],
+				this.data[12] * op.data[0] + this.data[13] * op.data[4] + this.data[14] * op.data[8] + this.data[15] * op.data[12],
+				this.data[12] * op.data[1] + this.data[13] * op.data[5] + this.data[14] * op.data[9] + this.data[15] * op.data[13],
+				this.data[12] * op.data[2] + this.data[13] * op.data[6] + this.data[14] * op.data[10] + this.data[15] * op.data[14],
+				this.data[12] * op.data[3] + this.data[13] * op.data[7] + this.data[14] * op.data[11] + this.data[15] * op.data[15],
+			]);
 		} else {
-			return new Mat4([...this.data].map((v) => v * op));
+			return new Mat4([
+				this.data[0]*op, this.data[1]*op, this.data[2]*op, this.data[3]*op,
+				this.data[4]*op, this.data[5]*op, this.data[6]*op, this.data[7]*op,
+				this.data[8]*op, this.data[9]*op, this.data[10]*op, this.data[11]*op,
+				this.data[12]*op, this.data[13]*op, this.data[14]*op, this.data[15]*op
+			]);
 		}
 	}
 

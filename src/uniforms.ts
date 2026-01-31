@@ -4,13 +4,14 @@ export class Uniforms {
 	name = "Uniforms";
 	useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag
 	instanceCount = 0; // draw instanced if > 0
+	data = new Float32Array(this.size());
 	
 	size(): number {
 		return 0; // * 4 bytes
 	}
 
 	toArray(): Float32Array {
-		return new Float32Array(this.size());
+		return this.data;
 	}
 }
 
@@ -32,18 +33,17 @@ export class BaseUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		let data = new Float32Array(this.size());
-		data[0] = this.time;
-		data[1] = this.frame;
-		data[2] = this.mask;
-		data.subarray(4, 4+2).set(this.resolution.data);
-		data.subarray(8, 8+4).set(this.color.data);
-		data.subarray(12, 12+3).set(this.viewPos.data);
-		data.subarray(16, 16+16).set(this.model.transpose().data);
-		data.subarray(32, 32+16).set(this.view.transpose().data);
-		data.subarray(48, 48+16).set(this.projection.transpose().data);
-		data.subarray(64, 64+16).set(this.normal.transpose().data);
-		return data;
+		this.data[0] = this.time;
+		this.data[1] = this.frame;
+		this.data[2] = this.mask;
+		this.data.subarray(4, 4+2).set(this.resolution.data);
+		this.data.subarray(8, 8+4).set(this.color.data);
+		this.data.subarray(12, 12+3).set(this.viewPos.data);
+		this.data.subarray(16, 16+16).set(this.model.transpose().data);
+		this.data.subarray(32, 32+16).set(this.view.transpose().data);
+		this.data.subarray(48, 48+16).set(this.projection.transpose().data);
+		this.data.subarray(64, 64+16).set(this.normal.transpose().data);
+		return this.data;
 	}
 }
 
@@ -61,14 +61,13 @@ export class PhongUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		let data = new Float32Array(this.size());
-		data[0] = this.ambientFactor;
-		data[1] = this.diffuseFactor;
-		data[2] = this.specularFactor;
-		data[3] = this.specularExponent;
-		data.subarray(4, 4+3).set(this.lightPos.data);
-		data.subarray(8, 8+4).set(this.lightColor.data);
-		return data;
+		this.data[0] = this.ambientFactor;
+		this.data[1] = this.diffuseFactor;
+		this.data[2] = this.specularFactor;
+		this.data[3] = this.specularExponent;
+		this.data.subarray(4, 4+3).set(this.lightPos.data);
+		this.data.subarray(8, 8+4).set(this.lightColor.data);
+		return this.data;
 	}
 }
 
@@ -84,13 +83,15 @@ export class InstancedUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		let data = new Float32Array(this.size());
-		data[0] = this.instanceCount;
-		for (let i=0; i<this.instanceCount; i++) {
-			data.subarray(4 + i*32, 4 + (i+1)*32 + 16).set(this.models[i].transpose().data);
-			data.subarray(4 + 16 + i*32, 4 + 16 + (i+1)*32 + 16).set(this.normals[i].transpose().data);
+		if (this.data.length != this.size()) {
+			this.data = new Float32Array(this.size());
 		}
-		return data;
+		this.data[0] = this.instanceCount;
+		for (let i=0; i<this.instanceCount; i++) {
+			this.data.subarray(4 + i*32, 4 + (i+1)*32 + 16).set(this.models[i].transpose().data);
+			this.data.subarray(4 + 16 + i*32, 4 + 16 + (i+1)*32 + 16).set(this.normals[i].transpose().data);
+		}
+		return this.data;
 	}
 }
 
@@ -105,11 +106,10 @@ export class PostBaseUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		let data = new Float32Array(this.size());
-		data[0] = this.time;
-		data[1] = this.frame;
-		data.subarray(2, 2+2).set(this.resolution.data);
-		return data;
+		this.data[0] = this.time;
+		this.data[1] = this.frame;
+		this.data.subarray(2, 2+2).set(this.resolution.data);
+		return this.data;
 	}
 }
 
@@ -124,11 +124,10 @@ export class PostPS1Uniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		let data = new Float32Array(this.size());
-		data[0] = this.fogStart;
-		data[1] = this.fogEnd;
-		data.subarray(4, 4+4).set(this.fogColor.data);
-		return data;
+		this.data[0] = this.fogStart;
+		this.data[1] = this.fogEnd;
+		this.data.subarray(4, 4+4).set(this.fogColor.data);
+		return this.data;
 	}
 }
 
@@ -144,10 +143,9 @@ export class PostOutlineUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		let data = new Float32Array(this.size());
-		data.subarray(0, 16).set(this.scale);
-		data.subarray(16, 32).set(this.mode);
-		data.subarray(32, 96).set(this.color.map(c => c.data).flat());
-		return data;
+		this.data.subarray(0, 16).set(this.scale);
+		this.data.subarray(16, 32).set(this.mode);
+		this.data.subarray(32, 96).set(this.color.map(c => c.data).flat());
+		return this.data;
 	}
 }
