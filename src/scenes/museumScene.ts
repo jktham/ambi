@@ -175,11 +175,14 @@ export class MuseumScene extends Scene {
 			let offset = offsets[this.roomSlots.findIndex(v => v == r)];
 			for (let obj of this.roomObjects[r]) {
 				obj.model = Mat4.translate(offset).mul(obj.model);
+				obj.collidable = this.roomSlots[0] == r; // only collidable if in current room
 			}
 			for (let t of this.roomTriggers[r]) {
 				t.bbox.model = Mat4.translate(offset).mul(t.bbox.model);
+				t.enabled = this.roomSlots[0] == r;
 			}
 		}
+
 	}
 
 	shuffleRooms(nextSlot: number) {

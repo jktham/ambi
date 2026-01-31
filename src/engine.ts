@@ -107,7 +107,7 @@ export class Engine {
 			if (trigger.enabled) await trigger.test(this.camera.position);
 		}
 		this.camera.updateView(); // in case position/rotation changed by update
-		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${this.renderer.resolution.x}x${this.renderer.resolution.y}, ${this.scene.objects.length} (${this.scene.objects.filter(o => o.visible).length}) obj`);
+		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} ms, ${this.scene.objects.length}/${this.scene.objects.filter(o => o.visible).length}/${this.scene.objects.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
 	}
 
 	private draw(time: number, frame: number) {

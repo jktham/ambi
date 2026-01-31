@@ -128,7 +128,7 @@ export class Gui {
 	}
 
 	updateInfo(text: string) {
-		this.info.textContent = text;
+		this.info.innerHTML = text;
 	}
 
 	updateScene(name: string) {

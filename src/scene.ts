@@ -8,6 +8,7 @@ export class WorldObject {
 	id: number;
 	tag: string = "";
 	visible: boolean = true;
+	collidable: boolean = true;
 
 	mesh: string = "triangle.json";
 	textures: string[] = ["test.png"];

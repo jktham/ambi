@@ -159,7 +159,7 @@ export class Camera {
 		let cameraBbox = new Bbox([position.sub(velocity.length()*2), position.add(velocity.length()*2)]);
 
 		for (let object of this.objects) {
-			if (object.collider) {
+			if (object.collider && object.collidable) {
 				if (object.bbox) {
 					if (!object.bbox.intersectsBbox(cameraBbox)) continue;
 				}
