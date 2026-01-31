@@ -3,7 +3,7 @@ import type { CameraMode } from "../camera";
 import { engine } from "../main";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
-import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
+import { InstancedUniforms, PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
@@ -11,7 +11,7 @@ export class MuseumScene extends Scene {
 	name = "museum";
 	resolution = new Vec2(1920, 1080);
 	cameraMode: CameraMode = "walk";
-	spawnPos: Vec3 = new Vec3(0, 2, 0);
+	spawnPos: Vec3 = new Vec3(0.001, 2, 0.001);
 	postShader = "post/outline.frag.wgsl";
 	postUniforms = new PostOutlineUniforms();
 
@@ -132,6 +132,27 @@ export class MuseumScene extends Scene {
 		this.applyRoomOffsets();
 		this.objects.push(...this.roomObjects.flat());
 		this.triggers.push(...this.roomTriggers.flat());
+
+		// outer rooms
+		obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
+		obj.mesh = "museum/room.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		obj.vertShader = "world/instanced.vert.wgsl";
+		let uniforms = new InstancedUniforms();
+		uniforms.instanceCount = 4;
+		uniforms.models = [
+			Mat4.trs(new Vec3(0, 0, -88), new Vec3(0, 0, 0), 1),
+			Mat4.trs(new Vec3(88, 0, 0), new Vec3(0, 0, 0), 1),
+			Mat4.trs(new Vec3(0, 0, 88), new Vec3(0, 0, 0), 1),
+			Mat4.trs(new Vec3(-88, 0, 0), new Vec3(0, 0, 0), 1),
+		];
+		uniforms.normals = uniforms.models.map(m => m.inverse().transpose());
+		obj.vertUniforms = uniforms;
+		this.objects.push(obj);
 	}
 
 	update(time: number, deltaTime: number, position: Vec3) {
@@ -220,10 +241,10 @@ export class MuseumScene extends Scene {
 		objects.push(obj);
 		
 		let positions = [
-			new Vec3(0, 0, -20),
-			new Vec3(20, 0, 0),
-			new Vec3(0, 0, 20),
-			new Vec3(-20, 0, 0),
+			new Vec3(0, -0.05, -20),
+			new Vec3(20, -0.05, 0),
+			new Vec3(0, -0.05, 20),
+			new Vec3(-20, -0.05, 0),
 		];
 		let rotations = [
 			new Vec3(0, Math.PI * 0, 0),
@@ -269,10 +290,10 @@ export class MuseumScene extends Scene {
 		let triggers: Trigger[] = [];
 
 		let positions = [
-			[new Vec3(-8, 0, -20), new Vec3(8, 0, -20)],
-			[new Vec3(20, 0, -8), new Vec3(20, 0, 8)],
-			[new Vec3(8, 0, 20), new Vec3(-8, 0, 20)],
-			[new Vec3(-20, 0, 8), new Vec3(-20, 0, -8)],
+			[new Vec3(-8, -0.05, -20), new Vec3(8, -0.05, -20)],
+			[new Vec3(20, -0.05, -8), new Vec3(20, -0.05, 8)],
+			[new Vec3(8, -0.05, 20), new Vec3(-8, -0.05, 20)],
+			[new Vec3(-20, -0.05, 8), new Vec3(-20, -0.05, -8)],
 		];
 		let rotations = [
 			new Vec3(0, Math.PI * 0, 0),
@@ -283,15 +304,6 @@ export class MuseumScene extends Scene {
 		for (let i=0; i<4; i++) {
 			for (let j=0; j<2; j++) {
 				if (scenes[i][j] == "") {
-					let obj = new WorldObject();
-					obj.model = Mat4.trs(positions[i][j], rotations[i], 1);
-					obj.mesh = `museum/portal_wall.obj`;
-					obj.collider = `museum/portal_wall.obj`;
-					obj.textures[0] = "blank.png";
-					obj.mask = 0;
-					obj.fragShader = "world/phong.frag.wgsl";
-					obj.fragUniforms = phong;
-					objects.push(obj);
 					continue;
 				}
 

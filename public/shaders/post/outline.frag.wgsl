@@ -68,9 +68,9 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 
 	var color = data.color;
 	// color = vec4f(0.0);
-	if (depth_edge > 2.0 || // large dist to reduce flat horizon
+	if (depth_edge > 4.0 || // large dist to reduce flat horizon
 		(depth_edge > 0.05 && abs(mask_sum - f32(mask)) > 0.01) || // shorter dist when different mask
-		(u_outline.mode[mask] == 1 && (normal_edge > 0.0 || depth_edge > 2.0)) // self edges mode
+		(u_outline.mode[mask] == 1 && (normal_edge > 0.0 || depth_edge > 4.0)) // self edges mode
 	) {
 		color = u_outline.color[mask];
 	}
