@@ -172,7 +172,7 @@ export class Gui {
 		this.uniformConfig.appendChild(name);
 
 		for (let [k, v] of Object.entries(uniforms)) {
-			const blacklist = ["useStorageBuffer", "instanceCount", "name"];
+			const blacklist = ["useStorageBuffer", "instanceCount", "name", "data"];
 			if (blacklist.includes(k)) {
 				continue;
 			}
