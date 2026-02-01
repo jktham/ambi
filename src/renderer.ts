@@ -563,6 +563,9 @@ export class Renderer {
             }
         }
 
+        // z-sort objects
+        scene.objects.sort((a, b) => b.z - a.z);
+
         // update world buffers
         for (let object of scene.objects) {
             if (!object.visible) {

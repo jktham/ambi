@@ -64,6 +64,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/skybox.frag.wgsl";
+		obj.z = 1000.0;
 		this.objects.push(obj);
 
 		obj = new WorldObject();
@@ -73,6 +74,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.z = 900.0;
 		this.objects.push(obj);
 	}
 

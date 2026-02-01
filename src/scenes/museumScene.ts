@@ -100,10 +100,12 @@ export class MuseumScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
-		obj.color = new Vec4(0, 0, 1, 1);
+		obj.color = new Vec4(0, 0, 1, 0.5);
 		obj.collider = "cube.obj";
 		obj.textures[0] = "blank.png";
 		obj.mask = 0;
+		obj.cull = 1.0;
+		obj.z = -1000.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
 		this.roomObjects[r].push(obj);
