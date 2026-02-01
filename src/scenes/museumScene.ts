@@ -105,7 +105,6 @@ export class MuseumScene extends Scene {
 		obj.textures[0] = "blank.png";
 		obj.mask = 0;
 		obj.cull = 1.0;
-		obj.z = -1000.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
 		this.roomObjects[r].push(obj);
@@ -196,6 +195,7 @@ export class MuseumScene extends Scene {
 			for (let obj of this.roomObjects[r]) {
 				obj.model = Mat4.translate(offset).mul(obj.model);
 				obj.collidable = this.roomSlots[0] == r; // only collidable if in current room
+				obj.z = this.roomSlots[0] == r ? 1000.0 : -1000.0; // draw current room first
 			}
 			for (let t of this.roomTriggers[r]) {
 				t.bbox.model = Mat4.translate(offset).mul(t.bbox.model);
