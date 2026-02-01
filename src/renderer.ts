@@ -330,7 +330,7 @@ export class Renderer {
         });
         const depthStencilState: GPUDepthStencilState = {
             depthWriteEnabled: true,
-            depthCompare: 'less' as GPUCompareFunction,
+            depthCompare: 'less-equal' as GPUCompareFunction,
             format: 'depth24plus-stencil8' as GPUTextureFormat,
         };
         const pipeline = this.device.createRenderPipeline({

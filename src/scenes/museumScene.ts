@@ -4,7 +4,7 @@ import { engine } from "../main";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms, PostOutlineUniforms } from "../uniforms";
-import { rnd } from "../utils";
+import { rnd, rndvec } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class MuseumScene extends Scene {
@@ -50,10 +50,11 @@ export class MuseumScene extends Scene {
 		this.roomTriggers[r].push(...t);
 
 		o = this.createWindows(phong, [
-			["house.jpg", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png"], 
-			["test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png"], 
-			["test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png"], 
-			["test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png"]
+			new Array(8).fill("test.png"),
+			new Array(8).fill("test.png"),
+			new Array(8).fill("test.png"),
+			new Array(8).fill("test.png"),
+			new Array(12).fill("test.png"),
 		]);
 		this.roomObjects[r].push(...o);
 
@@ -195,7 +196,8 @@ export class MuseumScene extends Scene {
 			for (let obj of this.roomObjects[r]) {
 				obj.model = Mat4.translate(offset).mul(obj.model);
 				obj.collidable = this.roomSlots[0] == r; // only collidable if in current room
-				obj.z = this.roomSlots[0] == r ? 1000.0 : -1000.0; // draw current room first
+				obj.z %= 100000.0;
+				obj.z += this.roomSlots[0] == r ? 100000.0 : 0.0; // draw current room first
 			}
 			for (let t of this.roomTriggers[r]) {
 				t.bbox.model = Mat4.translate(offset).mul(t.bbox.model);
@@ -234,7 +236,8 @@ export class MuseumScene extends Scene {
 		obj.mesh = "museum/room.obj";
 		obj.collider = "museum/room.obj";
 		obj.textures[0] = "blank.png";
-		obj.mask = 0;
+		obj.mask = 1;
+		obj.z = 1000.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
 		objects.push(obj);
@@ -338,23 +341,45 @@ export class MuseumScene extends Scene {
 	createWindows(phong: PhongUniforms, textures: string[][]): WorldObject[] {
 		let objects: WorldObject[] = [];
 
+		let occupiedPositions = [
+			[new Vec3(0, -0.05, -20), new Vec3(-8, -0.05, -20), new Vec3(8, -0.05, -20)],
+			[new Vec3(20, -0.05, 0), new Vec3(20, -0.05, -8), new Vec3(20, -0.05, 8)],
+			[new Vec3(0, -0.05, 20), new Vec3(8, -0.05, 20), new Vec3(-8, -0.05, 20)],
+			[new Vec3(-20, -0.05, 0), new Vec3(-20, -0.05, 8), new Vec3(-20, -0.05, -8)],
+			[new Vec3(17, 20, -17), new Vec3(17, 20, 17), new Vec3(-17, 20, 17), new Vec3(-17, 20, -17)],
+		];
 		let wallDimensions = [
-			[new Vec3(-18, 5, -20), new Vec3(18, 15, -20)],
-			[new Vec3(20, 5, -18), new Vec3(20, 15, 18)],
-			[new Vec3(-18, 5, 20), new Vec3(18, 15, 20)],
-			[new Vec3(-20, 5, -18), new Vec3(-20, 15, 18)],
+			[new Vec3(-18, 1, -20), new Vec3(18, 15, -20)],
+			[new Vec3(20, 1, -18), new Vec3(20, 15, 18)],
+			[new Vec3(-18, 1, 20), new Vec3(18, 15, 20)],
+			[new Vec3(-20, 1, -18), new Vec3(-20, 15, 18)],
+			[new Vec3(-18, 20, -18), new Vec3(15, 20, 15)],
 		];
 		let wallRotations = [
 			new Vec3(0, Math.PI * 0, 0),
 			new Vec3(0, Math.PI * 1.5, 0),
 			new Vec3(0, Math.PI * 1, 0),
 			new Vec3(0, Math.PI * 0.5, 0),
+			new Vec3(Math.PI * 0.5, 0, 0),
 		];
 
-		for (let i=0; i<4; i++) {
+		for (let i=0; i<5; i++) {
 			for (let texture of textures[i]) {
 				let [min, max] = wallDimensions[i];
-				let position = new Vec3(rnd(min.x, max.x), rnd(min.y, max.y), rnd(min.z, max.z));
+
+				let position = rndvec(min, max);
+				let dist = Math.min(...occupiedPositions[i].map(p => p.sub(position).mul(new Vec3(1, 0.5, 1)).length()), 100);
+				let iterations = 0;
+
+				while (dist < 5 && iterations < 100) {
+					position = rndvec(min, max);
+					dist = Math.min(...occupiedPositions[i].map(p => p.sub(position).mul(new Vec3(1, 0.5, 1)).length()), 100);
+					iterations++;
+				}
+				if (iterations >= 100) {
+					continue;
+				}
+				occupiedPositions[i].push(position);
 
 				let obj = new WorldObject();
 				obj.model = Mat4.trs(position, wallRotations[i], 1);
