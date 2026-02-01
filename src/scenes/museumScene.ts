@@ -40,9 +40,22 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(...o);
 		this.roomTriggers[r].push(...t);
 		
-		[o, t] = this.createPortals(phong, [["pier", "field"], ["brutal", "debug"], ["pier", "field"], ["debug_dither", "debug_outline"]]);
+		[o, t] = this.createPortals(phong, [
+			["pier", "field"], 
+			["brutal", "debug"], 
+			["pier", "field"], 
+			["debug_dither", "debug_outline"]
+		]);
 		this.roomObjects[r].push(...o);
 		this.roomTriggers[r].push(...t);
+
+		o = this.createWindows(phong, [
+			["house.jpg", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png"], 
+			["test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png"], 
+			["test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png"], 
+			["test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png", "test.png"]
+		]);
+		this.roomObjects[r].push(...o);
 
 		// room 1
 		r = 1;
@@ -61,10 +74,6 @@ export class MuseumScene extends Scene {
 		obj.fragUniforms = phong;
 		this.roomObjects[r].push(obj);
 
-		[o, t] = this.createPortals(phong, [["", ""], ["", ""], ["", ""], ["", ""], ["", ""]]);
-		this.roomObjects[r].push(...o);
-		this.roomTriggers[r].push(...t);
-		
 		// room 2
 		r = 2;
 		[o, t] = this.createRoom(phong);
@@ -81,10 +90,6 @@ export class MuseumScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
 		this.roomObjects[r].push(obj);
-		
-		[o, t] = this.createPortals(phong, [["", ""], ["", ""], ["", ""], ["", ""], ["", ""]]);
-		this.roomObjects[r].push(...o);
-		this.roomTriggers[r].push(...t);
 
 		// room 3
 		r = 3;
@@ -102,10 +107,6 @@ export class MuseumScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
 		this.roomObjects[r].push(obj);
-		
-		[o, t] = this.createPortals(phong, [["", ""], ["", ""], ["", ""], ["", ""], ["", ""]]);
-		this.roomObjects[r].push(...o);
-		this.roomTriggers[r].push(...t);
 
 		// room 4
 		r = 4;
@@ -123,10 +124,6 @@ export class MuseumScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
 		this.roomObjects[r].push(obj);
-		
-		[o, t] = this.createPortals(phong, [["", ""], ["", ""], ["", ""], ["", ""], ["", ""]]);
-		this.roomObjects[r].push(...o);
-		this.roomTriggers[r].push(...t);
 
 		// concat
 		this.applyRoomOffsets();
@@ -334,5 +331,48 @@ export class MuseumScene extends Scene {
 			}
 		}
 		return [objects, triggers];
+	}
+
+	createWindows(phong: PhongUniforms, textures: string[][]): WorldObject[] {
+		let objects: WorldObject[] = [];
+
+		let wallDimensions = [
+			[new Vec3(-18, 5, -20), new Vec3(18, 15, -20)],
+			[new Vec3(20, 5, -18), new Vec3(20, 15, 18)],
+			[new Vec3(-18, 5, 20), new Vec3(18, 15, 20)],
+			[new Vec3(-20, 5, -18), new Vec3(-20, 15, 18)],
+		];
+		let wallRotations = [
+			new Vec3(0, Math.PI * 0, 0),
+			new Vec3(0, Math.PI * 1.5, 0),
+			new Vec3(0, Math.PI * 1, 0),
+			new Vec3(0, Math.PI * 0.5, 0),
+		];
+
+		for (let i=0; i<4; i++) {
+			for (let texture of textures[i]) {
+				let [min, max] = wallDimensions[i];
+				let position = new Vec3(rnd(min.x, max.x), rnd(min.y, max.y), rnd(min.z, max.z));
+
+				let obj = new WorldObject();
+				obj.model = Mat4.trs(position, wallRotations[i], 1);
+				obj.mesh = `museum/portal_h.obj`;
+				obj.textures[0] = texture;
+				obj.fragShader = "world/skybox.frag.wgsl";
+				obj.mask = 1;
+				objects.push(obj);
+
+				obj = new WorldObject();
+				obj.model = Mat4.trs(position, wallRotations[i], 1);
+				obj.mesh = `museum/portal_frame.obj`;
+				obj.textures[0] = "blank.png";
+				obj.mask = 2;
+				obj.fragShader = "world/phong.frag.wgsl";
+				obj.fragUniforms = phong;
+				objects.push(obj);
+			}
+		}
+
+		return objects;
 	}
 }

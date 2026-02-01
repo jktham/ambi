@@ -353,9 +353,25 @@ export class Renderer {
             fragment: {
                 module: fragmentShader,
                 targets: [
-                    { format: "rgba8unorm" }, // color
-                    { format: "rgba32float" }, // posDepth
-                    { format: "rgba8unorm" }, // normalMask
+                    { // color
+                        format: "rgba8unorm",
+                        blend: {
+                            color: {
+                                srcFactor: 'one',
+                                dstFactor: 'one-minus-src-alpha'
+                            },
+                            alpha: {
+                                srcFactor: 'one',
+                                dstFactor: 'one-minus-src-alpha'
+                            },
+                        },
+                    },
+                    {  // posDepth
+                        format: "rgba32float",
+                    },
+                    { // normalMask
+                        format: "rgba8unorm",
+                    },
                 ]
             },
             depthStencil: depthStencilState,
@@ -556,6 +572,7 @@ export class Renderer {
             baseUniforms.time = time;
             baseUniforms.frame = frame;
             baseUniforms.mask = object.mask;
+            baseUniforms.cull = object.cull;
             baseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
             baseUniforms.color = object.color;
             baseUniforms.viewPos = camera.position;

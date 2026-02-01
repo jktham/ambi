@@ -25,7 +25,7 @@ struct FragmentOut {
 	@location(0) color: vec4f,
 	@location(1) pos_depth: vec4f,
 	@location(2) normal_mask: vec4f
-}
+};
 
 struct FbData {
 	color: vec4f,
@@ -33,25 +33,41 @@ struct FbData {
 	depth: f32,
 	normal: vec3f,
 	mask: u32,
-}
+};
 
 struct BaseUniforms {
 	time: f32,
 	frame: f32,
 	mask: f32,
+	cull: f32,
 	resolution: vec2f,
 	color: vec4f,
 	view_pos: vec3f,
 	model: mat4x4f,
 	view: mat4x4f,
 	projection: mat4x4f,
-	normal: mat4x4f
-}
+	normal: mat4x4f,
+};
 
 struct PostBaseUniforms {
 	time: f32,
 	frame: f32,
 	resolution: vec2f,
+};
+
+fn decideDiscard(color: vec4f, cull: f32, pos: vec3f, normal: vec3f, view_pos: vec3f) {
+	if (color.a < 0.001) {
+		discard;
+	}
+
+	if (cull == 0.0) {
+		return;
+	}
+	let view_dir = normalize(view_pos - pos);
+	let face = dot(normalize(normal), view_dir);
+	if (face * cull < 0.0) {
+		discard;
+	}
 }
 
 fn encodeFbData(data: FbData) -> FragmentOut {

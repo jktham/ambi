@@ -15,6 +15,7 @@ export class WorldObject {
 	color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
 	model: Mat4 = new Mat4();
 	mask: number = 0;
+	cull: number = 0.0; // 0.0 = no culling, 1.0 = backface culling, -1.0 = frontface culling
 	
 	collider?: string = undefined;
 	bbox?: Bbox = undefined;

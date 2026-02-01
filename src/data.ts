@@ -7,6 +7,7 @@ import { PierScene } from "./scenes/pierScene";
 import { PostOutlineUniforms, PostPS1Uniforms, Uniforms } from "./uniforms";
 import { MuseumScene } from "./scenes/museumScene";
 import { FieldScene } from "./scenes/fieldScene";
+import { DebugTransparencyScene } from "./scenes/debugTransparencyScene";
 
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
@@ -17,6 +18,7 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["debug", DebugScene],
 	["debug_dither", DebugDitherScene],
 	["debug_outline", DebugOutlineScene],
+	["debug_trans", DebugTransparencyScene],
 ]);
 
 // <path, [uniforms constructor, textures]>

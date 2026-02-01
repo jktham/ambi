@@ -23,5 +23,6 @@ fn main(in: PS1FragmentIn) -> FragmentOut {
 	data.normal = in.normal;
 	data.mask = u32(u_base.mask);
 
+	decideDiscard(data.color, u_base.cull, in.pos, in.normal, u_base.view_pos);
 	return encodeFbData(data);
 }

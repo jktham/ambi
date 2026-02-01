@@ -20,6 +20,7 @@ export class BaseUniforms extends Uniforms {
 	time = 0;
 	frame = 0;
 	mask = 0;
+	cull = 0.0;
 	resolution = new Vec2();
 	color = new Vec4();
 	viewPos = new Vec3();
@@ -36,6 +37,7 @@ export class BaseUniforms extends Uniforms {
 		this.data[0] = this.time;
 		this.data[1] = this.frame;
 		this.data[2] = this.mask;
+		this.data[3] = this.cull;
 		this.data.subarray(4, 4+2).set(this.resolution.data);
 		this.data.subarray(8, 8+4).set(this.color.data);
 		this.data.subarray(12, 12+3).set(this.viewPos.data);

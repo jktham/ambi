@@ -14,10 +14,12 @@ fn noise(xy: vec2f, seed: f32) -> f32 {
 fn main(in: FragmentIn) -> FragmentOut {
 	let seed = u_base.frame / 1000.0 % 10.0 + 1.0;
 	var data: FbData;
-	data.color = in.color * textureSample(t_color, t_sampler, in.uv) * noise(in.screen.xy, seed);
+	data.color = in.color * textureSample(t_color, t_sampler, in.uv) * vec4f(vec3f(noise(in.screen.xy, seed)), 1.0);
 	data.pos = in.pos;
 	data.depth = length(u_base.view_pos - in.pos);
 	data.normal = in.normal;
 	data.mask = u32(u_base.mask);
+
+	decideDiscard(data.color, u_base.cull, in.pos, in.normal, u_base.view_pos);
 	return encodeFbData(data);
 }

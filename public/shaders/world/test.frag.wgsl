@@ -18,5 +18,7 @@ fn main(in: FragmentIn) -> FragmentOut {
 	data.depth = length(u_base.view_pos - in.pos);
 	data.normal = in.normal;
 	data.mask = u32(u_base.mask);
+
+	decideDiscard(data.color, u_base.cull, in.pos, in.normal, u_base.view_pos);
 	return encodeFbData(data);
 }

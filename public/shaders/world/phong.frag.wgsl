@@ -23,6 +23,8 @@ fn main(in: FragmentIn) -> FragmentOut {
 	data.depth = length(u_base.view_pos - in.pos);
 	data.normal = in.normal;
 	data.mask = u32(u_base.mask);
+
+	decideDiscard(data.color, u_base.cull, in.pos, in.normal, u_base.view_pos);
 	return encodeFbData(data);
 }
 
@@ -36,5 +38,5 @@ fn phong(in: FragmentIn) -> vec4f {
 	let diffuse = u_phong.diffuse_factor * max(dot(norm, light_dir), 0.0);
 	let specular = u_phong.specular_factor * pow(max(dot(view_dir, reflect_dir), 0.0), u_phong.specular_exponent);
 
-	return in.color * u_phong.light_color * (ambient + diffuse + specular);
+	return in.color * vec4f(u_phong.light_color.rgb * (ambient + diffuse + specular), 1.0);
 }
