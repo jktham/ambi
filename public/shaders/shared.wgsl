@@ -56,7 +56,7 @@ struct PostBaseUniforms {
 };
 
 fn decideDiscard(color: vec4f, cull: f32, pos: vec3f, normal: vec3f, view_pos: vec3f) {
-	if (color.a < 0.001) {
+	if (color.a == 0.0) {
 		discard;
 	}
 

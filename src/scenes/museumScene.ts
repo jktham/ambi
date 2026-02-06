@@ -25,6 +25,7 @@ export class MuseumScene extends Scene {
 		this.postUniforms.scale.fill(2);
 		this.postUniforms.mode.fill(1);
 		this.postUniforms.color = this.postUniforms.color.map(_ => new Vec4(0, 0, 0, 1));
+		this.postUniforms.color[15] = new Vec4(1, 1, 1, 1);
 	}
 	
 	init() {
@@ -65,8 +66,69 @@ export class MuseumScene extends Scene {
 		this.roomTriggers[r].push(...t);
 
 		let obj = new WorldObject();
-		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.tag = "lod0";
+		obj.model = Mat4.trs(new Vec3(0, 4, 0), new Vec3(0, 0, 0), 3);
+		obj.mesh = "museum/monke_lod0.obj";
+		obj.color = new Vec4(1, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new WorldObject();
+		obj.tag = "lod1";
+		obj.model = Mat4.trs(new Vec3(0, 4, 0), new Vec3(0, 0, 0), 3);
+		obj.mesh = "museum/monke_lod1.obj";
+		obj.color = new Vec4(1, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new WorldObject();
+		obj.tag = "lod2";
+		obj.model = Mat4.trs(new Vec3(0, 4, 0), new Vec3(0, 0, 0), 3);
+		obj.mesh = "museum/monke_lod2.obj";
+		obj.color = new Vec4(1, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new WorldObject();
+		obj.tag = "lod3";
+		obj.model = Mat4.trs(new Vec3(0, 4, 0), new Vec3(0, 0, 0), 3);
+		obj.mesh = "museum/monke_lod3.obj";
+		obj.color = new Vec4(1, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new WorldObject();
+		obj.tag = "lod4";
+		obj.model = Mat4.trs(new Vec3(0, 4, 0), new Vec3(0, 0, 0), 3);
+		obj.mesh = "museum/monke_lod4.obj";
+		obj.color = new Vec4(1, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new WorldObject();
+		obj.tag = "lod5";
+		obj.model = Mat4.trs(new Vec3(0, 4, 0), new Vec3(0, 0, 0), 3);
+		obj.mesh = "museum/monke_lod5.obj";
 		obj.color = new Vec4(1, 0, 0, 1);
 		obj.collider = "cube.obj";
 		obj.textures[0] = "blank.png";
@@ -102,6 +164,54 @@ export class MuseumScene extends Scene {
 		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 1, 0.5);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 0;
+		obj.cull = 1.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+		
+		obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(10, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 1, 0.0001);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "test_trans.png";
+		obj.mask = 0;
+		obj.cull = 0.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+		
+		obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(-10, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 1, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "test_trans2.png";
+		obj.mask = 0;
+		obj.cull = 0.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+		
+		obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(0, 2, 10), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "blank.png";
+		obj.mask = 15;
+		obj.cull = -1.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = phong;
+		this.roomObjects[r].push(obj);
+		
+		obj = new WorldObject();
+		obj.model = Mat4.trs(new Vec3(0, 2, -10), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 0, 0.1);
 		obj.collider = "cube.obj";
 		obj.textures[0] = "blank.png";
 		obj.mask = 0;
@@ -178,6 +288,19 @@ export class MuseumScene extends Scene {
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(4);
 			this.applyRoomOffsets();
+		}
+
+		let lodDistances = [10, 13, 16, 19, 22, 1000];
+		let lodObjects = [this.getAllObjects("lod0"), this.getAllObjects("lod1"), this.getAllObjects("lod2"), this.getAllObjects("lod3"), this.getAllObjects("lod4"), this.getAllObjects("lod5")];
+		for (let i=0; i<lodObjects.length; i++) {
+			for (let obj of lodObjects[i]) {
+				let dist = position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
+				if (i == 0) {
+					obj.visible = dist < lodDistances[i] ? true : false;
+				} else {
+					obj.visible = dist < lodDistances[i] && dist >= lodDistances[i-1] ? true : false;
+				}
+			}
 		}
 	}
 
