@@ -52,7 +52,7 @@ export class FieldScene extends Scene {
 		this.objects.push(sky);
 
 		let grass = new WorldObject();
-		grass.tag = "grass";
+		grass.tags = ["grass"];
 		grass.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 0.01);
 		grass.color = new Vec4(0.6, 0.6, 0.6, 1.0);
 		grass.mesh = "field/grass.obj";

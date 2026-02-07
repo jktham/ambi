@@ -20,7 +20,7 @@ export class Camera {
 	private resources: Resources;
 
 	speed: number = 4.0;
-	fov: number = 90.0;
+	fov: number = 100.0;
 	mode: CameraMode = "fly";
 
 	velocity: Vec3 = new Vec3();

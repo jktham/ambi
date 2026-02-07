@@ -6,7 +6,7 @@ import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class WorldObject {
 	id: number;
-	tag: string = "";
+	tags: string[] = [];
 	visible: boolean = true;
 	collidable: boolean = true;
 
@@ -45,21 +45,25 @@ export class Scene {
 	objects: WorldObject[] = [];
 	triggers: Trigger[] = [];
 
+	// called before scene load, no resources available yet
 	init() {
 
 	}
 
+	// called every frame after scene is loaded
 	update(time: number, deltaTime: number, position: Vec3) {
 		
 	}
 
+	// get first object with tag
 	getObject(tag: string): WorldObject | undefined {
-		let found = this.objects.find((obj) => obj.tag == tag);
+		let found = this.objects.find((obj) => obj.tags.includes(tag));
 		return found;
 	}
 
-	getAllObjects(tag: string): WorldObject[] {
-		let found = this.objects.filter((obj) => obj.tag == tag);
+	// get all objects with tag
+	getObjects(tag: string): WorldObject[] {
+		let found = this.objects.filter((obj) => obj.tags.includes(tag));
 		return found;
 	}
 }

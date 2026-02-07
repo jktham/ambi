@@ -52,7 +52,7 @@ export class PierScene extends Scene {
 		this.objects.push(sky);
 
 		let snow = new WorldObject();
-		snow.tag = "snow";
+		snow.tags = ["snow"];
 		snow.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 0.01);
 		snow.mesh = "pier/snow.obj";
 		snow.textures = ["blank.png"];

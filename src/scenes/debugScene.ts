@@ -41,7 +41,7 @@ export class DebugScene extends Scene {
 
 
 		obj = new WorldObject();
-		obj.tag = "monke_instanced";
+		obj.tags = ["monke_instanced"];
 		obj.mesh = "monke.obj";
 		obj.vertShader = "world/instanced.vert.wgsl";
 		obj.vertUniforms = new InstancedUniforms();
@@ -92,9 +92,9 @@ export class DebugScene extends Scene {
 			(obj.fragUniforms as PhongUniforms).lightPos = light;
 		}
 
-		if (time > 3 && this.getAllObjects("added_after_init").length == 0) {
+		if (time > 3 && this.getObjects("added_after_init").length == 0) {
 			let obj = new WorldObject();
-			obj.tag = "added_after_init";
+			obj.tags = ["added_after_init"];
 			obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 1);
 			obj.mesh = "monke.obj";
 			obj.collider = "monke.obj";
