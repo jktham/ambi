@@ -15,8 +15,8 @@ struct InstancedUniforms {
 
 @vertex 
 fn main(in: VertexIn, @builtin(instance_index) i: u32) -> VertexOut {
-	let model = u_instanced.instances[i].model * u_base.model;
-	let normal = u_instanced.instances[i].normal * u_base.normal;
+	let model = u_base.model * u_instanced.instances[i].model; // not sure why this is left to right
+	let normal = u_base.normal * u_instanced.instances[i].normal;
 	
 	var out: VertexOut;
 	out.ndc = u_base.projection * u_base.view * model * vec4f(in.pos, 1.0);
