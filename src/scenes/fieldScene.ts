@@ -53,7 +53,7 @@ export class FieldScene extends Scene {
 
 		let grass = new WorldObject();
 		grass.tags = ["grass"];
-		grass.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 0.01);
+		grass.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		grass.color = new Vec4(0.6, 0.6, 0.6, 1.0);
 		grass.mesh = "field/grass.obj";
 		grass.textures = ["leaves.jpg"];

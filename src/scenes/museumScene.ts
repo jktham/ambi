@@ -4,7 +4,7 @@ import { engine } from "../main";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms, PostOutlineUniforms } from "../uniforms";
-import { rnd, rndvec } from "../utils";
+import { rnd, rndarr, rndvec } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class MuseumScene extends Scene {
@@ -50,13 +50,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(...o);
 		this.roomTriggers[r].push(...t);
 
-		o = this.createWindows(phong, [
-			new Array(8).fill("test.png"),
-			new Array(8).fill("test.png"),
-			new Array(8).fill("test.png"),
-			new Array(8).fill("test.png"),
-			new Array(12).fill("test.png"),
-		]);
+		o = this.createWindows(phong);
 		this.roomObjects[r].push(...o);
 
 		// room 1
@@ -413,8 +407,15 @@ export class MuseumScene extends Scene {
 		return [objects, triggers];
 	}
 
-	createWindows(phong: PhongUniforms, textures: string[][]): WorldObject[] {
+	createWindows(phong: PhongUniforms): WorldObject[] {
 		let objects: WorldObject[] = [];
+		let textures: string[][] = [
+			new Array(8).fill("").map(() => rndarr(["skybox/pure_clouds.jpg", "skybox/pure_cloudy.jpg", "skybox/pure_stars.jpg"])),
+			new Array(8).fill("").map(() => rndarr(["skybox/pure_clouds.jpg", "skybox/pure_cloudy.jpg", "skybox/pure_stars.jpg"])),
+			new Array(8).fill("").map(() => rndarr(["skybox/pure_clouds.jpg", "skybox/pure_cloudy.jpg", "skybox/pure_stars.jpg"])),
+			new Array(8).fill("").map(() => rndarr(["skybox/pure_clouds.jpg", "skybox/pure_cloudy.jpg", "skybox/pure_stars.jpg"])),
+			new Array(16).fill("").map(() => rndarr(["skybox/desert_stars.jpg"])),
+		];
 
 		let occupiedPositions = [
 			[new Vec3(0, -0.05, -20), new Vec3(-8, -0.05, -20), new Vec3(8, -0.05, -20)],
@@ -424,31 +425,33 @@ export class MuseumScene extends Scene {
 			[new Vec3(17, 20, -17), new Vec3(17, 20, 17), new Vec3(-17, 20, 17), new Vec3(-17, 20, -17)],
 		];
 		let wallDimensions = [
-			[new Vec3(-18, 1, -20), new Vec3(18, 15, -20)],
-			[new Vec3(20, 1, -18), new Vec3(20, 15, 18)],
-			[new Vec3(-18, 1, 20), new Vec3(18, 15, 20)],
-			[new Vec3(-20, 1, -18), new Vec3(-20, 15, 18)],
-			[new Vec3(-18, 20, -18), new Vec3(15, 20, 15)],
+			[new Vec3(-18, 0.5, -20), new Vec3(18, 15, -20)],
+			[new Vec3(20, 0.5, -18), new Vec3(20, 15, 18)],
+			[new Vec3(-18, 0.5, 20), new Vec3(18, 15, 20)],
+			[new Vec3(-20, 0.5, -18), new Vec3(-20, 15, 18)],
+			[new Vec3(-15, 20, -18), new Vec3(18, 20, 15)],
 		];
 		let wallRotations = [
-			new Vec3(0, Math.PI * 0, 0),
-			new Vec3(0, Math.PI * 1.5, 0),
-			new Vec3(0, Math.PI * 1, 0),
-			new Vec3(0, Math.PI * 0.5, 0),
-			new Vec3(Math.PI * 0.5, 0, 0),
+			[new Vec3(0, Math.PI * 0, 0)],
+			[new Vec3(0, Math.PI * 1.5, 0)],
+			[new Vec3(0, Math.PI * 1, 0)],
+			[new Vec3(0, Math.PI * 0.5, 0)],
+			[new Vec3(Math.PI * 0.5, 0, 0), new Vec3(Math.PI * 0.5, 0, Math.PI * 0.5)],
 		];
 
+		let instances: Map<string, Mat4[]> = new Map();
 		for (let i=0; i<5; i++) {
 			for (let texture of textures[i]) {
 				let [min, max] = wallDimensions[i];
 
 				let position = rndvec(min, max);
-				let dist = Math.min(...occupiedPositions[i].map(p => p.sub(position).mul(new Vec3(1, 0.5, 1)).length()), 100);
+				let rotation = rndarr(wallRotations[i]);
+				let dist = Math.min(...occupiedPositions[i].map(p => p.sub(position).mul(new Vec3(1, i == 4 ? 1 : 0.5, 1)).length()), 100);
 				let iterations = 0;
 
-				while (dist < 5 && iterations < 100) {
+				while (dist < (i == 4 ? 6 : 4) && iterations < 100) {
 					position = rndvec(min, max);
-					dist = Math.min(...occupiedPositions[i].map(p => p.sub(position).mul(new Vec3(1, 0.5, 1)).length()), 100);
+					dist = Math.min(...occupiedPositions[i].map(p => p.sub(position).mul(new Vec3(1, i == 4 ? 1 : 0.5, 1)).length()), 100);
 					iterations++;
 				}
 				if (iterations >= 100) {
@@ -456,23 +459,39 @@ export class MuseumScene extends Scene {
 				}
 				occupiedPositions[i].push(position);
 
-				let obj = new WorldObject();
-				obj.model = Mat4.trs(position, wallRotations[i], 1);
-				obj.mesh = `museum/portal_h.obj`;
-				obj.textures[0] = texture;
-				obj.fragShader = "world/skybox.frag.wgsl";
-				obj.mask = 1;
-				objects.push(obj);
+				if (!instances.has(texture)) {
+					instances.set(texture, []);
+				}
+				instances.get(texture)?.push(Mat4.trs(position, rotation, 1));
 
-				obj = new WorldObject();
-				obj.model = Mat4.trs(position, wallRotations[i], 1);
-				obj.mesh = `museum/portal_frame.obj`;
-				obj.textures[0] = "blank.png";
-				obj.mask = 2;
-				obj.fragShader = "world/phong.frag.wgsl";
-				obj.fragUniforms = phong;
-				objects.push(obj);
 			}
+		}
+		
+		for (let [texture, models] of instances) {
+			let obj = new WorldObject();
+			obj.mesh = `museum/portal_h.obj`;
+			obj.textures[0] = texture;
+			obj.fragShader = "world/skybox.frag.wgsl";
+			obj.mask = 1;
+			obj.vertShader = "world/instanced.vert.wgsl";
+			obj.vertUniforms = new InstancedUniforms();
+			(obj.vertUniforms as InstancedUniforms).instanceCount = models.length;
+			(obj.vertUniforms as InstancedUniforms).models = models;
+			(obj.vertUniforms as InstancedUniforms).normals = models.map(m => m.inverse().transpose());
+			objects.push(obj);
+
+			obj = new WorldObject();
+			obj.mesh = `museum/portal_frame.obj`;
+			obj.textures[0] = "blank.png";
+			obj.mask = 2;
+			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragUniforms = phong;
+			obj.vertShader = "world/instanced.vert.wgsl";
+			obj.vertUniforms = new InstancedUniforms();
+			(obj.vertUniforms as InstancedUniforms).instanceCount = models.length;
+			(obj.vertUniforms as InstancedUniforms).models = models;
+			(obj.vertUniforms as InstancedUniforms).normals = models.map(m => m.inverse().transpose());
+			objects.push(obj);
 		}
 
 		return objects;

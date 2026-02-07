@@ -17,6 +17,10 @@ export function rndvec(min: Vec3, max: Vec3): Vec3 {
     );
 }
 
+export function rndarr<T>(arr: T[]): T {
+    return arr[rndint(0, arr.length)];
+}
+
 export function swap(arr: any[], i: number, j: number) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
 }

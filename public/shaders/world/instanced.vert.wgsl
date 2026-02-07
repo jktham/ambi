@@ -15,10 +15,13 @@ struct InstancedUniforms {
 
 @vertex 
 fn main(in: VertexIn, @builtin(instance_index) i: u32) -> VertexOut {
+	let model = u_instanced.instances[i].model * u_base.model;
+	let normal = u_instanced.instances[i].normal * u_base.normal;
+	
 	var out: VertexOut;
-	out.ndc = u_base.projection * u_base.view * u_instanced.instances[i].model * vec4f(in.pos, 1.0);
-	out.pos = (u_instanced.instances[i].model * vec4f(in.pos, 1.0)).xyz;
-	out.normal = normalize((u_instanced.instances[i].normal * vec4f(in.normal, 0.0)).xyz);
+	out.ndc = u_base.projection * u_base.view * model * vec4f(in.pos, 1.0);
+	out.pos = (model * vec4f(in.pos, 1.0)).xyz;
+	out.normal = normalize((normal * vec4f(in.normal, 0.0)).xyz);
 	out.color = in.color * u_base.color;
 	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y);
 	return out;
