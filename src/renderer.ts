@@ -613,7 +613,7 @@ export class Renderer {
             const uniformBindGroup = this.uniformBindGroups.get(object.id);
             const textureBindGroup = this.textureBindGroups.get(object.id);
             if (!pipeline || !vertexBuffer || !uniformBindGroup || !textureBindGroup) {
-                console.error(`missing object resources ${object.id}, ${object.tag}, ${object.mesh}, ${object.textures}`);
+                console.error(`missing object resources ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
                 continue;
             }
 
