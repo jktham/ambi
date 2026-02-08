@@ -17,6 +17,7 @@ export class FieldScene extends Scene {
 	CHUNK_SIZE = 30.0;
 	GRASS_COUNT = 1000;
 	grassOrigins: Mat4[] = [];
+	grassModels: Mat4[] = [];
 	grassSwayOffsets: number[] = [];
 	grassSwaySpeeds: number[] = [];
 	grassSwayScales: number[] = [];
@@ -51,17 +52,6 @@ export class FieldScene extends Scene {
 		sky.color = new Vec4(0.1, 0.1, 0.1, 1.0);
 		this.objects.push(sky);
 
-		let grass = new WorldObject();
-		grass.tags = ["grass"];
-		grass.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
-		grass.color = new Vec4(0.6, 0.6, 0.6, 1.0);
-		grass.mesh = "field/grass.obj";
-		grass.textures = ["leaves.jpg"];
-		grass.fragShader = "world/ps1.frag.wgsl";
-		grass.vertShader = "world/ps1_instanced.vert.wgsl";
-
-		let grassUniforms = new InstancedUniforms();
-		grassUniforms.instanceCount = this.GRASS_COUNT*4;
 		for (let i=0; i<this.GRASS_COUNT; i++) {
 			let origin = Mat4.trs(
 				new Vec3(rnd(-this.CHUNK_SIZE/2, this.CHUNK_SIZE/2), 0, rnd(-this.CHUNK_SIZE/2, this.CHUNK_SIZE/2)), 
@@ -69,33 +59,49 @@ export class FieldScene extends Scene {
 				rnd(0.8, 1.6)
 			);
 			this.grassOrigins.push(origin);
+			this.grassModels.push(origin);
 			this.grassSwayOffsets.push(rnd(0, Math.PI * 2.0));
 			this.grassSwaySpeeds.push(rnd(0.3, 1.5));
 			this.grassSwayScales.push(rnd(0.1, Math.PI * 0.1));
 		}
+
 		for (let chunkOffset of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)]) {
+			let grass = new WorldObject();
+			grass.tags = ["grass"];
+			grass.model = Mat4.translate(new Vec3(chunkOffset.x * this.CHUNK_SIZE/2, 0, chunkOffset.y * this.CHUNK_SIZE/2));
+			grass.color = new Vec4(0.6, 0.6, 0.6, 1.0);
+			grass.mesh = "field/grass.obj";
+			grass.textures = ["leaves.jpg"];
+			grass.fragShader = "world/ps1.frag.wgsl";
+			grass.vertShader = "world/ps1_instanced.vert.wgsl";
+
+			let grassUniforms = new InstancedUniforms();
+			grassUniforms.instanceCount = this.GRASS_COUNT;
+			
 			for (let i=0; i<this.GRASS_COUNT; i++) {
-				let model = Mat4.translate(new Vec3(chunkOffset.x * this.CHUNK_SIZE/2, 0, chunkOffset.y * this.CHUNK_SIZE/2)).mul(this.grassOrigins[i]);
-				grassUniforms.models.push(model);
-				grassUniforms.normals.push(model.inverse().transpose());
+				grassUniforms.models.push(this.grassModels[i]);
+				grassUniforms.normals.push(this.grassModels[i].inverse().transpose());
 			}
+			grass.vertUniforms = grassUniforms;
+			this.objects.push(grass);
 		}
-		grass.vertUniforms = grassUniforms;
-		this.objects.push(grass);
 	}
 
 	update(time: number, deltaTime: number, position: Vec3) {
-		let grass = this.getObject("grass")!;
-		let grassUniforms = grass.vertUniforms as InstancedUniforms;
-		for (let [k, chunkOffset] of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)].entries()) {
-			for (let i=0; i<this.GRASS_COUNT; i++) {
-				let model = Mat4.translate(new Vec3(chunkOffset.x * this.CHUNK_SIZE/2, 0, chunkOffset.y * this.CHUNK_SIZE/2)).mul(this.grassOrigins[i]);
-				let sway = Mat4.rotate(new Vec3(0, 0, Math.sin(this.grassSwaySpeeds[i] * time + this.grassSwayOffsets[i]) * this.grassSwayScales[i]));
-				grassUniforms.models[this.GRASS_COUNT*k + i] = model.mul(sway);
-				// grassUniforms.normals[i] = model.inverse().transpose();
-			}
+		for (let i=0; i<this.GRASS_COUNT; i++) {
+			let sway = Mat4.rotate(new Vec3(0, 0, Math.sin(this.grassSwaySpeeds[i] * time + this.grassSwayOffsets[i]) * this.grassSwayScales[i]));
+			this.grassModels[i] = this.grassOrigins[i].mul(sway);
 		}
-		grass.changed = true;
+
+		let grass = this.getObjects("grass")!;
+		for (let g of grass) {
+			let grassUniforms = g.vertUniforms as InstancedUniforms;
+			for (let i=0; i<this.GRASS_COUNT; i++) {
+				grassUniforms.models[i] = this.grassModels[i];
+				// grassUniforms.normals[i] = this.grassModels[i].inverse().transpose();
+			}
+			g.changed = true;
+		}
 
 		if (position.x > this.CHUNK_SIZE/2) position.x -= this.CHUNK_SIZE;
 		if (position.x < -this.CHUNK_SIZE/2) position.x += this.CHUNK_SIZE;
