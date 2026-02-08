@@ -7,6 +7,7 @@ import { Uniforms } from "./uniforms";
 import { Resources } from "./resources";
 import { scenes } from "./data";
 import type { Vec2 } from "./vec";
+import { Profiler } from "./profiler";
 
 export class Engine {
 	resources: Resources;
@@ -15,6 +16,7 @@ export class Engine {
 	input: Input;
 	scene: Scene;
 	gui: Gui;
+	profiler: Profiler;
 	private deltaHist: number[] = [];
 	private scheduledFrameHandle: number = 0;
 
@@ -25,6 +27,7 @@ export class Engine {
 		this.input = new Input(canvas);
 		this.scene = new Scene();
 		this.gui = new Gui(this);
+		this.profiler = new Profiler();
 	}
 
 	async run(scene: string) {
@@ -92,26 +95,38 @@ export class Engine {
 		this.gui.updateResolution(resolution);
 	}
 
-	private async update(time: number, deltaTime: number) {
+	private async update(time: number, frame: number, deltaTime: number) {
+		this.profiler.start("update");
 		this.deltaHist.push(deltaTime);
 		if (this.deltaHist.length > 60) {
 			this.deltaHist.shift();
 		}
 		let deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / 60.0;
 
+		this.profiler.start("  updateCamera");
         this.camera.updatePosition(this.input.activeActions, deltaTime);
         this.camera.updateRotation(this.input.cursorChange);
         this.input.resetChange();
+		this.profiler.stop("  updateCamera");
+
+		this.profiler.start("  updateScene");
 		this.scene.update(time, deltaTime, this.camera.position);
 		for (let trigger of this.scene.triggers) {
 			if (trigger.enabled) await trigger.test(this.camera.position);
 		}
+		this.profiler.stop("  updateScene");
+
 		this.camera.updateView(); // in case position/rotation changed by update
-		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} ms, ${this.scene.objects.length}/${this.scene.objects.filter(o => o.visible).length}/${this.scene.objects.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
+		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.objects.length}/${this.scene.objects.filter(o => o.visible).length}/${this.scene.objects.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
+		
+		this.profiler.stop("update");
+		if (frame % 120 == 0) this.profiler.print();
 	}
 
 	private draw(time: number, frame: number) {
-		this.renderer.drawScene(this.scene, this.camera, time, frame);
+		this.profiler.start("draw");
+		this.renderer.drawScene(this.scene, this.camera, time, frame, this.profiler);
+		this.profiler.stop("draw");
 	}
 
 	private loop() {
@@ -127,7 +142,7 @@ export class Engine {
             if (frameRate == 0 || dt >= 1 / frameRate - 0.001) {
             	t0 = t;
 				f++;
-                await this.update(t / 1000, dt);
+                await this.update(t / 1000, f, dt);
                 this.draw(t / 1000, f);
             }
         }

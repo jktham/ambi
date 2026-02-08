@@ -1,4 +1,5 @@
 import type { Camera } from "./camera";
+import type { Profiler } from "./profiler";
 import { Resources } from "./resources";
 import type { Scene, WorldObject } from "./scene";
 import { BaseUniforms, PostBaseUniforms, Uniforms } from "./uniforms";
@@ -552,7 +553,7 @@ export class Renderer {
         return postFrameBufferBindGroup;
     }
 
-    async drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
+    async drawScene(scene: Scene, camera: Camera, time: number, frame: number, profiler: Profiler) {
         // initialize new objects
         for (let object of scene.objects) {
             if (!object.visible) {
@@ -567,6 +568,7 @@ export class Renderer {
         scene.objects.sort((a, b) => b.z - a.z);
 
         // update world buffers
+        profiler.start("  bufferWorld");
         for (let object of scene.objects) {
             if (!object.visible) {
                 continue;
@@ -603,8 +605,10 @@ export class Renderer {
                 this.device.queue.writeBuffer(fragUniformBuffer, 0, object.fragUniforms.toArray().buffer);
             }
         }
+        profiler.stop("  bufferWorld");
 
         // draw world
+        profiler.start("  drawWorld");
         const encoder = this.device.createCommandEncoder({ label: "render encoder" });
         const pass = encoder.beginRenderPass(this.renderPassDescriptor);
         for (let object of scene.objects) {
@@ -628,8 +632,10 @@ export class Renderer {
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);
+        profiler.stop("  drawWorld");
 
         // update post buffers
+        profiler.start("  bufferPost");
         let postBaseUniforms = new PostBaseUniforms();
         postBaseUniforms.time = time;
         postBaseUniforms.frame = frame;
@@ -640,8 +646,10 @@ export class Renderer {
         if (postUniforms.size() > 0) {
             this.device.queue.writeBuffer(this.postUniformBuffer, 0, postUniforms.toArray().buffer);
         }
+        profiler.stop("  bufferPost");
 
         // draw post
+        profiler.start("  drawPost");
         (this.postRenderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = this.context.getCurrentTexture().createView();
         const postEncoder = this.device.createCommandEncoder({ label: "post render encoder" });
         const postPass = postEncoder.beginRenderPass(this.postRenderPassDescriptor);
@@ -652,5 +660,6 @@ export class Renderer {
         postPass.draw(6);
         postPass.end();
         this.device.queue.submit([postEncoder.finish()]);
+        profiler.stop("  drawPost");
     }
 }
