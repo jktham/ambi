@@ -64,12 +64,10 @@ export class MuseumScene extends Scene {
 			obj.tags = [`lod${i}`, "rotate"];
 			obj.model = Mat4.trs(new Vec3(0, 3.5, 0), new Vec3(0, 0, 0), 3);
 			obj.mesh = `museum/monke_lod${i}.obj`;
-			obj.color = new Vec4(1, 0, 0, 1);
-			// obj.collider = "cube.obj";
 			obj.textures[0] = "blank.png";
 			obj.mask = 0;
-			obj.fragShader = "world/phong.frag.wgsl";
-			obj.fragUniforms = phong;
+			obj.fragShader = "world/rainbow.frag.wgsl";
+			obj.vertShader = "world/glitch.vert.wgsl";
 			this.roomObjects[r].push(obj);
 		}
 
@@ -347,7 +345,7 @@ export class MuseumScene extends Scene {
 			obj.mesh = `museum/pillar.obj`;
 			obj.collider = `museum/pillar.obj`;
 			obj.textures[0] = "blank.png";
-			obj.mask = 2;
+			obj.mask = 3;
 			obj.fragShader = "world/phong.frag.wgsl";
 			obj.fragUniforms = phong;
 			objects.push(obj);

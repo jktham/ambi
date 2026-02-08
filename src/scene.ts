@@ -25,9 +25,11 @@ export class WorldObject {
 	fragShader: string = "world/base.frag.wgsl";
 	vertUniforms: Uniforms = new Uniforms();
 	fragUniforms: Uniforms = new Uniforms();
+	vertConfig: Vec4 = new Vec4(); // custom config values for shaders
+	fragConfig: Vec4 = new Vec4();
 
 	constructor() {
-		this.id = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+		this.id = Math.floor(Math.random() * 2**32); // u32
 	}
 }
 

@@ -43,10 +43,13 @@ struct BaseUniforms {
 	resolution: vec2f,
 	color: vec4f,
 	view_pos: vec3f,
+	id: u32,
 	model: mat4x4f,
 	view: mat4x4f,
 	projection: mat4x4f,
 	normal: mat4x4f,
+	vert_config: vec4f,
+	frag_config: vec4f,
 };
 
 struct PostBaseUniforms {
@@ -90,4 +93,16 @@ fn loadFbData(pixel: vec2u, fb_color: texture_storage_2d<rgba8unorm, read>, fb_p
 	data.mask = u32(nm.w * 255.0);
 
 	return data;
+}
+
+fn rnd(seed: f32) -> f32 {
+	return fract(sin(seed) * 43758.5453123);
+}
+
+fn rndvec(seed: f32) -> vec3f {
+	return vec3f(
+		fract(sin(seed) * 43758.5453123),
+		fract(sin(seed + 1.0) * 43758.5453123),
+		fract(sin(seed + 2.0) * 43758.5453123)
+	);
 }

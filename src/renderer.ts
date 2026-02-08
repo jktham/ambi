@@ -579,10 +579,13 @@ export class Renderer {
             baseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
             baseUniforms.color = object.color;
             baseUniforms.viewPos = camera.position;
+            baseUniforms.id = object.id;
             baseUniforms.model = object.model;
             baseUniforms.view = camera.view;
             baseUniforms.projection = camera.projection;
             baseUniforms.normal = object.model.inverse().transpose();
+            baseUniforms.vertConfig = object.vertConfig;
+            baseUniforms.fragConfig = object.fragConfig;
 
             const baseUniformBuffer = this.baseUniformBuffers.get(object.id);
             const vertUniformBuffer = this.vertUniformBuffers.get(object.id);
