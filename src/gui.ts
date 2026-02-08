@@ -13,6 +13,8 @@ export class Gui {
 	private resolutionInputX: HTMLInputElement = document.getElementById("gui-resolution-input-x")! as HTMLInputElement;
 	private resolutionInputY: HTMLInputElement = document.getElementById("gui-resolution-input-y")! as HTMLInputElement;
 	private resolutionSelect: HTMLSelectElement = document.getElementById("gui-resolution-select")! as HTMLSelectElement;
+	private fovRange: HTMLInputElement = document.getElementById("gui-fov-range")! as HTMLInputElement;
+	private fovInput: HTMLInputElement = document.getElementById("gui-fov-input")! as HTMLInputElement;
 	private keyboardInput: HTMLInputElement = document.getElementById("gui-keyboard-input")! as HTMLInputElement;
 	private uniformConfig: HTMLDivElement = document.getElementById("gui-uniforms")! as HTMLDivElement;
 
@@ -78,6 +80,21 @@ export class Gui {
 			if (e.key.length == 1 && !e.ctrlKey) {
 				e.preventDefault();
 			}
+		});
+
+		this.fovRange.value = engine.camera.fov.toString();
+		this.fovInput.value = engine.camera.fov.toString();
+		this.fovRange.addEventListener("input", (e) => {
+			let value = Number((e.target as HTMLInputElement).value);
+			this.fovInput.value = value.toString();
+			engine.camera.fov = value;
+			engine.camera.updateProjection();
+		});
+		this.fovInput.addEventListener("input", (e) => {
+			let value = Number((e.target as HTMLInputElement).value);
+			this.fovRange.value = value.toString();
+			engine.camera.fov = value;
+			engine.camera.updateProjection();
 		});
 
 		this.keyboardInput.addEventListener("input", (e) => {

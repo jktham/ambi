@@ -107,7 +107,7 @@ export class Camera {
 		this.view = Mat4.rotate(new Vec3(this.rotation.y, this.rotation.x, 0)).mul(Mat4.translate(this.position.mul(1)).inverse());
 	}
 
-	private updateProjection() {
+	updateProjection() {
 		const near = 0.001;
 		const far = 1000.0;
 		const aspect = this.canvas.width / this.canvas.height;
