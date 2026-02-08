@@ -97,7 +97,7 @@ export class MuseumScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
-		obj.color = new Vec4(0, 0, 1, 0.5);
+		obj.color = new Vec4(0, 0.2, 1, 0.4);
 		obj.collider = "cube.obj";
 		obj.textures[0] = "blank.png";
 		obj.mask = 0;
@@ -109,7 +109,7 @@ export class MuseumScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(10, 2, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
-		obj.color = new Vec4(0, 0, 1, 0.0001);
+		obj.color = new Vec4(1, 0, 0.86, 0.0001);
 		obj.collider = "cube.obj";
 		obj.textures[0] = "test_trans.png";
 		obj.mask = 0;
