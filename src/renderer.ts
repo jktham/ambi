@@ -583,7 +583,7 @@ export class Renderer {
         // update world buffers
         profiler.start("  bufferWorld");
 
-        // global uniforms
+        // global uniforms, always update
         let globalUniforms = new GlobalUniforms();
         globalUniforms.time = time;
         globalUniforms.frame = frame;
@@ -596,11 +596,13 @@ export class Renderer {
         const globalUniformBuffer = this.globalUniformBuffer;
         this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms.toArray().buffer);
 
-        // object uniforms
+        // object uniforms, only update if changed
         for (let object of scene.objects) {
-            if (!object.visible) {
+            if (!object.visible || !object.changed) {
                 continue;
             }
+            object.changed = false;
+            
             let objectUniforms = new ObjectUniforms();
             objectUniforms.mask = object.mask;
             objectUniforms.cull = object.cull;

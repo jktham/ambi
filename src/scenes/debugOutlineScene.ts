@@ -93,9 +93,11 @@ export class DebugOutlineScene extends Scene {
 			if ((obj.fragUniforms as PhongUniforms).lightPos) {
 				(obj.fragUniforms as PhongUniforms).lightPos = lightPos;
 			}
+			obj.changed = true;
 		}
 		for (let obj of this.getObjects("rotate")) {
 			obj.model = Mat4.rotate(new Vec3(0, 1, 0).mul(deltaTime)).mul(obj.model);
+			obj.changed = true;
 		}
 
 	}

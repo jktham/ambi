@@ -85,7 +85,8 @@ export class FieldScene extends Scene {
 	}
 
 	update(time: number, deltaTime: number, position: Vec3) {
-		let grassUniforms = (this.getObject("grass")?.vertUniforms as InstancedUniforms);
+		let grass = this.getObject("grass")!;
+		let grassUniforms = grass.vertUniforms as InstancedUniforms;
 		for (let [k, chunkOffset] of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)].entries()) {
 			for (let i=0; i<this.GRASS_COUNT; i++) {
 				let model = Mat4.translate(new Vec3(chunkOffset.x * this.CHUNK_SIZE/2, 0, chunkOffset.y * this.CHUNK_SIZE/2)).mul(this.grassOrigins[i]);
@@ -94,6 +95,7 @@ export class FieldScene extends Scene {
 				// grassUniforms.normals[i] = model.inverse().transpose();
 			}
 		}
+		grass.changed = true;
 
 		if (position.x > this.CHUNK_SIZE/2) position.x -= this.CHUNK_SIZE;
 		if (position.x < -this.CHUNK_SIZE/2) position.x += this.CHUNK_SIZE;

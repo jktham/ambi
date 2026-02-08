@@ -78,18 +78,23 @@ export class DebugScene extends Scene {
 
 	update(time: number, deltaTime: number, position: Vec3) {
 		this.objects[0].model = this.objects[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
+		this.objects[0].changed = true;
 		this.objects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
+		this.objects[1].changed = true;
 
-		let monkeUniforms = (this.getObject("monke_instanced")?.vertUniforms as InstancedUniforms);
+		let monke = this.getObject("monke_instanced")!;
+		let monkeUniforms = monke.vertUniforms as InstancedUniforms;
 		for (let i=0; i<monkeUniforms.instanceCount; i++) {
 			let model = monkeUniforms.models[i].mul(Mat4.rotate(new Vec3(deltaTime, deltaTime, deltaTime)));
 			monkeUniforms.models[i] = model;
 			monkeUniforms.normals[i] = model.inverse().transpose();
 		}
+		monke.changed = true;
 
 		let light = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);
 		for (let obj of this.objects) {
 			(obj.fragUniforms as PhongUniforms).lightPos = light;
+			obj.changed = true;
 		}
 
 		if (time > 3 && this.getObjects("added_after_init").length == 0) {

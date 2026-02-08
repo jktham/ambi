@@ -9,6 +9,7 @@ export class WorldObject {
 	tags: string[] = [];
 	visible: boolean = true;
 	collidable: boolean = true;
+	changed: boolean = true; // true if object has changed since last frame, used for skipping uniform updates
 
 	mesh: string = "triangle.json";
 	textures: string[] = ["test.png"];

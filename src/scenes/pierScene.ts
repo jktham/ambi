@@ -94,7 +94,8 @@ export class PierScene extends Scene {
 	}
 
 	update(time: number, deltaTime: number, position: Vec3) {
-		let snowUniforms = (this.getObject("snow")?.vertUniforms as InstancedUniforms);
+		let snow = this.getObject("snow")!;
+		let snowUniforms = snow.vertUniforms as InstancedUniforms;
 		for (let i=0; i<snowUniforms.instanceCount; i++) {
 			let model = snowUniforms.models[i];
 			let fall = Mat4.translate(new Vec3(0, -0.2 * deltaTime, 0.1 * deltaTime));
@@ -105,5 +106,6 @@ export class PierScene extends Scene {
 			snowUniforms.models[i] = model;
 			snowUniforms.normals[i] = model.inverse().transpose();
 		}
+		snow.changed = true;
 	}
 }

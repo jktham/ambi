@@ -245,6 +245,7 @@ export class MuseumScene extends Scene {
 		let rotateObjects = this.getObjects("rotate");
 		for (let obj of rotateObjects) {
 			obj.model = obj.model.mul(Mat4.rotate(new Vec3(0, 0.5 * deltaTime, 0)));
+			obj.changed = true;
 		}
 	}
 
@@ -265,6 +266,7 @@ export class MuseumScene extends Scene {
 				obj.collidable = this.roomSlots[0] == r; // only collidable if in current room
 				obj.z %= 100000.0;
 				obj.z += this.roomSlots[0] == r ? 100000.0 : 0.0; // draw current room first
+				obj.changed = true;
 			}
 			for (let t of this.roomTriggers[r]) {
 				t.bbox.model = Mat4.translate(offset).mul(t.bbox.model);
