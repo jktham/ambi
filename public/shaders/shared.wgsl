@@ -35,21 +35,25 @@ struct FbData {
 	mask: u32,
 };
 
-struct BaseUniforms {
+struct GlobalUniforms {
 	time: f32,
 	frame: f32,
-	mask: f32,
-	cull: f32,
+	fov: f32,
 	resolution: vec2f,
-	color: vec4f,
 	view_pos: vec3f,
-	id: u32,
-	model: mat4x4f,
 	view: mat4x4f,
 	projection: mat4x4f,
-	normal: mat4x4f,
+};
+
+struct ObjectUniforms {
+	mask: f32,
+	cull: f32,
+	id: u32,
+	color: vec4f,
 	vert_config: vec4f,
 	frag_config: vec4f,
+	model: mat4x4f,
+	normal: mat4x4f,
 };
 
 struct PostBaseUniforms {

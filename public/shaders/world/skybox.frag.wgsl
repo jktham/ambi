@@ -1,13 +1,14 @@
 #import "../shared.wgsl"
 
-@group(0) @binding(0) var<uniform> u_base: BaseUniforms;
+@group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
+@group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
 @group(1) @binding(1) var t_color: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
-	let ray: vec3f = in.pos.xyz - u_base.view_pos;
+	let ray: vec3f = in.pos.xyz - u_global.view_pos;
 	let r: f32 = length(ray);
 	let phi: f32 = sign(ray.z) * acos(ray.x / sqrt(ray.x*ray.x + ray.z*ray.z));
 	let theta: f32 = acos(ray.y / r);
@@ -16,10 +17,10 @@ fn main(in: FragmentIn) -> FragmentOut {
 	var data: FbData;
 	data.color = in.color * textureSample(t_color, t_sampler, uv);
 	data.pos = in.pos;
-	data.depth = length(u_base.view_pos - in.pos);
+	data.depth = length(u_global.view_pos - in.pos);
 	data.normal = in.normal;
-	data.mask = u32(u_base.mask);
+	data.mask = u32(u_object.mask);
 
-	decideDiscard(data.color, u_base.cull, in.pos, in.normal, u_base.view_pos);
+	decideDiscard(data.color, u_object.cull, in.pos, in.normal, u_global.view_pos);
 	return encodeFbData(data);
 }

@@ -2,7 +2,7 @@ import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
 import { Resources } from "./resources";
 import type { Scene, WorldObject } from "./scene";
-import { BaseUniforms, PostBaseUniforms, Uniforms } from "./uniforms";
+import { GlobalUniforms, ObjectUniforms, PostBaseUniforms, Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
 
 export class Renderer {
@@ -19,7 +19,8 @@ export class Renderer {
 
     private pipelines: Map<number, GPURenderPipeline> = new Map();
     private vertexBuffers: Map<string, GPUBuffer> = new Map();
-    private baseUniformBuffers: Map<number, GPUBuffer> = new Map();
+    private globalUniformBuffer!: GPUBuffer;
+    private objectUniformBuffers: Map<number, GPUBuffer> = new Map();
     private vertUniformBuffers: Map<number, GPUBuffer> = new Map();
     private fragUniformBuffers: Map<number, GPUBuffer> = new Map();
     private uniformBindGroups: Map<number, GPUBindGroup> = new Map();
@@ -185,13 +186,14 @@ export class Renderer {
 
     private destroyWorldBuffers() {
         this.vertexBuffers.forEach(b => b.destroy());
-        this.baseUniformBuffers.forEach(b => b.destroy());
+        this.objectUniformBuffers.forEach(b => b.destroy());
         this.vertUniformBuffers.forEach(b => b.destroy());
         this.fragUniformBuffers.forEach(b => b.destroy());
 
         this.pipelines = new Map();
         this.vertexBuffers = new Map();
-        this.baseUniformBuffers = new Map();
+        (this.globalUniformBuffer as any) = undefined;
+        this.objectUniformBuffers = new Map();
         this.vertUniformBuffers = new Map();
         this.fragUniformBuffers = new Map();
         this.uniformBindGroups = new Map();
@@ -237,6 +239,14 @@ export class Renderer {
     private async initWorld(scene: Scene) {
         this.destroyWorldBuffers();
 
+        const globalUniformLength = new GlobalUniforms().size();
+        const globalUniformBuffer = this.device.createBuffer({
+            label: "global uniform buffer",
+            size: globalUniformLength * 4,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+        this.globalUniformBuffer = globalUniformBuffer;
+
         for (let object of scene.objects) {
             if (!object.visible) {
                 continue;
@@ -274,9 +284,9 @@ export class Renderer {
         }
 
         // uniforms
-        if (!this.baseUniformBuffers.has(object.id)) {
-            const [baseUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindGroup] = await this.createUniformBuffers(object.vertUniforms, object.fragUniforms, pipeline);
-            this.baseUniformBuffers.set(object.id, baseUniformBuffer);
+        if (!this.objectUniformBuffers.has(object.id)) {
+            const [objectUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindGroup] = await this.createUniformBuffers(object.vertUniforms, object.fragUniforms, pipeline);
+            this.objectUniformBuffers.set(object.id, objectUniformBuffer);
             this.vertUniformBuffers.set(object.id, vertUniformBuffer);
             this.fragUniformBuffers.set(object.id, fragUniformBuffer);
             this.uniformBindGroups.set(object.id, uniformBindGroup);
@@ -397,10 +407,12 @@ export class Renderer {
     }
 
     private async createUniformBuffers(vertUniforms: Uniforms, fragUniforms: Uniforms, pipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBuffer, GPUBindGroup]> {
-        const baseUniformLength = new BaseUniforms().size();
-        const baseUniformBuffer = this.device.createBuffer({
-            label: "base uniform buffer",
-            size: baseUniformLength * 4,
+        const globalUniformBuffer = this.globalUniformBuffer;
+
+        const objectUniformLength = new ObjectUniforms().size();
+        const objectUniformBuffer = this.device.createBuffer({
+            label: "object base uniform buffer",
+            size: objectUniformLength * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
 
@@ -425,12 +437,13 @@ export class Renderer {
         }
 
         let uniformBindings: GPUBindGroupEntry[] = [];
-        uniformBindings.push({ binding: 0, resource: { buffer: baseUniformBuffer }});
+        uniformBindings.push({ binding: 0, resource: { buffer: globalUniformBuffer }});
+        uniformBindings.push({ binding: 1, resource: { buffer: objectUniformBuffer }});
         if (vertUniformLength > 0) {
-            uniformBindings.push({ binding: 1, resource: { buffer: vertUniformBuffer }});
+            uniformBindings.push({ binding: 2, resource: { buffer: vertUniformBuffer }});
         }
         if (fragUniformLength > 0) {
-            uniformBindings.push({ binding: 2, resource: { buffer: fragUniformBuffer }});
+            uniformBindings.push({ binding: 3, resource: { buffer: fragUniformBuffer }});
         }
 
         const uniformBindGroup = this.device.createBindGroup({
@@ -439,7 +452,7 @@ export class Renderer {
             entries: uniformBindings,
         });
 
-        return [baseUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindGroup];
+        return [objectUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindGroup];
     }
 
     private async createTextureBuffer(texture: string, pipeline: GPURenderPipeline): Promise<GPUTexture> {
@@ -559,7 +572,7 @@ export class Renderer {
             if (!object.visible) {
                 continue;
             }
-            if (!this.baseUniformBuffers.has(object.id)) {
+            if (!this.objectUniformBuffers.has(object.id)) {
                 await this.initObject(object);
             }
         }
@@ -569,35 +582,44 @@ export class Renderer {
 
         // update world buffers
         profiler.start("  bufferWorld");
+
+        // global uniforms
+        let globalUniforms = new GlobalUniforms();
+        globalUniforms.time = time;
+        globalUniforms.frame = frame;
+        globalUniforms.fov = camera.fov;
+        globalUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
+        globalUniforms.viewPos = camera.position;
+        globalUniforms.view = camera.view;
+        globalUniforms.projection = camera.projection;
+
+        const globalUniformBuffer = this.globalUniformBuffer;
+        this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms.toArray().buffer);
+
+        // object uniforms
         for (let object of scene.objects) {
             if (!object.visible) {
                 continue;
             }
-            let baseUniforms = new BaseUniforms();
-            baseUniforms.time = time;
-            baseUniforms.frame = frame;
-            baseUniforms.mask = object.mask;
-            baseUniforms.cull = object.cull;
-            baseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
-            baseUniforms.color = object.color;
-            baseUniforms.viewPos = camera.position;
-            baseUniforms.id = object.id;
-            baseUniforms.model = object.model;
-            baseUniforms.view = camera.view;
-            baseUniforms.projection = camera.projection;
-            baseUniforms.normal = object.model.inverse().transpose();
-            baseUniforms.vertConfig = object.vertConfig;
-            baseUniforms.fragConfig = object.fragConfig;
+            let objectUniforms = new ObjectUniforms();
+            objectUniforms.mask = object.mask;
+            objectUniforms.cull = object.cull;
+            objectUniforms.id = object.id;
+            objectUniforms.color = object.color;
+            objectUniforms.vertConfig = object.vertConfig;
+            objectUniforms.fragConfig = object.fragConfig;
+            objectUniforms.model = object.model;
+            objectUniforms.normal = object.model.inverse().transpose();
 
-            const baseUniformBuffer = this.baseUniformBuffers.get(object.id);
+            const objectUniformBuffer = this.objectUniformBuffers.get(object.id);
             const vertUniformBuffer = this.vertUniformBuffers.get(object.id);
             const fragUniformBuffer = this.fragUniformBuffers.get(object.id);
-            if (!baseUniformBuffer || !vertUniformBuffer || !fragUniformBuffer) {
+            if (!objectUniformBuffer || !vertUniformBuffer || !fragUniformBuffer) {
                 console.error(`missing uniform buffers ${object.id}`);
                 continue;
             }
 
-            this.device.queue.writeBuffer(baseUniformBuffer, 0, baseUniforms.toArray().buffer);
+            this.device.queue.writeBuffer(objectUniformBuffer, 0, objectUniforms.toArray().buffer);
             if (object.vertUniforms.size() > 0) {
                 this.device.queue.writeBuffer(vertUniformBuffer, 0, object.vertUniforms.toArray().buffer);
             }

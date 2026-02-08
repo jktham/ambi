@@ -9,7 +9,8 @@ struct PS1FragmentIn {
 	@location(4) w: f32
 };
 
-@group(0) @binding(0) var<uniform> u_base: BaseUniforms;
+@group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
+@group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
 @group(1) @binding(1) var t_color: texture_2d<f32>;
@@ -19,10 +20,10 @@ fn main(in: PS1FragmentIn) -> FragmentOut {
 	var data: FbData;
 	data.color = (in.color / in.w) * textureSample(t_color, t_sampler, vec2f(vec2u((in.uv / in.w) * 255.0)) / 255.0);
 	data.pos = in.pos;
-	data.depth = length(u_base.view_pos - in.pos);
+	data.depth = length(u_global.view_pos - in.pos);
 	data.normal = in.normal;
-	data.mask = u32(u_base.mask);
+	data.mask = u32(u_object.mask);
 
-	decideDiscard(data.color, u_base.cull, in.pos, in.normal, u_base.view_pos);
+	decideDiscard(data.color, u_object.cull, in.pos, in.normal, u_global.view_pos);
 	return encodeFbData(data);
 }

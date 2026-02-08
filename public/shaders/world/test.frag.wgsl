@@ -1,6 +1,7 @@
 #import "../shared.wgsl"
 
-@group(0) @binding(0) var<uniform> u_base: BaseUniforms;
+@group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
+@group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
 @group(1) @binding(1) var t_color0: texture_2d<f32>;
@@ -9,16 +10,16 @@
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
 	var data: FbData;
-	if (u_base.frame % 2 == 0) {
+	if (u_global.frame % 2 == 0) {
 		data.color = in.color * textureSample(t_color0, t_sampler, in.uv);
 	} else {
 		data.color = in.color * textureSample(t_color1, t_sampler, in.uv);
 	}
 	data.pos = in.pos;
-	data.depth = length(u_base.view_pos - in.pos);
+	data.depth = length(u_global.view_pos - in.pos);
 	data.normal = in.normal;
-	data.mask = u32(u_base.mask);
+	data.mask = u32(u_object.mask);
 
-	decideDiscard(data.color, u_base.cull, in.pos, in.normal, u_base.view_pos);
+	decideDiscard(data.color, u_object.cull, in.pos, in.normal, u_global.view_pos);
 	return encodeFbData(data);
 }

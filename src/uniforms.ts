@@ -15,42 +15,56 @@ export class Uniforms {
 	}
 }
 
-export class BaseUniforms extends Uniforms {
-	name = "BaseUniforms";
+export class GlobalUniforms extends Uniforms {
+	name = "GlobalUniforms";
 	time = 0;
 	frame = 0;
-	mask = 0;
-	cull = 0.0;
+	fov = 0;
 	resolution = new Vec2();
-	color = new Vec4();
 	viewPos = new Vec3();
-	id = 0;
-	model = new Mat4();
 	view = new Mat4();
 	projection = new Mat4();
-	normal = new Mat4();
-	vertConfig = new Vec4();
-	fragConfig = new Vec4();
 
 	size(): number {
-		return 88;
+		return 44;
 	}
 
 	toArray(): Float32Array {
 		this.data[0] = this.time;
 		this.data[1] = this.frame;
-		this.data[2] = this.mask;
-		this.data[3] = this.cull;
+		this.data[2] = this.fov;
 		this.data.subarray(4, 4+2).set(this.resolution.data);
-		this.data.subarray(8, 8+4).set(this.color.data);
-		this.data.subarray(12, 12+3).set(this.viewPos.data);
-		this.data[15] = this.id;
+		this.data.subarray(8, 8+3).set(this.viewPos.data);
+		this.data.subarray(12, 12+16).set(this.view.transpose().data);
+		this.data.subarray(28, 28+16).set(this.projection.transpose().data);
+		return this.data;
+	}
+}
+
+export class ObjectUniforms extends Uniforms {
+	name = "ObjectUniforms";
+	mask = 0;
+	cull = 0.0;
+	id = 0;
+	color = new Vec4();
+	vertConfig = new Vec4();
+	fragConfig = new Vec4();
+	model = new Mat4();
+	normal = new Mat4();
+
+	size(): number {
+		return 48;
+	}
+
+	toArray(): Float32Array {
+		this.data[0] = this.mask;
+		this.data[1] = this.cull;
+		this.data[2] = this.id;
+		this.data.subarray(4, 4+4).set(this.color.data);
+		this.data.subarray(8, 8+4).set(this.vertConfig.data);
+		this.data.subarray(12, 12+4).set(this.fragConfig.data);
 		this.data.subarray(16, 16+16).set(this.model.transpose().data);
-		this.data.subarray(32, 32+16).set(this.view.transpose().data);
-		this.data.subarray(48, 48+16).set(this.projection.transpose().data);
-		this.data.subarray(64, 64+16).set(this.normal.transpose().data);
-		this.data.subarray(80, 80+4).set(this.vertConfig.data);
-		this.data.subarray(84, 84+4).set(this.fragConfig.data);
+		this.data.subarray(32, 32+16).set(this.normal.transpose().data);
 		return this.data;
 	}
 }
