@@ -80,7 +80,7 @@ fn main(in: FragmentIn) -> FragmentOut {
 			continue;
 		}
 		let t2 = intersectSphere(ray, vec4f((u_object.model * vec4f(u_rayspheres.spheres[i].pos.xyz, 1.0)).xyz, u_rayspheres.spheres[i].pos.w));
-		if (t2 > near && t2 < t || t < near) {
+		if ((t2 > near && t2 < t) || t < near) {
 			t = t2;
 			j = i;
 		}
