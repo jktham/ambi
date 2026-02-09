@@ -3,7 +3,7 @@ import type { CameraMode } from "../camera";
 import { engine } from "../main";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
-import { InstancedUniforms, PhongUniforms, PostOutlineUniforms } from "../uniforms";
+import { InstancedUniforms, PhongUniforms, PostOutlineUniforms, RayspheresUniforms } from "../uniforms";
 import { rnd, rndarr, rndvec } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
@@ -25,6 +25,7 @@ export class MuseumScene extends Scene {
 		this.postUniforms.scale.fill(2);
 		this.postUniforms.mode.fill(1);
 		this.postUniforms.color = this.postUniforms.color.map(_ => new Vec4(0, 0, 0, 1));
+		this.postUniforms.mode[14] = 0;
 		this.postUniforms.color[15] = new Vec4(1, 1, 1, 1);
 	}
 	
@@ -80,12 +81,27 @@ export class MuseumScene extends Scene {
 		let obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
-		obj.color = new Vec4(0, 1, 0, 1);
+		obj.color = new Vec4(1, 1, 1, 1);
 		obj.collider = "cube.obj";
 		obj.textures[0] = "blank.png";
-		obj.mask = 0;
-		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = phong;
+		obj.mask = 14;
+		obj.fragShader = "world/rayspheres.frag.wgsl";
+		let rayspheresUniforms = new RayspheresUniforms();
+		rayspheresUniforms.sphereCount = 1;
+		rayspheresUniforms.spherePos = [
+			new Vec4(0, 0, 0, 0.8),
+		];
+		rayspheresUniforms.sphereColor = [
+			new Vec4(1, 0, 0, 1),
+		];
+		rayspheresUniforms.backgroundColor = new Vec4(0, 0, 0, 0);
+		rayspheresUniforms.lightPos = phong.lightPos;
+		rayspheresUniforms.ambientFactor = phong.ambientFactor;
+		rayspheresUniforms.diffuseFactor = phong.diffuseFactor;
+		rayspheresUniforms.specularFactor = phong.specularFactor;
+		rayspheresUniforms.specularExponent = phong.specularExponent;
+		obj.fragUniforms = rayspheresUniforms;
+
 		this.roomObjects[r].push(obj);
 
 		// room 3

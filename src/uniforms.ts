@@ -26,7 +26,7 @@ export class GlobalUniforms extends Uniforms {
 	projection = new Mat4();
 
 	size(): number {
-		return 44;
+		return 60;
 	}
 
 	toArray(): Float32Array {
@@ -36,7 +36,8 @@ export class GlobalUniforms extends Uniforms {
 		this.data.subarray(4, 4+2).set(this.resolution.data);
 		this.data.subarray(8, 8+3).set(this.viewPos.data);
 		this.data.subarray(12, 12+16).set(this.view.transpose().data);
-		this.data.subarray(28, 28+16).set(this.projection.transpose().data);
+		this.data.subarray(28, 28+16).set(this.view.inverse().transpose().data);
+		this.data.subarray(44, 44+16).set(this.projection.transpose().data);
 		return this.data;
 	}
 }
@@ -112,6 +113,46 @@ export class InstancedUniforms extends Uniforms {
 		for (let i=0; i<this.instanceCount; i++) {
 			this.data.subarray(4 + i*32, 4 + (i+1)*32 + 16).set(this.models[i].transpose().data);
 			this.data.subarray(4 + 16 + i*32, 4 + 16 + (i+1)*32 + 16).set(this.normals[i].transpose().data);
+		}
+		return this.data;
+	}
+}
+
+export class RayspheresUniforms extends Uniforms {
+	name = "RayspheresUniforms";
+	useStorageBuffer = true;
+	
+	ambientFactor = 0.1;
+	diffuseFactor = 0.6;
+	specularFactor = 0.3;
+	specularExponent = 32.0;
+	lightPos = new Vec3();
+	lightColor = new Vec4(1.0, 1.0, 1.0, 1.0);
+	
+	sphereCount = 0;
+	backgroundColor = new Vec4(0.0, 0.0, 0.0, 0.0);
+	spherePos: Vec4[] = []; // xyz = center, w = radius
+	sphereColor: Vec4[] = [];
+
+	size(): number {
+		return 20 + 8*this.sphereCount;
+	}
+
+	toArray(): Float32Array {
+		if (this.data.length != this.size()) {
+			this.data = new Float32Array(this.size());
+		}
+		this.data[0] = this.ambientFactor;
+		this.data[1] = this.diffuseFactor;
+		this.data[2] = this.specularFactor;
+		this.data[3] = this.specularExponent;
+		this.data.subarray(4, 4+3).set(this.lightPos.data);
+		this.data.subarray(8, 8+4).set(this.lightColor.data);
+		this.data[12] = this.sphereCount;
+		this.data.subarray(16, 16+4).set(this.backgroundColor.data);
+		for (let i=0; i<this.sphereCount; i++) {
+			this.data.subarray(20 + i*8, 20 + (i+1)*8).set(this.spherePos[i].data);
+			this.data.subarray(20 + 4 + i*8, 20 + 4 + (i+1)*8).set(this.sphereColor[i].data);
 		}
 		return this.data;
 	}

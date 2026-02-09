@@ -42,13 +42,14 @@ struct GlobalUniforms {
 	resolution: vec2f,
 	view_pos: vec3f,
 	view: mat4x4f,
+	view_inv: mat4x4f,
 	projection: mat4x4f,
 };
 
 struct ObjectUniforms {
 	mask: f32,
 	cull: f32,
-	id: u32,
+	id: f32,
 	color: vec4f,
 	vert_config: vec4f,
 	frag_config: vec4f,

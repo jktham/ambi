@@ -19,7 +19,7 @@ struct PhongUniforms {
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
 	var data: FbData;
-	data.color = phong(in) * textureSample(t_color, t_sampler, in.uv);
+	data.color = phong(in.color, in.pos, in.normal, u_phong.ambient_factor, u_phong.diffuse_factor, u_phong.specular_factor, u_phong.specular_exponent, u_phong.light_pos, u_phong.light_color, u_global.view_pos) * textureSample(t_color, t_sampler, in.uv);
 	data.pos = in.pos;
 	data.depth = length(u_global.view_pos - in.pos);
 	data.normal = in.normal;
@@ -29,15 +29,15 @@ fn main(in: FragmentIn) -> FragmentOut {
 	return encodeFbData(data);
 }
 
-fn phong(in: FragmentIn) -> vec4f {
-	let norm = normalize(in.normal);
-	let light_dir = normalize(u_phong.light_pos - in.pos);
-	let view_dir = normalize(u_global.view_pos - in.pos);
+fn phong(color: vec4f, pos: vec3f, normal: vec3f, ambient_factor: f32, diffuse_factor: f32, specular_factor: f32, specular_exponent: f32, light_pos: vec3f, light_color: vec4f, view_pos: vec3f) -> vec4f {
+	let norm = normalize(normal);
+	let light_dir = normalize(light_pos - pos);
+	let view_dir = normalize(view_pos - pos);
 	let reflect_dir = reflect(-light_dir, norm);
 
-	let ambient = u_phong.ambient_factor;
-	let diffuse = u_phong.diffuse_factor * max(dot(norm, light_dir), 0.0);
-	let specular = u_phong.specular_factor * pow(max(dot(view_dir, reflect_dir), 0.0), u_phong.specular_exponent);
+	let ambient = ambient_factor;
+	let diffuse = diffuse_factor * max(dot(norm, light_dir), 0.0);
+	let specular = specular_factor * pow(max(dot(view_dir, reflect_dir), 0.0), specular_exponent);
 
-	return in.color * vec4f(u_phong.light_color.rgb * (ambient + diffuse + specular), 1.0);
+	return color * vec4f(light_color.rgb * (ambient + diffuse + specular), 1.0);
 }
