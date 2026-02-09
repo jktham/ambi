@@ -63,13 +63,13 @@ export class Renderer {
                 throw new Error("no webgpu device");
             }
             if (adapter?.info?.isFallbackAdapter) {
-                alert("fallback to cpu simulated device, bad performance likely, try chrome://flags/#enable-vulkan");
+                alert("fallback to cpu simulated device, bad performance likely.\ntry chrome://flags/#enable-vulkan");
             }
             this.device = device;
 
         } catch (e) {
             console.error(e);
-            alert("no webgpu support, try chromium based browser with chrome://flags/#enable-unsafe-webgpu");
+            alert("no webgpu support, try chrome.\ncompatible browsers: https://caniuse.com/webgpu");
             throw new Error("no webgpu support");
         }
     }

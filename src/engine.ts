@@ -37,6 +37,7 @@ export class Engine {
 
 	async setScene(name: string) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
+		this.gui.updateInfo("loading...");
 
 		let scene = scenes.get(name);
 		if (scene) {
@@ -67,6 +68,7 @@ export class Engine {
 
 	async setPost(path: string, uniforms: Uniforms, textures: string[]) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
+		this.gui.updateInfo("loading...");
 
 		if (path == "scene") {
 			this.renderer.postShaderOverride = undefined;
