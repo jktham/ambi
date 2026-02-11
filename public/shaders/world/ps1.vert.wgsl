@@ -1,4 +1,4 @@
-#import "../shared.wgsl"
+#import "../data.wgsl"
 
 struct PS1VertexOut {
 	@builtin(position) ndc: vec4f,

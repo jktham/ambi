@@ -1,4 +1,5 @@
-#import "../shared.wgsl"
+#import "../data.wgsl"
+#import "../lighting.wgsl"
 
 struct PhongUniforms {
 	ambient_factor: f32,
@@ -19,29 +20,15 @@ struct PhongUniforms {
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
 	var data: FbData;
-	data.color = phong(in) * textureSample(t_color, t_sampler, in.uv);
+	data.color = phong(in.color, in.pos, in.normal, u_global.view_pos, u_phong.ambient_factor, u_phong.diffuse_factor, u_phong.specular_factor, u_phong.specular_exponent, u_phong.light_pos, u_phong.light_color) * textureSample(t_color, t_sampler, in.uv);
 	data.pos = in.pos;
 	data.depth = length(u_global.view_pos - in.pos);
 	data.normal = in.normal;
 	data.mask = u32(u_object.mask);
 
-	decideDiscard(data.color, u_object.cull, in.pos, in.normal, u_global.view_pos);
-	return encodeFbData(data);
-}
-
-fn phong(in: FragmentIn) -> vec4f {
-	let norm = normalize(in.normal);
-	let light_dir = normalize(u_phong.light_pos - in.pos);
-	let view_dir = normalize(u_global.view_pos - in.pos);
-	let reflect_dir = reflect(-light_dir, norm);
-
-	let ambient = u_phong.ambient_factor;
-	let diffuse = u_phong.diffuse_factor * max(dot(norm, light_dir), 0.0);
-	let specular = u_phong.specular_factor * pow(max(dot(view_dir, reflect_dir), 0.0), u_phong.specular_exponent);
-
-	let color = in.color * u_phong.light_color * (ambient + diffuse + specular);
 	const q = 8.0;
-	let quantized = floor(color * q) / q;
+	data.color = floor(data.color * q) / q;
 
-	return quantized;
+	decideDiscard(data.color, data.pos, data.normal, u_global.view_pos, u_object.cull);
+	return encodeFbData(data);
 }

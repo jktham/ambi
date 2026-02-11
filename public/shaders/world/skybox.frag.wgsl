@@ -1,4 +1,4 @@
-#import "../shared.wgsl"
+#import "../data.wgsl"
 
 @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
@@ -21,6 +21,6 @@ fn main(in: FragmentIn) -> FragmentOut {
 	data.normal = in.normal;
 	data.mask = u32(u_object.mask);
 
-	decideDiscard(data.color, u_object.cull, in.pos, in.normal, u_global.view_pos);
+	decideDiscard(data.color, data.pos, data.normal, u_global.view_pos, u_object.cull);
 	return encodeFbData(data);
 }

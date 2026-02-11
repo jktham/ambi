@@ -1,4 +1,4 @@
-#import "../shared.wgsl"
+#import "../data.wgsl"
 
 @group(0) @binding(0) var<uniform> u_base: PostBaseUniforms;
 

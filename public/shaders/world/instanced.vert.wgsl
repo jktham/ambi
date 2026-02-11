@@ -1,4 +1,4 @@
-#import "../shared.wgsl"
+#import "../data.wgsl"
 
 struct Instance {
 	model: mat4x4f,

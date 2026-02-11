@@ -1,4 +1,4 @@
-#import "../shared.wgsl"
+#import "../data.wgsl"
 
 struct PostPS1Uniforms {
 	fog_start: f32,

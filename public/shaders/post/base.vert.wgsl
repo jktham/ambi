@@ -1,4 +1,4 @@
-#import "../shared.wgsl"
+#import "../data.wgsl"
 
 @vertex 
 fn main(@builtin(vertex_index) i: u32) -> VertexOut {

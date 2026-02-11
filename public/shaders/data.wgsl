@@ -63,20 +63,6 @@ struct PostBaseUniforms {
 	resolution: vec2f,
 };
 
-fn decideDiscard(color: vec4f, cull: f32, pos: vec3f, normal: vec3f, view_pos: vec3f) {
-	if (color.a == 0.0) {
-		discard;
-	}
-
-	if (cull != 0.0) {
-		let view_dir = normalize(view_pos - pos);
-		let face = dot(normalize(normal), view_dir);
-		if (face * cull < 0.0) {
-			discard;
-		}
-	}
-}
-
 fn encodeFbData(data: FbData) -> FragmentOut {
 	var out: FragmentOut;
 	out.color = data.color;
@@ -100,14 +86,16 @@ fn loadFbData(pixel: vec2u, fb_color: texture_storage_2d<rgba8unorm, read>, fb_p
 	return data;
 }
 
-fn rnd(seed: f32) -> f32 {
-	return fract(sin(seed) * 43758.5453123);
-}
+fn decideDiscard(color: vec4f, pos: vec3f, normal: vec3f, view_pos: vec3f, cull: f32) {
+	if (color.a == 0.0) {
+		discard;
+	}
 
-fn rndvec3(seed: f32) -> vec3f {
-	return vec3f(
-		fract(sin(seed) * 43758.5453123),
-		fract(sin(seed + 1.0) * 43758.5453123),
-		fract(sin(seed + 2.0) * 43758.5453123)
-	);
+	if (cull != 0.0) {
+		let view_dir = normalize(view_pos - pos);
+		let face = dot(normalize(normal), view_dir);
+		if (face * cull < 0.0) {
+			discard;
+		}
+	}
 }
