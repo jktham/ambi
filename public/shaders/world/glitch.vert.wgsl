@@ -7,7 +7,7 @@
 fn main(in: VertexIn) -> VertexOut {
 	let t = u_global.time;
 	let scale = select(u_object.vert_config.x, 0.1, u_object.vert_config.x == 0.0);
-	let pos = in.pos + rndvec(in.pos.x + in.pos.y + in.pos.z + t) * scale - scale/2;
+	let pos = in.pos + rndvec3(in.pos.x + in.pos.y + in.pos.z + t) * scale - scale/2;
 
 	var out: VertexOut;
 	out.ndc = u_global.projection * u_global.view * u_object.model * vec4f(pos, 1.0);

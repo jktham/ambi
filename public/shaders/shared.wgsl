@@ -104,7 +104,7 @@ fn rnd(seed: f32) -> f32 {
 	return fract(sin(seed) * 43758.5453123);
 }
 
-fn rndvec(seed: f32) -> vec3f {
+fn rndvec3(seed: f32) -> vec3f {
 	return vec3f(
 		fract(sin(seed) * 43758.5453123),
 		fract(sin(seed + 1.0) * 43758.5453123),

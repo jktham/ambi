@@ -4,7 +4,7 @@ import { engine } from "../main";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms, PostOutlineUniforms, RayspheresUniforms } from "../uniforms";
-import { rnd, rndarr, rndvec } from "../utils";
+import { rnd, rndarr, rndseed, rndvec3, rndvec4 } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class MuseumScene extends Scene {
@@ -101,7 +101,6 @@ export class MuseumScene extends Scene {
 		rayspheresUniforms.specularFactor = phong.specularFactor;
 		rayspheresUniforms.specularExponent = phong.specularExponent;
 		obj.fragUniforms = rayspheresUniforms;
-
 		this.roomObjects[r].push(obj);
 
 		// room 3
@@ -177,14 +176,24 @@ export class MuseumScene extends Scene {
 		this.roomTriggers[r].push(...t);
 
 		obj = new WorldObject();
-		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.tags = ["spheres"];
+		obj.model = Mat4.trs(new Vec3(0, 5, 0), new Vec3(0, 0, 0), new Vec3(4, 4, 4));
 		obj.mesh = "cube.obj";
-		obj.color = new Vec4(1, 0, 1, 1);
-		obj.collider = "cube.obj";
+		obj.color = new Vec4(1, 1, 1, 1);
 		obj.textures[0] = "blank.png";
-		obj.mask = 0;
-		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = phong;
+		obj.mask = 14;
+		obj.fragShader = "world/rayspheres.frag.wgsl";
+		rayspheresUniforms = new RayspheresUniforms();
+		rayspheresUniforms.sphereCount = 32;
+		rayspheresUniforms.spherePos = new Array<Vec4>(rayspheresUniforms.sphereCount).fill(new Vec4()).map(_ => rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, 4, 2, 1.5)));
+		rayspheresUniforms.sphereColor = new Array<Vec4>(rayspheresUniforms.sphereCount).fill(new Vec4()).map(_ => rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1)));
+		rayspheresUniforms.backgroundColor = new Vec4(0, 0, 0, 1);
+		rayspheresUniforms.lightPos = phong.lightPos;
+		rayspheresUniforms.ambientFactor = phong.ambientFactor;
+		rayspheresUniforms.diffuseFactor = phong.diffuseFactor;
+		rayspheresUniforms.specularFactor = phong.specularFactor;
+		rayspheresUniforms.specularExponent = phong.specularExponent;
+		obj.fragUniforms = rayspheresUniforms;
 		this.roomObjects[r].push(obj);
 
 		// concat
@@ -261,6 +270,19 @@ export class MuseumScene extends Scene {
 		let rotateObjects = this.getObjects("rotate");
 		for (let obj of rotateObjects) {
 			obj.model = obj.model.mul(Mat4.rotate(new Vec3(0, 0.5 * deltaTime, 0)));
+			obj.changed = true;
+		}
+
+		let spheresObjects = this.getObjects("spheres");
+		for (let obj of spheresObjects) {
+			let uniforms = obj.fragUniforms as RayspheresUniforms;
+			for (let i=0; i<uniforms.sphereCount; i++) {
+				uniforms.spherePos[i].y += rndseed(i, 0.3, 1.2) * deltaTime;
+				if (uniforms.spherePos[i].y > 4) {
+					uniforms.spherePos[i] = rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, -4, 2, 1.5));
+					uniforms.sphereColor[i] = rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1));
+				}
+			}
 			obj.changed = true;
 		}
 	}
@@ -460,13 +482,13 @@ export class MuseumScene extends Scene {
 			for (let texture of textures[i]) {
 				let [min, max] = wallDimensions[i];
 
-				let position = rndvec(min, max);
+				let position = rndvec3(min, max);
 				let rotation = rndarr(wallRotations[i]);
 				let dist = Math.min(...occupiedPositions[i].map(p => p.sub(position).mul(new Vec3(1, i == 4 ? 1 : 0.5, 1)).length()), 100);
 				let iterations = 0;
 
 				while (dist < (i == 4 ? 6 : 4) && iterations < 100) {
-					position = rndvec(min, max);
+					position = rndvec3(min, max);
 					dist = Math.min(...occupiedPositions[i].map(p => p.sub(position).mul(new Vec3(1, i == 4 ? 1 : 0.5, 1)).length()), 100);
 					iterations++;
 				}
