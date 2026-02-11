@@ -80,7 +80,7 @@ fn decideDiscard(color: vec4f, cull: f32, pos: vec3f, normal: vec3f, view_pos: v
 fn encodeFbData(data: FbData) -> FragmentOut {
 	var out: FragmentOut;
 	out.color = data.color;
-	out.pos_depth = vec4f(data.pos, log2(data.depth + 1.0));
+	out.pos_depth = vec4f(data.pos, data.depth);
 	out.normal_mask = vec4f((data.normal + 1.0) / 2.0, f32(data.mask) / 255.0);
 	return out;
 }
@@ -93,7 +93,7 @@ fn loadFbData(pixel: vec2u, fb_color: texture_storage_2d<rgba8unorm, read>, fb_p
 
 	data.color = color;
 	data.pos = pd.xyz;
-	data.depth = exp2(pd.w) - 1.0;
+	data.depth = pd.w;
 	data.normal = nm.xyz * 2.0 - 1.0;
 	data.mask = u32(nm.w * 255.0);
 

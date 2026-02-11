@@ -116,7 +116,7 @@ export class Camera {
 		this.projection = new Mat4([
 			phi, 0.0, 0.0, 0.0,
 			0.0, phi * aspect, 0.0, 0.0,
-			0.0, 0.0, far / (near - far), near * far / (near - far),
+			0.0, 0.0, near / (far - near), far * near / (far - near), // reverse z
 			0.0, 0.0, -1.0, 0.0
 		]);
 	}

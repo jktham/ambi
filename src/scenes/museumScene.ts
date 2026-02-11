@@ -184,7 +184,7 @@ export class MuseumScene extends Scene {
 		obj.mask = 14;
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
-		rayspheresUniforms.sphereCount = 32;
+		rayspheresUniforms.sphereCount = 16;
 		rayspheresUniforms.spherePos = new Array<Vec4>(rayspheresUniforms.sphereCount).fill(new Vec4()).map(_ => rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, 4, 2, 1.5)));
 		rayspheresUniforms.sphereColor = new Array<Vec4>(rayspheresUniforms.sphereCount).fill(new Vec4()).map(_ => rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1)));
 		rayspheresUniforms.backgroundColor = new Vec4(0, 0, 0, 1);

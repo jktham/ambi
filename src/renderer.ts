@@ -117,7 +117,7 @@ export class Renderer {
             }],
             depthStencilAttachment: {
                 view: depthTexture.createView(),
-                depthClearValue: 1,
+                depthClearValue: 0,
                 depthLoadOp: 'clear',
                 depthStoreOp: 'store',
                 stencilClearValue: 0,
@@ -341,7 +341,7 @@ export class Renderer {
         });
         const depthStencilState: GPUDepthStencilState = {
             depthWriteEnabled: true,
-            depthCompare: 'less-equal' as GPUCompareFunction,
+            depthCompare: 'greater' as GPUCompareFunction,
             format: 'depth24plus-stencil8' as GPUTextureFormat,
         };
         const pipeline = this.device.createRenderPipeline({
