@@ -1,5 +1,5 @@
 import { Bbox } from "../bbox";
-import type { CameraMode } from "../camera";
+import type { Camera, CameraMode } from "../camera";
 import { Scene, WorldObject } from "../scene";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
@@ -66,7 +66,7 @@ export class BrutalScene extends Scene {
 		this.objects.push(sun);
 	}
 
-	update(time: number, deltaTime: number, position: Vec3) {
+	update(time: number, deltaTime: number, camera: Camera) {
 		
 	}
 }

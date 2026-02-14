@@ -1,4 +1,4 @@
-import type { CameraMode } from "../camera";
+import type { Camera, CameraMode } from "../camera";
 import { Scene, WorldObject } from "../scene";
 import { InstancedUniforms, PostPS1Uniforms } from "../uniforms";
 import { rnd } from "../utils";
@@ -87,7 +87,7 @@ export class FieldScene extends Scene {
 		}
 	}
 
-	update(time: number, deltaTime: number, position: Vec3) {
+	update(time: number, deltaTime: number, camera: Camera) {
 		for (let i=0; i<this.GRASS_COUNT; i++) {
 			let sway = Mat4.rotate(new Vec3(0, 0, Math.sin(this.grassSwaySpeeds[i] * time + this.grassSwayOffsets[i]) * this.grassSwayScales[i]));
 			this.grassModels[i] = this.grassOrigins[i].mul(sway);
@@ -103,9 +103,9 @@ export class FieldScene extends Scene {
 			g.changed = true;
 		}
 
-		if (position.x > this.CHUNK_SIZE/2) position.x -= this.CHUNK_SIZE;
-		if (position.x < -this.CHUNK_SIZE/2) position.x += this.CHUNK_SIZE;
-		if (position.z > this.CHUNK_SIZE/2) position.z -= this.CHUNK_SIZE;
-		if (position.z < -this.CHUNK_SIZE/2) position.z += this.CHUNK_SIZE;
+		if (camera.position.x > this.CHUNK_SIZE/2) camera.position.x -= this.CHUNK_SIZE;
+		if (camera.position.x < -this.CHUNK_SIZE/2) camera.position.x += this.CHUNK_SIZE;
+		if (camera.position.z > this.CHUNK_SIZE/2) camera.position.z -= this.CHUNK_SIZE;
+		if (camera.position.z < -this.CHUNK_SIZE/2) camera.position.z += this.CHUNK_SIZE;
 	}
 }

@@ -26,9 +26,9 @@ export class Camera {
 	velocity: Vec3 = new Vec3();
 	position: Vec3 = new Vec3();
 	rotation: Vec2 = new Vec2();
-	private front: Vec3 = new Vec3();
-	private right: Vec3 = new Vec3();
-	private up: Vec3 = new Vec3();
+	front: Vec3 = new Vec3();
+	right: Vec3 = new Vec3();
+	up: Vec3 = new Vec3();
 
 	view: Mat4 = new Mat4();
 	projection: Mat4 = new Mat4();

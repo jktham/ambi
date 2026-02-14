@@ -1,5 +1,5 @@
 import { Bbox } from "../bbox";
-import type { CameraMode } from "../camera";
+import type { Camera, CameraMode } from "../camera";
 import { engine } from "../main";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
@@ -79,6 +79,7 @@ export class MuseumScene extends Scene {
 		this.roomTriggers[r].push(...t);
 
 		let obj = new WorldObject();
+		obj.tags = ["interactsphere"];
 		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(1, 1, 1, 1);
@@ -223,27 +224,27 @@ export class MuseumScene extends Scene {
 		this.objects.push(obj);
 	}
 
-	update(time: number, deltaTime: number, position: Vec3) {
-		if (position.z < -22) {
-			position.z += 44;
+	update(time: number, deltaTime: number, camera: Camera) {
+		if (camera.position.z < -22) {
+			camera.position.z += 44;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(1);
 			this.applyRoomOffsets();
 		}
-		if (position.x > 22) {
-			position.x -= 44;
+		if (camera.position.x > 22) {
+			camera.position.x -= 44;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(2);
 			this.applyRoomOffsets();
 		}
-		if (position.z > 22) {
-			position.z -= 44;
+		if (camera.position.z > 22) {
+			camera.position.z -= 44;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(3);
 			this.applyRoomOffsets();
 		}
-		if (position.x < -22) {
-			position.x += 44;
+		if (camera.position.x < -22) {
+			camera.position.x += 44;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(4);
 			this.applyRoomOffsets();
@@ -256,7 +257,7 @@ export class MuseumScene extends Scene {
 		}
 		for (let i=0; i<lodObjects.length; i++) {
 			for (let obj of lodObjects[i]) {
-				let dist = position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
+				let dist = camera.position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
 				if (i == 0) {
 					obj.visible = dist < lodDistances[i] ? true : false;
 					obj.collidable = dist < lodDistances[i] ? true : false;
@@ -284,6 +285,31 @@ export class MuseumScene extends Scene {
 				}
 			}
 			obj.changed = true;
+		}
+
+		let interactSpheresObjects = this.getObjects("interactsphere");
+		for (let obj of interactSpheresObjects) {
+			let offset = obj.model.transform(new Vec3(0, 0, 0)).sub(camera.position);
+			if (offset.length() < 3 && offset.normalize().dot(camera.front) > 0.8) {
+				this.postUniforms.color[14] = new Vec4(0.0, 0.9, 0.1, 1);
+				this.postUniforms.scale[14] = 8;
+			} else {
+				this.postUniforms.color[14] = new Vec4(0, 0, 0, 1);
+				this.postUniforms.scale[14] = 2;
+			}
+		}
+	}
+
+	interact(camera: Camera): void {
+		let interactSpheresObjects = this.getObjects("interactsphere");
+		for (let obj of interactSpheresObjects) {
+			let offset = obj.model.transform(new Vec3(0, 0, 0)).sub(camera.position);
+			if (offset.length() < 3 && offset.normalize().dot(camera.front) > 0.8) {
+				let uni = obj.fragUniforms as RayspheresUniforms;
+				uni.sphere_color[0] = rndvec4();
+				uni.sphere_color[0].w = 1;
+				obj.changed = true;
+			}
 		}
 	}
 

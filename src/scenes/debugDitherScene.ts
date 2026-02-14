@@ -1,3 +1,4 @@
+import type { Camera } from "../camera";
 import { Scene, WorldObject } from "../scene";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
@@ -62,7 +63,7 @@ export class DebugDitherScene extends Scene {
 		this.objects.push(obj);
 	}
 
-	update(time: number, deltaTime: number, position: Vec3) {
+	update(time: number, deltaTime: number, camera: Camera) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		for (let obj of this.objects) {
 			(obj.fragUniforms as PhongUniforms).light_pos = lightPos;

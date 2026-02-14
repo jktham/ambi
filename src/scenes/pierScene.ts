@@ -1,4 +1,4 @@
-import type { CameraMode } from "../camera";
+import type { Camera, CameraMode } from "../camera";
 import { Scene, WorldObject } from "../scene";
 import { InstancedUniforms, PostPS1Uniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
@@ -93,7 +93,7 @@ export class PierScene extends Scene {
 		this.objects.push(lantern_holder);
 	}
 
-	update(time: number, deltaTime: number, position: Vec3) {
+	update(time: number, deltaTime: number, camera: Camera) {
 		let snow = this.getObject("snow")!;
 		let snowUniforms = snow.vertUniforms as InstancedUniforms;
 		for (let i=0; i<snowUniforms.instanceCount; i++) {

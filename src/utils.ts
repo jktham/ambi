@@ -9,7 +9,7 @@ export function rndint(min: number, max: number): number {
     return Math.floor(rnd(min, max));
 }
 
-export function rndvec3(min: Vec3, max: Vec3): Vec3 {
+export function rndvec3(min: Vec3 = new Vec3(0, 0, 0), max: Vec3 = new Vec3(1, 1, 1)): Vec3 {
     return new Vec3(
         rnd(min.x, max.x),
         rnd(min.y, max.y),
@@ -17,7 +17,7 @@ export function rndvec3(min: Vec3, max: Vec3): Vec3 {
     );
 }
 
-export function rndvec4(min: Vec4, max: Vec4): Vec4 {
+export function rndvec4(min: Vec4 = new Vec4(0, 0, 0, 0), max: Vec4 = new Vec4(1, 1, 1, 1)): Vec4 {
     return new Vec4(
         rnd(min.x, max.x),
         rnd(min.y, max.y),

@@ -1,4 +1,5 @@
 import { Bbox } from "../bbox";
+import type { Camera } from "../camera";
 import { Scene, WorldObject } from "../scene";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
@@ -76,7 +77,7 @@ export class DebugScene extends Scene {
 
 	}
 
-	update(time: number, deltaTime: number, position: Vec3) {
+	update(time: number, deltaTime: number, camera: Camera) {
 		this.objects[0].model = this.objects[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
 		this.objects[0].changed = true;
 		this.objects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));

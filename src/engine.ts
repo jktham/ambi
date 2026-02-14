@@ -112,9 +112,13 @@ export class Engine {
 		this.profiler.stop("  updateCamera");
 
 		this.profiler.start("  updateScene");
-		this.scene.update(time, deltaTime, this.camera.position);
+		this.scene.update(time, deltaTime, this.camera);
 		for (let trigger of this.scene.triggers) {
 			if (trigger.enabled) await trigger.test(this.camera.position);
+		}
+		if (this.input.activeActions.has("interact")) {
+			this.scene.interact(this.camera);
+			this.input.activeActions.delete("interact"); // only trigger once per press
 		}
 		this.profiler.stop("  updateScene");
 

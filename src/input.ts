@@ -1,6 +1,6 @@
 import { Vec2 } from "./vec";
 
-export const Actions = ["left", "right", "up", "down", "forward", "backward", "sprint"] as const;
+export const Actions = ["left", "right", "up", "down", "forward", "backward", "sprint", "interact"] as const;
 export type Action = typeof Actions[number];
 
 export class Input {
@@ -15,6 +15,7 @@ export class Input {
 		["r", "up"],
 		["f", "down"],
 		["shift", "sprint"],
+		["e", "interact"],
 	]);
 
 	cursorChange: Vec2 = new Vec2();
@@ -23,6 +24,9 @@ export class Input {
 	constructor(canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
 		addEventListener("keydown", (e) => {
+			if (e.repeat) {
+				return;
+			}
 			if ((e.target as HTMLElement).nodeName == "INPUT") {
 				return;
 			}

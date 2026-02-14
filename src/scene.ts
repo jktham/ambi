@@ -1,5 +1,5 @@
 import type { Bbox } from "./bbox";
-import type { CameraMode } from "./camera";
+import type { Camera, CameraMode } from "./camera";
 import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
@@ -55,8 +55,13 @@ export class Scene {
 	}
 
 	// called every frame after scene is loaded
-	update(time: number, deltaTime: number, position: Vec3) {
+	update(time: number, deltaTime: number, camera: Camera) {
 		
+	}
+
+	// called once when player hits interact button
+	interact(camera: Camera) {
+
 	}
 
 	// get first object with tag
