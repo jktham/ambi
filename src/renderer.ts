@@ -215,6 +215,7 @@ export class Renderer {
         let shaders = new Set<string>();
         let meshes = new Set<string>();
         let textures = new Set<string>();
+        let mtls = new Set<string>();
         for (let object of scene.objects) {
             shaders.add(object.vertShader);
             shaders.add(object.fragShader);
@@ -222,6 +223,7 @@ export class Renderer {
             object.textures.map(t => textures.add(t));
             if (object.collider) meshes.add(object.collider);
             if (object.bbox?.mesh) meshes.add(object.bbox.mesh);
+            if (object.mtl) mtls.add(object.mtl);
         }
         for (let trigger of scene.triggers) {
             if (trigger.bbox?.mesh) meshes.add(trigger.bbox.mesh);
@@ -233,6 +235,7 @@ export class Renderer {
         promises.push(...[...shaders].map((s) => this.resources.loadShader(s)));
         promises.push(...[...meshes].map((m) => this.resources.loadMesh(m)));
         promises.push(...[...textures].map((t) => this.resources.loadTexture(t)));
+        promises.push(...[...mtls].map((m) => this.resources.loadMtl(m)));
         await Promise.all(promises);
     }
 
@@ -290,6 +293,12 @@ export class Renderer {
             this.vertUniformBuffers.set(object.id, vertUniformBuffer);
             this.fragUniformBuffers.set(object.id, fragUniformBuffer);
             this.uniformBindGroups.set(object.id, uniformBindGroup);
+        }
+
+        // override first texture if mtl specified
+        if (object.mtl) {
+            let mtlTexture = await this.resources.loadMtl(object.mtl);
+            object.textures[0] = mtlTexture;
         }
 
         // textures

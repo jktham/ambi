@@ -9,7 +9,7 @@ export class WorldObject {
 	tags: string[] = [];
 	visible: boolean = true;
 	collidable: boolean = true;
-	changed: boolean = true; // true if object has changed since last frame, used for skipping uniform updates
+	changed: boolean = true; // set true if object has changed since last frame, used for skipping uniform updates
 
 	mesh: string = "triangle.json";
 	textures: string[] = ["test.png"];
@@ -17,10 +17,11 @@ export class WorldObject {
 	model: Mat4 = new Mat4();
 	mask: number = 0;
 	cull: number = 0.0; // 0.0 = no culling, 1.0 = backface culling, -1.0 = frontface culling
-	z: number = 0.0; // lower = closer to camera
+	z: number = 0.0; // used for draw order, lower = closer to camera
 	
 	collider?: string = undefined;
 	bbox?: Bbox = undefined;
+	mtl?: string = undefined; // overrides first texture if specified
 
 	vertShader: string = "world/base.vert.wgsl";
 	fragShader: string = "world/base.frag.wgsl";

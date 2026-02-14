@@ -7,6 +7,7 @@ export class Resources {
 	private textures: Map<string, ImageData> = new Map();
 	private colliders: Map<string, Vec3[][]> = new Map();
 	private bboxes: Map<string, Bbox> = new Map();
+	private mtls: Map<string, string> = new Map();
 
 	async loadShader(name: string): Promise<string> {
 		let cached = this.shaders.get(name);
@@ -121,6 +122,34 @@ export class Resources {
 		}
 	}
 
+	// returns name of first texture in mtl
+	async loadMtl(name: string): Promise<string> {
+		let cached = this.mtls.get(name);
+		if (cached) {
+			return cached;
+		} else {
+			let path = `/meshes/${name}`;
+			if (!await this.fileExists(path)) {
+				console.warn(`mtl file does not exist: ${path}`);
+				this.mtls.set(name, "");
+				return "";
+			}
+			let file = await this.fetchFile(path);
+			let texture = this.parseMtl(file);
+			this.mtls.set(name, texture);
+			return texture;
+		}
+	}
+
+	private async fileExists(path: string): Promise<boolean> {
+		try {
+			let res = await fetch(path, { method: "HEAD" });
+			return res.ok;
+		} catch (e) {
+			return false;
+		}
+	}
+
 	private async fetchFile(path: string): Promise<string> {
 		try {
 			let res = await fetch(path).then(res => res.text());
@@ -217,6 +246,23 @@ export class Resources {
 		return new Bbox([min, max]);
 	}
 
+	private parseMtl(file: string): string {
+		for (let line of file.split(/\r?\n/)) {
+			let words = line.split(" ");
+			if (words[0] == "map_Kd") {
+				let abs = words[1];
+				if (!abs.includes("textures/")) {
+					console.warn(`texture path in mtl does not include "textures/": ${abs}`);
+					return "";
+				}
+				let rel = abs.split("textures/").slice(1).join("");
+				return rel;
+			}
+		}
+		console.warn(`did not find map_Kd in mtl: ${file}`);
+		return "";
+	}
+
 	private async preprocessShader(file: string, path: string): Promise<string> {
 		let out = "";
 		for (let line of file.split(/\r?\n/)) {
@@ -235,5 +281,6 @@ export class Resources {
 		this.meshes.clear();
 		this.textures.clear();
 		this.colliders.clear();
+		this.mtls.clear();
 	}
 }
