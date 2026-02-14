@@ -93,7 +93,7 @@ export class DebugScene extends Scene {
 
 		let light = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);
 		for (let obj of this.objects) {
-			(obj.fragUniforms as PhongUniforms).lightPos = light;
+			(obj.fragUniforms as PhongUniforms).light_pos = light;
 			obj.changed = true;
 		}
 

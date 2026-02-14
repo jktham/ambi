@@ -15,9 +15,9 @@ export class PierScene extends Scene {
 
 	constructor() {
 		super();
-		(this.postUniforms as PostPS1Uniforms).fogStart = -2.0;
-		(this.postUniforms as PostPS1Uniforms).fogEnd = 10.0;
-		(this.postUniforms as PostPS1Uniforms).fogColor = new Vec4(0.60, 0.60, 0.60, 1.0);
+		(this.postUniforms as PostPS1Uniforms).fog_start = -2.0;
+		(this.postUniforms as PostPS1Uniforms).fog_end = 10.0;
+		(this.postUniforms as PostPS1Uniforms).fog_color = new Vec4(0.60, 0.60, 0.60, 1.0);
 	}
 
 	init() {

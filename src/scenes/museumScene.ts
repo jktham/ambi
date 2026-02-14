@@ -31,10 +31,10 @@ export class MuseumScene extends Scene {
 	
 	init() {
 		let phong = new PhongUniforms();
-		phong.lightPos = new Vec3(400, 1200, 800);
-		phong.ambientFactor = 0.8;
-		phong.diffuseFactor = 0.2;
-		phong.specularFactor = 0.0;
+		phong.light_pos = new Vec3(400, 1200, 800);
+		phong.ambient_factor = 0.8;
+		phong.diffuse_factor = 0.2;
+		phong.specular_factor = 0.0;
 
 		// room 0
 		let r = 0;
@@ -87,19 +87,19 @@ export class MuseumScene extends Scene {
 		obj.mask = 14;
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		let rayspheresUniforms = new RayspheresUniforms();
-		rayspheresUniforms.sphereCount = 1;
-		rayspheresUniforms.spherePos = [
+		rayspheresUniforms.sphere_count = 1;
+		rayspheresUniforms.sphere_pos = [
 			new Vec4(0, 0, 0, 0.8),
 		];
-		rayspheresUniforms.sphereColor = [
+		rayspheresUniforms.sphere_color = [
 			new Vec4(1, 0, 0, 1),
 		];
-		rayspheresUniforms.backgroundColor = new Vec4(0, 0, 0, 0);
-		rayspheresUniforms.lightPos = phong.lightPos;
-		rayspheresUniforms.ambientFactor = phong.ambientFactor;
-		rayspheresUniforms.diffuseFactor = phong.diffuseFactor;
-		rayspheresUniforms.specularFactor = phong.specularFactor;
-		rayspheresUniforms.specularExponent = phong.specularExponent;
+		rayspheresUniforms.background_color = new Vec4(0, 0, 0, 0);
+		rayspheresUniforms.light_pos = phong.light_pos;
+		rayspheresUniforms.ambient_factor = phong.ambient_factor;
+		rayspheresUniforms.diffuse_factor = phong.diffuse_factor;
+		rayspheresUniforms.specular_factor = phong.specular_factor;
+		rayspheresUniforms.specular_exponent = phong.specular_exponent;
 		obj.fragUniforms = rayspheresUniforms;
 		this.roomObjects[r].push(obj);
 
@@ -184,15 +184,15 @@ export class MuseumScene extends Scene {
 		obj.mask = 14;
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
-		rayspheresUniforms.sphereCount = 16;
-		rayspheresUniforms.spherePos = new Array<Vec4>(rayspheresUniforms.sphereCount).fill(new Vec4()).map(_ => rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, 4, 2, 1.5)));
-		rayspheresUniforms.sphereColor = new Array<Vec4>(rayspheresUniforms.sphereCount).fill(new Vec4()).map(_ => rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1)));
-		rayspheresUniforms.backgroundColor = new Vec4(0, 0, 0, 1);
-		rayspheresUniforms.lightPos = phong.lightPos;
-		rayspheresUniforms.ambientFactor = phong.ambientFactor;
-		rayspheresUniforms.diffuseFactor = phong.diffuseFactor;
-		rayspheresUniforms.specularFactor = phong.specularFactor;
-		rayspheresUniforms.specularExponent = phong.specularExponent;
+		rayspheresUniforms.sphere_count = 16;
+		rayspheresUniforms.sphere_pos = new Array<Vec4>(rayspheresUniforms.sphere_count).fill(new Vec4()).map(_ => rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, 4, 2, 1.5)));
+		rayspheresUniforms.sphere_color = new Array<Vec4>(rayspheresUniforms.sphere_count).fill(new Vec4()).map(_ => rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1)));
+		rayspheresUniforms.background_color = new Vec4(0, 0, 0, 1);
+		rayspheresUniforms.light_pos = phong.light_pos;
+		rayspheresUniforms.ambient_factor = phong.ambient_factor;
+		rayspheresUniforms.diffuse_factor = phong.diffuse_factor;
+		rayspheresUniforms.specular_factor = phong.specular_factor;
+		rayspheresUniforms.specular_exponent = phong.specular_exponent;
 		obj.fragUniforms = rayspheresUniforms;
 		this.roomObjects[r].push(obj);
 
@@ -276,11 +276,11 @@ export class MuseumScene extends Scene {
 		let spheresObjects = this.getObjects("spheres");
 		for (let obj of spheresObjects) {
 			let uniforms = obj.fragUniforms as RayspheresUniforms;
-			for (let i=0; i<uniforms.sphereCount; i++) {
-				uniforms.spherePos[i].y += rndseed(i, 0.3, 1.2) * deltaTime;
-				if (uniforms.spherePos[i].y > 4) {
-					uniforms.spherePos[i] = rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, -4, 2, 1.5));
-					uniforms.sphereColor[i] = rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1));
+			for (let i=0; i<uniforms.sphere_count; i++) {
+				uniforms.sphere_pos[i].y += rndseed(i, 0.3, 1.2) * deltaTime;
+				if (uniforms.sphere_pos[i].y > 4) {
+					uniforms.sphere_pos[i] = rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, -4, 2, 1.5));
+					uniforms.sphere_color[i] = rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1));
 				}
 			}
 			obj.changed = true;

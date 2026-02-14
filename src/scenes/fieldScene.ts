@@ -24,9 +24,9 @@ export class FieldScene extends Scene {
 
 	constructor() {
 		super();
-		(this.postUniforms as PostPS1Uniforms).fogStart = -5.0;
-		(this.postUniforms as PostPS1Uniforms).fogEnd = 20.0;
-		(this.postUniforms as PostPS1Uniforms).fogColor = new Vec4(0.20, 0.20, 0.20, 1.0);
+		(this.postUniforms as PostPS1Uniforms).fog_start = -5.0;
+		(this.postUniforms as PostPS1Uniforms).fog_end = 20.0;
+		(this.postUniforms as PostPS1Uniforms).fog_color = new Vec4(0.20, 0.20, 0.20, 1.0);
 	}
 
 	init() {

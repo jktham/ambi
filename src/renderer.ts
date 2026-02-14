@@ -598,7 +598,7 @@ export class Renderer {
         globalUniforms.frame = frame;
         globalUniforms.fov = camera.fov;
         globalUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
-        globalUniforms.viewPos = camera.position;
+        globalUniforms.view_pos = camera.position;
         globalUniforms.view = camera.view;
         globalUniforms.projection = camera.projection;
 

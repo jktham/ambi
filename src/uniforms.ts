@@ -2,7 +2,7 @@ import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class Uniforms {
 	name = "Uniforms";
-	useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag
+	useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag, for large or dynamic buffers
 	instanceCount = 0; // draw instanced if > 0
 	data = new Float32Array(this.size());
 	
@@ -17,11 +17,12 @@ export class Uniforms {
 
 export class GlobalUniforms extends Uniforms {
 	name = "GlobalUniforms";
+
 	time = 0;
 	frame = 0;
 	fov = 0;
 	resolution = new Vec2();
-	viewPos = new Vec3();
+	view_pos = new Vec3();
 	view = new Mat4();
 	projection = new Mat4();
 
@@ -34,7 +35,7 @@ export class GlobalUniforms extends Uniforms {
 		this.data[1] = this.frame;
 		this.data[2] = this.fov;
 		this.data.subarray(4, 4+2).set(this.resolution.data);
-		this.data.subarray(8, 8+3).set(this.viewPos.data);
+		this.data.subarray(8, 8+3).set(this.view_pos.data);
 		this.data.subarray(12, 12+16).set(this.view.transpose().data);
 		this.data.subarray(28, 28+16).set(this.view.inverse().transpose().data);
 		this.data.subarray(44, 44+16).set(this.projection.transpose().data);
@@ -44,12 +45,13 @@ export class GlobalUniforms extends Uniforms {
 
 export class ObjectUniforms extends Uniforms {
 	name = "ObjectUniforms";
+
 	mask = 0;
 	cull = 0.0;
 	id = 0;
 	color = new Vec4();
-	vertConfig = new Vec4();
-	fragConfig = new Vec4();
+	vert_config = new Vec4();
+	frag_config = new Vec4();
 	model = new Mat4();
 	normal = new Mat4();
 
@@ -62,8 +64,8 @@ export class ObjectUniforms extends Uniforms {
 		this.data[1] = this.cull;
 		this.data[2] = this.id;
 		this.data.subarray(4, 4+4).set(this.color.data);
-		this.data.subarray(8, 8+4).set(this.vertConfig.data);
-		this.data.subarray(12, 12+4).set(this.fragConfig.data);
+		this.data.subarray(8, 8+4).set(this.vert_config.data);
+		this.data.subarray(12, 12+4).set(this.frag_config.data);
 		this.data.subarray(16, 16+16).set(this.model.transpose().data);
 		this.data.subarray(32, 32+16).set(this.normal.transpose().data);
 		return this.data;
@@ -72,24 +74,25 @@ export class ObjectUniforms extends Uniforms {
 
 export class PhongUniforms extends Uniforms {
 	name = "PhongUniforms";
-	ambientFactor = 0.1;
-	diffuseFactor = 0.6;
-	specularFactor = 0.3;
-	specularExponent = 32.0;
-	lightPos = new Vec3();
-	lightColor = new Vec4(1.0, 1.0, 1.0, 1.0);
+
+	ambient_factor = 0.1;
+	diffuse_factor = 0.6;
+	specular_factor = 0.3;
+	specular_exponent = 32.0;
+	light_pos = new Vec3();
+	light_color = new Vec4(1.0, 1.0, 1.0, 1.0);
 
 	size(): number {
 		return 12;
 	}
 
 	toArray(): Float32Array {
-		this.data[0] = this.ambientFactor;
-		this.data[1] = this.diffuseFactor;
-		this.data[2] = this.specularFactor;
-		this.data[3] = this.specularExponent;
-		this.data.subarray(4, 4+3).set(this.lightPos.data);
-		this.data.subarray(8, 8+4).set(this.lightColor.data);
+		this.data[0] = this.ambient_factor;
+		this.data[1] = this.diffuse_factor;
+		this.data[2] = this.specular_factor;
+		this.data[3] = this.specular_exponent;
+		this.data.subarray(4, 4+3).set(this.light_pos.data);
+		this.data.subarray(8, 8+4).set(this.light_color.data);
 		return this.data;
 	}
 }
@@ -98,6 +101,7 @@ export class InstancedUniforms extends Uniforms {
 	name = "InstancedUniforms";
 	useStorageBuffer = true;
 	instanceCount = 0;
+
 	models: Mat4[] = [];
 	normals: Mat4[] = [];
 
@@ -122,37 +126,37 @@ export class RayspheresUniforms extends Uniforms {
 	name = "RayspheresUniforms";
 	useStorageBuffer = true;
 	
-	ambientFactor = 0.1;
-	diffuseFactor = 0.6;
-	specularFactor = 0.3;
-	specularExponent = 32.0;
-	lightPos = new Vec3();
-	lightColor = new Vec4(1.0, 1.0, 1.0, 1.0);
+	ambient_factor = 0.1;
+	diffuse_factor = 0.6;
+	specular_factor = 0.3;
+	specular_exponent = 32.0;
+	light_pos = new Vec3();
+	light_color = new Vec4(1.0, 1.0, 1.0, 1.0);
 	
-	sphereCount = 0;
-	backgroundColor = new Vec4(0.0, 0.0, 0.0, 0.0);
-	spherePos: Vec4[] = []; // xyz = center, w = radius
-	sphereColor: Vec4[] = [];
+	sphere_count = 0;
+	background_color = new Vec4(0.0, 0.0, 0.0, 0.0);
+	sphere_pos: Vec4[] = []; // xyz = center, w = radius
+	sphere_color: Vec4[] = [];
 
 	size(): number {
-		return 20 + 8*this.sphereCount;
+		return 20 + 8*this.sphere_count;
 	}
 
 	toArray(): Float32Array {
 		if (this.data.length != this.size()) {
 			this.data = new Float32Array(this.size());
 		}
-		this.data[0] = this.ambientFactor;
-		this.data[1] = this.diffuseFactor;
-		this.data[2] = this.specularFactor;
-		this.data[3] = this.specularExponent;
-		this.data.subarray(4, 4+3).set(this.lightPos.data);
-		this.data.subarray(8, 8+4).set(this.lightColor.data);
-		this.data[12] = this.sphereCount;
-		this.data.subarray(16, 16+4).set(this.backgroundColor.data);
-		for (let i=0; i<this.sphereCount; i++) {
-			this.data.subarray(20 + i*8, 20 + (i+1)*8).set(this.spherePos[i].data);
-			this.data.subarray(20 + 4 + i*8, 20 + 4 + (i+1)*8).set(this.sphereColor[i].data);
+		this.data[0] = this.ambient_factor;
+		this.data[1] = this.diffuse_factor;
+		this.data[2] = this.specular_factor;
+		this.data[3] = this.specular_exponent;
+		this.data.subarray(4, 4+3).set(this.light_pos.data);
+		this.data.subarray(8, 8+4).set(this.light_color.data);
+		this.data[12] = this.sphere_count;
+		this.data.subarray(16, 16+4).set(this.background_color.data);
+		for (let i=0; i<this.sphere_count; i++) {
+			this.data.subarray(20 + i*8, 20 + (i+1)*8).set(this.sphere_pos[i].data);
+			this.data.subarray(20 + 4 + i*8, 20 + 4 + (i+1)*8).set(this.sphere_color[i].data);
 		}
 		return this.data;
 	}
@@ -160,6 +164,7 @@ export class RayspheresUniforms extends Uniforms {
 
 export class PostUniforms extends Uniforms {
 	name = "PostUniforms";
+
 	time = 0;
 	frame = 0;
 	resolution = new Vec2();
@@ -178,18 +183,19 @@ export class PostUniforms extends Uniforms {
 
 export class PostPS1Uniforms extends Uniforms {
 	name = "PostPS1Uniforms";
-	fogStart = 0.0;
-	fogEnd = 10.0;
-	fogColor = new Vec4(0.6, 0.6, 0.6, 1.0);
+
+	fog_start = 0.0;
+	fog_end = 10.0;
+	fog_color = new Vec4(0.6, 0.6, 0.6, 1.0);
 
 	size(): number {
 		return 8;
 	}
 
 	toArray(): Float32Array {
-		this.data[0] = this.fogStart;
-		this.data[1] = this.fogEnd;
-		this.data.subarray(4, 4+4).set(this.fogColor.data);
+		this.data[0] = this.fog_start;
+		this.data[1] = this.fog_end;
+		this.data.subarray(4, 4+4).set(this.fog_color.data);
 		return this.data;
 	}
 }
@@ -197,6 +203,7 @@ export class PostPS1Uniforms extends Uniforms {
 export class PostOutlineUniforms extends Uniforms {
 	name = "PostOutlineUniforms";
 	useStorageBuffer = true;
+
 	scale = new Array<number>(16).fill(1);
 	mode = [1].concat(new Array<number>(16-1).fill(0));
 	color = new Array<Vec4>(16).fill(new Vec4()).map(_ => new Vec4(1, 1, 1, 1));
