@@ -6,7 +6,7 @@ struct PostPS1Uniforms {
 	fog_color: vec4f,
 }
 
-@group(0) @binding(0) var<uniform> u_base: PostBaseUniforms;
+@group(0) @binding(0) var<uniform> u_post: PostUniforms;
 @group(0) @binding(1) var<uniform> u_ps1: PostPS1Uniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
@@ -18,7 +18,7 @@ struct PostPS1Uniforms {
 @fragment 
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
-	_ = u_base.time;
+	_ = u_post.time;
 	let pixel = vec2u(in.screen.xy);
 	var data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 

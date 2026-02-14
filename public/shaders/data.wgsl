@@ -57,7 +57,7 @@ struct ObjectUniforms {
 	normal: mat4x4f,
 };
 
-struct PostBaseUniforms {
+struct PostUniforms {
 	time: f32,
 	frame: f32,
 	resolution: vec2f,

@@ -1,7 +1,7 @@
 #import "../data.wgsl"
 #import "../noise.wgsl"
 
-@group(0) @binding(0) var<uniform> u_base: PostBaseUniforms;
+@group(0) @binding(0) var<uniform> u_post: PostUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
 
@@ -16,10 +16,10 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 	var color = data.color;
 
-	let seed = u_base.frame / 1000.0 % 10.0 + 1.0;
+	let seed = u_post.frame / 1000.0 % 10.0 + 1.0;
 	let noise = gold_noise(vec2f(pixel) + 100.0, seed);
 	if (noise > 0.9) {
-		let center_dist = length(vec2f(pixel) / u_base.resolution - 0.5);
+		let center_dist = length(vec2f(pixel) / u_post.resolution - 0.5);
 		color += noise * (1.0 - center_dist) * 0.3;
 	}
 

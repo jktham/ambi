@@ -1,6 +1,6 @@
 #import "../data.wgsl"
 
-@group(0) @binding(0) var<uniform> u_base: PostBaseUniforms;
+@group(0) @binding(0) var<uniform> u_post: PostUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
 
@@ -11,7 +11,7 @@
 @fragment 
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
-	_ = u_base.time;
+	_ = u_post.time;
 	let pixel: vec2u = vec2u(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 	let d = pow(1.0 - (1.0 / (data.depth + 1.0)), 2.0);

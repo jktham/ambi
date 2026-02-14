@@ -158,8 +158,8 @@ export class RayspheresUniforms extends Uniforms {
 	}
 }
 
-export class PostBaseUniforms extends Uniforms {
-	name = "PostBaseUniforms";
+export class PostUniforms extends Uniforms {
+	name = "PostUniforms";
 	time = 0;
 	frame = 0;
 	resolution = new Vec2();

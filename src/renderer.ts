@@ -2,7 +2,7 @@ import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
 import { Resources } from "./resources";
 import type { Scene, WorldObject } from "./scene";
-import { GlobalUniforms, ObjectUniforms, PostBaseUniforms, Uniforms } from "./uniforms";
+import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
 
 export class Renderer {
@@ -530,7 +530,7 @@ export class Renderer {
     }
 
     private async createPostUniformBuffers(postUniforms: Uniforms, postPipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBindGroup]> {
-        const postBaseUniformLength = new PostBaseUniforms().size();
+        const postBaseUniformLength = new PostUniforms().size();
         const postBaseUniformBuffer = this.device.createBuffer({
             label: "post base uniform buffer",
             size: postBaseUniformLength * 4,
@@ -669,7 +669,7 @@ export class Renderer {
 
         // update post buffers
         profiler.start("  bufferPost");
-        let postBaseUniforms = new PostBaseUniforms();
+        let postBaseUniforms = new PostUniforms();
         postBaseUniforms.time = time;
         postBaseUniforms.frame = frame;
         postBaseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);

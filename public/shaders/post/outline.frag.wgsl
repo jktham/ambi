@@ -6,7 +6,7 @@ struct PostOutlineUniforms {
 	color: array<vec4f, 16>,
 };
 
-@group(0) @binding(0) var<uniform> u_base: PostBaseUniforms;
+@group(0) @binding(0) var<uniform> u_post: PostUniforms;
 @group(0) @binding(1) var<storage, read> u_outline: PostOutlineUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
@@ -18,7 +18,7 @@ struct PostOutlineUniforms {
 @fragment 
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
-	_ = u_base.time;
+	_ = u_post.time;
 	let pixel: vec2u = vec2u(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 
@@ -38,7 +38,7 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	
 	for (var i=0; i<N; i++) {
 		for (var j=0; j<N; j++) {
-			let p = clamp(vec2i(pixel) + S*vec2i(i-N/2, j-N/2), vec2i(1), vec2i(u_base.resolution - 1));
+			let p = clamp(vec2i(pixel) + S*vec2i(i-N/2, j-N/2), vec2i(1), vec2i(u_post.resolution - 1));
 			var data_p = loadFbData(vec2u(p), fb_color, fb_pos_depth, fb_normal_mask);
 			if (data_p.depth == 0.0) {
 				data_p.depth = 9999.0;
