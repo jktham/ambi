@@ -617,8 +617,8 @@ export class Renderer {
             objectUniforms.cull = object.cull;
             objectUniforms.id = object.id;
             objectUniforms.color = object.color;
-            objectUniforms.vertConfig = object.vertConfig;
-            objectUniforms.fragConfig = object.fragConfig;
+            objectUniforms.vert_config = object.vertConfig;
+            objectUniforms.frag_config = object.fragConfig;
             objectUniforms.model = object.model;
             objectUniforms.normal = object.model.inverse().transpose();
 
