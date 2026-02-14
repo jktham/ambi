@@ -27,7 +27,8 @@ fn main(in: FragmentIn) -> FragmentOut {
 	data.mask = u32(u_object.mask);
 
 	const q = 8.0;
-	data.color = floor(data.color * q) / q;
+	let quantized = floor(data.color * q) / q;
+	data.color = vec4f(quantized.xyz, data.color.w);
 
 	decideDiscard(data.color, data.pos, data.normal, u_global.view_pos, u_object.cull);
 	return encodeFbData(data);
