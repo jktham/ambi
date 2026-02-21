@@ -45,6 +45,7 @@ export class Scene {
 	postShader: string = "post/base.frag.wgsl";
 	postUniforms: Uniforms = new Uniforms();
 	postTextures: string[] = [];
+	postConfig: Vec4 = new Vec4();
 
 	objects: WorldObject[] = [];
 	triggers: Trigger[] = [];

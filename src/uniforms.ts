@@ -168,15 +168,17 @@ export class PostUniforms extends Uniforms {
 	time = 0;
 	frame = 0;
 	resolution = new Vec2();
+	post_config = new Vec4();
 
 	size(): number {
-		return 4;
+		return 8;
 	}
 
 	toArray(): Float32Array {
 		this.data[0] = this.time;
 		this.data[1] = this.frame;
 		this.data.subarray(2, 2+2).set(this.resolution.data);
+		this.data.subarray(4, 4+4).set(this.post_config.data);
 		return this.data;
 	}
 }
@@ -205,7 +207,7 @@ export class PostOutlineUniforms extends Uniforms {
 	useStorageBuffer = true;
 
 	scale = new Array<number>(16).fill(1);
-	mode = [1].concat(new Array<number>(16-1).fill(0));
+	mode = [1].concat(new Array<number>(16-1).fill(0)); // 0 = outline only, 1 = self edges
 	color = new Array<Vec4>(16).fill(new Vec4()).map(_ => new Vec4(1, 1, 1, 1));
 
 	size(): number {
