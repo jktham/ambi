@@ -61,7 +61,7 @@ export class Scene {
 	}
 
 	// called once when player hits interact button
-	interact(camera: Camera) {
+	interact(time: number, camera: Camera) {
 
 	}
 

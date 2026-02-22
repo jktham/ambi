@@ -221,3 +221,23 @@ export class PostOutlineUniforms extends Uniforms {
 		return this.data;
 	}
 }
+
+export class PostEchoUniforms extends Uniforms {
+	name = "PostEchoUniforms";
+	useStorageBuffer = true; // vec4f array alignment
+
+	pulse_origins = new Array<Vec3>(16).fill(new Vec3());
+	pulse_colors = new Array<Vec4>(16).fill(new Vec4(1, 1, 1, 1));
+	pulse_times = new Array<number>(16).fill(0);
+
+	size(): number {
+		return 16*4 + 16*4 + 16;
+	}
+
+	toArray(): Float32Array {
+		this.data.subarray(0, 16*4).set(this.pulse_origins.map(o => [...o.data, 0.0]).flat());
+		this.data.subarray(16*4, 16*4 + 16*4).set(this.pulse_colors.map(c => c.data).flat());
+		this.data.subarray(16*4 + 16*4, 16*4 + 16*4 + 16).set(this.pulse_times);
+		return this.data;
+	}
+}

@@ -45,8 +45,8 @@ export class MuseumScene extends Scene {
 		[o, t] = this.createPortals(phong, [
 			["pier", "field"], 
 			["brutal", "debug"], 
-			["pier", "field"], 
-			["debug_dither", "debug_outline"]
+			["debug_dither", "debug_outline"], 
+			["debug_trans", "debug_echo"]
 		]);
 		this.roomObjects[r].push(...o);
 		this.roomTriggers[r].push(...t);
@@ -300,7 +300,7 @@ export class MuseumScene extends Scene {
 		}
 	}
 
-	interact(camera: Camera): void {
+	interact(time: number, camera: Camera) {
 		let interactSpheresObjects = this.getObjects("interactsphere");
 		for (let obj of interactSpheresObjects) {
 			let offset = obj.model.transform(new Vec3(0, 0, 0)).sub(camera.position);

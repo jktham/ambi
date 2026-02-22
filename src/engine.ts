@@ -117,7 +117,7 @@ export class Engine {
 			if (trigger.enabled) await trigger.test(this.camera.position);
 		}
 		if (this.input.activeActions.has("interact")) {
-			this.scene.interact(this.camera);
+			this.scene.interact(time, this.camera);
 			this.input.activeActions.delete("interact"); // only trigger once per press
 		}
 		this.profiler.stop("  updateScene");
