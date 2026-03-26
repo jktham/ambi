@@ -27,6 +27,7 @@ export class MuseumScene extends Scene {
 		this.postUniforms.color = this.postUniforms.color.map(_ => new Vec4(0, 0, 0, 1));
 		this.postUniforms.mode[14] = 0;
 		this.postUniforms.color[15] = new Vec4(1, 1, 1, 1);
+		this.postUniforms.scale[13] = 0;
 	}
 	
 	init() {
@@ -161,13 +162,13 @@ export class MuseumScene extends Scene {
 		obj = new WorldObject();
 		obj.model = Mat4.trs(new Vec3(0, 2, -10), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
-		obj.color = new Vec4(0, 0, 0, 0.1);
+		obj.color = new Vec4(0, 0, 0, 1);
 		obj.collider = "cube.obj";
 		obj.textures[0] = "blank.png";
-		obj.mask = 0;
-		obj.cull = 1.0;
-		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = phong;
+		obj.mask = 13;
+		obj.cull = 0.0;
+		obj.fragShader = "world/wireframe.frag.wgsl";
+		obj.fragConfig.x = 4.0; // line width
 		this.roomObjects[r].push(obj);
 
 		// room 4

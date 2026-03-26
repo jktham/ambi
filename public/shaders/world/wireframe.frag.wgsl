@@ -1,15 +1,5 @@
 #import "../data.wgsl"
 
-struct PsxFragmentIn {
-	@builtin(position) screen: vec4f,
-	@location(0) pos: vec3f,
-	@location(1) normal: vec3f,
-	@location(2) color: vec4f,
-	@location(3) uv: vec2f,
-	@location(4) w: f32,
-	@location(5) bary: vec3f
-};
-
 @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
@@ -17,14 +7,23 @@ struct PsxFragmentIn {
 @group(1) @binding(1) var t_color: texture_2d<f32>;
 
 @fragment 
-fn main(in: PsxFragmentIn) -> FragmentOut {
+fn main(in: FragmentIn) -> FragmentOut {
 	var data: FbData;
-	data.color = (in.color / in.w) * textureSample(t_color, t_sampler, vec2f(vec2u((in.uv / in.w) * 255.0)) / 255.0);
+	data.color = in.color * textureSample(t_color, t_sampler, in.uv);
 	data.pos = in.pos;
 	data.depth = length(u_global.view_pos - in.pos);
 	data.normal = in.normal;
 	data.mask = u32(u_object.mask);
 
+	let thickness = u_object.frag_config.x;
+	data.color.a = step(0.5, 1 - edgeFactor(in.bary, thickness));
+
 	decideDiscard(data.color, data.pos, data.normal, u_global.view_pos, u_object.cull);
 	return encodeFbData(data);
+}
+
+fn edgeFactor(bary: vec3f, thickness: f32) -> f32 {
+	let d = fwidth(bary);
+	let a3 = smoothstep(vec3f(0.0), d * thickness, bary);
+	return min(min(a3.x, a3.y), a3.z);
 }

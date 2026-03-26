@@ -15,9 +15,9 @@ struct InstancedUniforms {
 @group(0) @binding(2) var<storage, read> u_instanced: InstancedUniforms;
 
 @vertex 
-fn main(in: VertexIn, @builtin(instance_index) i: u32) -> VertexOut {
-	let model = u_object.model * u_instanced.instances[i].model; // not sure why this is left to right
-	let normal = u_object.normal * u_instanced.instances[i].normal;
+fn main(in: VertexIn, @builtin(vertex_index) vi: u32, @builtin(instance_index) ii: u32) -> VertexOut {
+	let model = u_object.model * u_instanced.instances[ii].model; // not sure why this is left to right
+	let normal = u_object.normal * u_instanced.instances[ii].normal;
 	
 	var out: VertexOut;
 	out.ndc = u_global.projection * u_global.view * model * vec4f(in.pos, 1.0);
@@ -25,5 +25,10 @@ fn main(in: VertexIn, @builtin(instance_index) i: u32) -> VertexOut {
 	out.normal = normalize((normal * vec4f(in.normal, 0.0)).xyz);
 	out.color = in.color * u_object.color;
 	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y);
+
+	var bary = vec3f(0.0);
+	bary[vi % 3] = 1.0;
+	out.bary = bary;
+
 	return out;
 }

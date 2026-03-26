@@ -6,14 +6,15 @@ struct PsxVertexOut {
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
-	@location(4) w: f32
+	@location(4) w: f32,
+	@location(5) bary: vec3f
 };
 
 @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @vertex 
-fn main(in: VertexIn) -> PsxVertexOut {
+fn main(in: VertexIn, @builtin(vertex_index) vi: u32) -> PsxVertexOut {
 	var out: PsxVertexOut;
 	out.ndc = u_global.projection * u_global.view * u_object.model * vec4f(in.pos, 1.0);
 	out.pos = (u_object.model * vec4f(in.pos, 1.0)).xyz;
@@ -24,6 +25,10 @@ fn main(in: VertexIn) -> PsxVertexOut {
 	var rounded_ndc: vec2f = (round((out.ndc.xy / out.ndc.w) * (u_global.resolution / 2)) / (u_global.resolution / 2)) * out.ndc.w;
 	out.ndc = vec4f(rounded_ndc, out.ndc.z, out.ndc.w);
 	out.w = out.ndc.w;
+
+	var bary = vec3f(0.0);
+	bary[vi % 3] = 1.0;
+	out.bary = bary;
 
 	return out;
 }
