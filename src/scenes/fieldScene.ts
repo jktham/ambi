@@ -1,6 +1,6 @@
 import type { Camera, CameraMode } from "../camera";
 import { Scene, WorldObject } from "../scene";
-import { InstancedUniforms, PostPS1Uniforms } from "../uniforms";
+import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
@@ -11,8 +11,8 @@ export class FieldScene extends Scene {
 	spawnRot = new Vec2(-Math.PI / 2.0, 0);
 	cameraMode = "walk" as CameraMode;
 
-	postShader = "post/ps1_fog.frag.wgsl";
-	postUniforms = new PostPS1Uniforms();
+	postShader = "post/psx_fog.frag.wgsl";
+	postUniforms = new PostPsxUniforms();
 
 	CHUNK_SIZE = 30.0;
 	GRASS_COUNT = 1000;
@@ -24,9 +24,9 @@ export class FieldScene extends Scene {
 
 	constructor() {
 		super();
-		(this.postUniforms as PostPS1Uniforms).fog_start = -5.0;
-		(this.postUniforms as PostPS1Uniforms).fog_end = 20.0;
-		(this.postUniforms as PostPS1Uniforms).fog_color = new Vec4(0.20, 0.20, 0.20, 1.0);
+		(this.postUniforms as PostPsxUniforms).fog_start = -5.0;
+		(this.postUniforms as PostPsxUniforms).fog_end = 20.0;
+		(this.postUniforms as PostPsxUniforms).fog_color = new Vec4(0.20, 0.20, 0.20, 1.0);
 	}
 
 	init() {
@@ -34,8 +34,8 @@ export class FieldScene extends Scene {
 			let ground = new WorldObject();;
 			ground.mesh = "field/ground.obj";
 			ground.textures = ["ground.jpg"];
-			ground.fragShader = "world/ps1.frag.wgsl";
-			ground.vertShader = "world/ps1.vert.wgsl";
+			ground.fragShader = "world/psx.frag.wgsl";
+			ground.vertShader = "world/psx.vert.wgsl";
 			ground.model = Mat4.trs(
 				new Vec3(chunkOffset.x * this.CHUNK_SIZE/2, 0, chunkOffset.y * this.CHUNK_SIZE/2), 
 				new Vec3(0, 0, 0), 
@@ -72,11 +72,11 @@ export class FieldScene extends Scene {
 			grass.color = new Vec4(0.6, 0.6, 0.6, 1.0);
 			grass.mesh = "field/grass.obj";
 			grass.textures = ["leaves.jpg"];
-			grass.fragShader = "world/ps1.frag.wgsl";
-			grass.vertShader = "world/ps1_instanced.vert.wgsl";
+			grass.fragShader = "world/psx.frag.wgsl";
+			grass.vertShader = "world/psx_instanced.vert.wgsl";
 
 			let grassUniforms = new InstancedUniforms();
-			grassUniforms.instanceCount = this.GRASS_COUNT;
+			grassUniforms._instanceCount = this.GRASS_COUNT;
 			
 			for (let i=0; i<this.GRASS_COUNT; i++) {
 				grassUniforms.models.push(this.grassModels[i]);

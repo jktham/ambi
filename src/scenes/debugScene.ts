@@ -52,7 +52,7 @@ export class DebugScene extends Scene {
 
 		let count = 1000;
 		let range = 100;
-		(obj.vertUniforms as InstancedUniforms).instanceCount = count;
+		(obj.vertUniforms as InstancedUniforms)._instanceCount = count;
 		for (let i=0; i<count; i++) {
 			let model = Mat4.translate(new Vec3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2)).mul(Mat4.rotate(new Vec3(Math.random()*2*Math.PI, Math.random()*2*Math.PI, Math.random()*2*Math.PI)));
 			(obj.vertUniforms as InstancedUniforms).models.push(model);
@@ -85,7 +85,7 @@ export class DebugScene extends Scene {
 
 		let monke = this.getObject("monke_instanced")!;
 		let monkeUniforms = monke.vertUniforms as InstancedUniforms;
-		for (let i=0; i<monkeUniforms.instanceCount; i++) {
+		for (let i=0; i<monkeUniforms._instanceCount; i++) {
 			let model = monkeUniforms.models[i].mul(Mat4.rotate(new Vec3(deltaTime, deltaTime, deltaTime)));
 			monkeUniforms.models[i] = model;
 			monkeUniforms.normals[i] = model.inverse().transpose();

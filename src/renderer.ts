@@ -429,7 +429,7 @@ export class Renderer {
         const vertUniformBuffer = this.device.createBuffer({
             label: "vert uniform buffer",
             size: vertUniformLength * 4,
-            usage: ((vertUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
+            usage: ((vertUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (vertUniformLength > 0) {
             this.device.queue.writeBuffer(vertUniformBuffer, 0, vertUniforms.toArray().buffer);
@@ -439,7 +439,7 @@ export class Renderer {
         const fragUniformBuffer = this.device.createBuffer({
             label: "frag uniform buffer",
             size: fragUniformLength * 4,
-            usage: ((fragUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
+            usage: ((fragUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (fragUniformLength > 0) {
             this.device.queue.writeBuffer(fragUniformBuffer, 0, fragUniforms.toArray().buffer);
@@ -541,7 +541,7 @@ export class Renderer {
         const postUniformBuffer = this.device.createBuffer({
             label: "post uniform buffer",
             size: postUniformLength * 4,
-            usage: ((postUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
+            usage: ((postUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (postUniformLength > 0) {
             this.device.queue.writeBuffer(postUniformBuffer, 0, postUniforms.toArray().buffer);
@@ -661,7 +661,7 @@ export class Renderer {
             pass.setVertexBuffer(0, vertexBuffer);
             pass.setBindGroup(0, uniformBindGroup);
             pass.setBindGroup(1, textureBindGroup);
-            pass.draw(vertexBuffer.size / 4 / 12, object.vertUniforms.instanceCount || 1);
+            pass.draw(vertexBuffer.size / 4 / 12, object.vertUniforms._instanceCount || 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);

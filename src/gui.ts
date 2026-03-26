@@ -185,12 +185,12 @@ export class Gui {
 		}
 
 		let name = document.createElement("span");
-		name.textContent = uniforms.name;
+		name.textContent = uniforms._name;
 		this.uniformConfig.appendChild(name);
 
 		for (let [k, v] of Object.entries(uniforms)) {
-			const blacklist = ["useStorageBuffer", "instanceCount", "name", "data"];
-			if (blacklist.includes(k)) {
+			const blacklist: string[] = [];
+			if (k.startsWith("_") || blacklist.includes(k)) {
 				continue;
 			}
 			let row = document.createElement("div");

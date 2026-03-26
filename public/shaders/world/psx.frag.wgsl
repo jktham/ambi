@@ -1,6 +1,6 @@
 #import "../data.wgsl"
 
-struct PS1FragmentIn {
+struct PsxFragmentIn {
 	@builtin(position) screen: vec4f,
 	@location(0) pos: vec3f,
 	@location(1) normal: vec3f,
@@ -16,7 +16,7 @@ struct PS1FragmentIn {
 @group(1) @binding(1) var t_color: texture_2d<f32>;
 
 @fragment 
-fn main(in: PS1FragmentIn) -> FragmentOut {
+fn main(in: PsxFragmentIn) -> FragmentOut {
 	var data: FbData;
 	data.color = (in.color / in.w) * textureSample(t_color, t_sampler, vec2f(vec2u((in.uv / in.w) * 255.0)) / 255.0);
 	data.pos = in.pos;

@@ -1,6 +1,6 @@
 #import "../data.wgsl"
 
-struct PS1VertexOut {
+struct PsxVertexOut {
 	@builtin(position) ndc: vec4f,
 	@location(0) pos: vec3f,
 	@location(1) normal: vec3f,
@@ -24,11 +24,11 @@ struct InstancedUniforms {
 @group(0) @binding(2) var<storage, read> u_instanced: InstancedUniforms;
 
 @vertex 
-fn main(in: VertexIn, @builtin(instance_index) i: u32) -> PS1VertexOut {
+fn main(in: VertexIn, @builtin(instance_index) i: u32) -> PsxVertexOut {
 	let model = u_object.model * u_instanced.instances[i].model;
 	let normal = u_object.normal * u_instanced.instances[i].normal;
 
-	var out: PS1VertexOut;
+	var out: PsxVertexOut;
 	out.ndc = u_global.projection * u_global.view * model * vec4f(in.pos, 1.0);
 	out.pos = (model * vec4f(in.pos, 1.0)).xyz;
 	out.normal = normalize((normal * vec4f(in.normal, 0.0)).xyz);

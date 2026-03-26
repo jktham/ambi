@@ -1,6 +1,6 @@
 #import "../data.wgsl"
 
-struct PS1VertexOut {
+struct PsxVertexOut {
 	@builtin(position) ndc: vec4f,
 	@location(0) pos: vec3f,
 	@location(1) normal: vec3f,
@@ -13,8 +13,8 @@ struct PS1VertexOut {
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @vertex 
-fn main(in: VertexIn) -> PS1VertexOut {
-	var out: PS1VertexOut;
+fn main(in: VertexIn) -> PsxVertexOut {
+	var out: PsxVertexOut;
 	out.ndc = u_global.projection * u_global.view * u_object.model * vec4f(in.pos, 1.0);
 	out.pos = (u_object.model * vec4f(in.pos, 1.0)).xyz;
 	out.normal = normalize((u_object.normal * vec4f(in.normal, 0.0)).xyz);

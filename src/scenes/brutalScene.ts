@@ -46,7 +46,7 @@ export class BrutalScene extends Scene {
 			let u = new InstancedUniforms();
 			u.models = models;
 			u.normals = models.map(m => m.inverse().transpose());
-			u.instanceCount = models.length;
+			u._instanceCount = models.length;
 
 			let tileObj = new WorldObject();
 			tileObj.mesh = mesh;

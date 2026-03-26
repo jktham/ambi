@@ -1,13 +1,13 @@
 #import "../data.wgsl"
 
-struct PostPS1Uniforms {
+struct PostPsxUniforms {
 	fog_start: f32,
 	fog_end: f32,
 	fog_color: vec4f,
 }
 
 @group(0) @binding(0) var<uniform> u_post: PostUniforms;
-@group(0) @binding(1) var<uniform> u_ps1: PostPS1Uniforms;
+@group(0) @binding(1) var<uniform> u_psx: PostPsxUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
 
@@ -22,12 +22,12 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	let pixel = vec2u(in.screen.xy);
 	var data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 
-	var fog_factor = 1.0 - ((u_ps1.fog_end - data.depth) / (u_ps1.fog_end - u_ps1.fog_start));
+	var fog_factor = 1.0 - ((u_psx.fog_end - data.depth) / (u_psx.fog_end - u_psx.fog_start));
 	let fog_color = vec4f(0.3, 0.3, 0.3, 1.0);
 	if (data.mask == 255) {
 		fog_factor /= 2.5;
 	}
-	data.color = mix(data.color, u_ps1.fog_color, clamp(fog_factor, 0.0, 1.0));
+	data.color = mix(data.color, u_psx.fog_color, clamp(fog_factor, 0.0, 1.0));
 
 	const GLOW_SAMPLES = 10;
 	const GLOW_STEP = 1;
@@ -52,9 +52,9 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 		}
 	}
 	
-	glow_fog_factor = 1.0 - ((u_ps1.fog_end - glow_distance) / (u_ps1.fog_end - u_ps1.fog_start));
+	glow_fog_factor = 1.0 - ((u_psx.fog_end - glow_distance) / (u_psx.fog_end - u_psx.fog_start));
 	if (glow_fog_factor > 1.0) {
-		glow_fog_factor = max(1.0 - ((glow_distance - u_ps1.fog_end) / (u_ps1.fog_end - u_ps1.fog_start)), 0.3);
+		glow_fog_factor = max(1.0 - ((glow_distance - u_psx.fog_end) / (u_psx.fog_end - u_psx.fog_start)), 0.3);
 	}
 	data.color = mix(data.color, glow_color, clamp(glow_fog_factor, 0.0, 1.0) * glow_radius * GLOW_STRENGTH);
 

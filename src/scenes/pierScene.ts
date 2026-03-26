@@ -1,6 +1,6 @@
 import type { Camera, CameraMode } from "../camera";
 import { Scene, WorldObject } from "../scene";
-import { InstancedUniforms, PostPS1Uniforms } from "../uniforms";
+import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class PierScene extends Scene {
@@ -10,14 +10,14 @@ export class PierScene extends Scene {
 	spawnRot = new Vec2(-Math.PI / 2.0, 0);
 	cameraMode = "walk" as CameraMode;
 
-	postShader = "post/ps1_fog.frag.wgsl";
-	postUniforms = new PostPS1Uniforms();
+	postShader = "post/psx_fog.frag.wgsl";
+	postUniforms = new PostPsxUniforms();
 
 	constructor() {
 		super();
-		(this.postUniforms as PostPS1Uniforms).fog_start = -2.0;
-		(this.postUniforms as PostPS1Uniforms).fog_end = 10.0;
-		(this.postUniforms as PostPS1Uniforms).fog_color = new Vec4(0.60, 0.60, 0.60, 1.0);
+		(this.postUniforms as PostPsxUniforms).fog_start = -2.0;
+		(this.postUniforms as PostPsxUniforms).fog_end = 10.0;
+		(this.postUniforms as PostPsxUniforms).fog_color = new Vec4(0.60, 0.60, 0.60, 1.0);
 	}
 
 	init() {
@@ -25,22 +25,22 @@ export class PierScene extends Scene {
 		pier.mesh = "pier/pier.obj";
 		pier.collider = "pier/collider.obj";
 		pier.textures = ["wood.jpg"];
-		pier.fragShader = "world/ps1.frag.wgsl";
-		pier.vertShader = "world/ps1.vert.wgsl";
+		pier.fragShader = "world/psx.frag.wgsl";
+		pier.vertShader = "world/psx.vert.wgsl";
 		this.objects.push(pier);
 
 		let water = new WorldObject();
 		water.mesh = "pier/water.obj";
 		water.textures = ["snow.jpg"];
-		water.fragShader = "world/ps1.frag.wgsl";
-		water.vertShader = "world/ps1.vert.wgsl";
+		water.fragShader = "world/psx.frag.wgsl";
+		water.vertShader = "world/psx.vert.wgsl";
 		this.objects.push(water);
 
 		let ground = new WorldObject();
 		ground.mesh = "pier/ground.obj";
 		ground.textures = ["ground.jpg"];
-		ground.fragShader = "world/ps1.frag.wgsl";
-		ground.vertShader = "world/ps1.vert.wgsl";
+		ground.fragShader = "world/psx.frag.wgsl";
+		ground.vertShader = "world/psx.vert.wgsl";
 		this.objects.push(ground);
 
 		let sky = new WorldObject();
@@ -57,12 +57,12 @@ export class PierScene extends Scene {
 		snow.mesh = "pier/snow.obj";
 		snow.textures = ["blank.png"];
 		snow.color = new Vec4(0.9, 0.9, 0.9, 1.0);
-		snow.fragShader = "world/ps1.frag.wgsl";
-		snow.vertShader = "world/ps1_instanced.vert.wgsl";
+		snow.fragShader = "world/psx.frag.wgsl";
+		snow.vertShader = "world/psx_instanced.vert.wgsl";
 		
 		let snowUniforms = new InstancedUniforms();
-		snowUniforms.instanceCount = 1000;
-		for (let i=0; i<snowUniforms.instanceCount; i++) {
+		snowUniforms._instanceCount = 1000;
+		for (let i=0; i<snowUniforms._instanceCount; i++) {
 			let range = 20;
 			let model = Mat4.trs(
 				new Vec3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2), 
@@ -80,23 +80,23 @@ export class PierScene extends Scene {
 		lantern.textures = ["cracked.jpg"];
 		lantern.color = new Vec4(1.0, 0.9, 0.0, 1.0);
 		lantern.mask = 255;
-		lantern.fragShader = "world/ps1.frag.wgsl";
-		lantern.vertShader = "world/ps1.vert.wgsl";
+		lantern.fragShader = "world/psx.frag.wgsl";
+		lantern.vertShader = "world/psx.vert.wgsl";
 		this.objects.push(lantern);
 
 		let lantern_holder = new WorldObject();
 		lantern_holder.mesh = "pier/lantern_holder.obj";
 		lantern_holder.textures = ["metal.jpg"];
 		lantern_holder.color = new Vec4(0.2, 0.2, 0.2, 1.0);
-		lantern_holder.fragShader = "world/ps1.frag.wgsl";
-		lantern_holder.vertShader = "world/ps1.vert.wgsl";
+		lantern_holder.fragShader = "world/psx.frag.wgsl";
+		lantern_holder.vertShader = "world/psx.vert.wgsl";
 		this.objects.push(lantern_holder);
 	}
 
 	update(time: number, deltaTime: number, camera: Camera) {
 		let snow = this.getObject("snow")!;
 		let snowUniforms = snow.vertUniforms as InstancedUniforms;
-		for (let i=0; i<snowUniforms.instanceCount; i++) {
+		for (let i=0; i<snowUniforms._instanceCount; i++) {
 			let model = snowUniforms.models[i];
 			let fall = Mat4.translate(new Vec3(0, -0.2 * deltaTime, 0.1 * deltaTime));
 			model = model.mul(fall);

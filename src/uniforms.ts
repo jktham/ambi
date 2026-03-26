@@ -1,22 +1,22 @@
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class Uniforms {
-	name = "Uniforms";
-	useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag, for large or dynamic buffers
-	instanceCount = 0; // draw instanced if > 0
-	data = new Float32Array(this.size());
+	_name = "Uniforms";
+	_useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag, for large or dynamic buffers
+	_instanceCount = 0; // draw instanced if > 0
+	_data = new Float32Array(this.size());
 	
 	size(): number {
 		return 0; // * 4 bytes
 	}
 
 	toArray(): Float32Array {
-		return this.data;
+		return this._data;
 	}
 }
 
 export class GlobalUniforms extends Uniforms {
-	name = "GlobalUniforms";
+	_name = "GlobalUniforms";
 
 	time = 0;
 	frame = 0;
@@ -31,20 +31,20 @@ export class GlobalUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		this.data[0] = this.time;
-		this.data[1] = this.frame;
-		this.data[2] = this.fov;
-		this.data.subarray(4, 4+2).set(this.resolution.data);
-		this.data.subarray(8, 8+3).set(this.view_pos.data);
-		this.data.subarray(12, 12+16).set(this.view.transpose().data);
-		this.data.subarray(28, 28+16).set(this.view.inverse().transpose().data);
-		this.data.subarray(44, 44+16).set(this.projection.transpose().data);
-		return this.data;
+		this._data[0] = this.time;
+		this._data[1] = this.frame;
+		this._data[2] = this.fov;
+		this._data.subarray(4, 4+2).set(this.resolution.data);
+		this._data.subarray(8, 8+3).set(this.view_pos.data);
+		this._data.subarray(12, 12+16).set(this.view.transpose().data);
+		this._data.subarray(28, 28+16).set(this.view.inverse().transpose().data);
+		this._data.subarray(44, 44+16).set(this.projection.transpose().data);
+		return this._data;
 	}
 }
 
 export class ObjectUniforms extends Uniforms {
-	name = "ObjectUniforms";
+	_name = "ObjectUniforms";
 
 	mask = 0;
 	cull = 0.0;
@@ -60,20 +60,20 @@ export class ObjectUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		this.data[0] = this.mask;
-		this.data[1] = this.cull;
-		this.data[2] = this.id;
-		this.data.subarray(4, 4+4).set(this.color.data);
-		this.data.subarray(8, 8+4).set(this.vert_config.data);
-		this.data.subarray(12, 12+4).set(this.frag_config.data);
-		this.data.subarray(16, 16+16).set(this.model.transpose().data);
-		this.data.subarray(32, 32+16).set(this.normal.transpose().data);
-		return this.data;
+		this._data[0] = this.mask;
+		this._data[1] = this.cull;
+		this._data[2] = this.id;
+		this._data.subarray(4, 4+4).set(this.color.data);
+		this._data.subarray(8, 8+4).set(this.vert_config.data);
+		this._data.subarray(12, 12+4).set(this.frag_config.data);
+		this._data.subarray(16, 16+16).set(this.model.transpose().data);
+		this._data.subarray(32, 32+16).set(this.normal.transpose().data);
+		return this._data;
 	}
 }
 
 export class PhongUniforms extends Uniforms {
-	name = "PhongUniforms";
+	_name = "PhongUniforms";
 
 	ambient_factor = 0.1;
 	diffuse_factor = 0.6;
@@ -87,44 +87,44 @@ export class PhongUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		this.data[0] = this.ambient_factor;
-		this.data[1] = this.diffuse_factor;
-		this.data[2] = this.specular_factor;
-		this.data[3] = this.specular_exponent;
-		this.data.subarray(4, 4+3).set(this.light_pos.data);
-		this.data.subarray(8, 8+4).set(this.light_color.data);
-		return this.data;
+		this._data[0] = this.ambient_factor;
+		this._data[1] = this.diffuse_factor;
+		this._data[2] = this.specular_factor;
+		this._data[3] = this.specular_exponent;
+		this._data.subarray(4, 4+3).set(this.light_pos.data);
+		this._data.subarray(8, 8+4).set(this.light_color.data);
+		return this._data;
 	}
 }
 
 export class InstancedUniforms extends Uniforms {
-	name = "InstancedUniforms";
-	useStorageBuffer = true;
-	instanceCount = 0;
+	_name = "InstancedUniforms";
+	_useStorageBuffer = true;
+	_instanceCount = 0;
 
 	models: Mat4[] = [];
 	normals: Mat4[] = [];
 
 	size(): number {
-		return 4 + 32*this.instanceCount;
+		return 4 + 32*this._instanceCount;
 	}
 
 	toArray(): Float32Array {
-		if (this.data.length != this.size()) {
-			this.data = new Float32Array(this.size());
+		if (this._data.length != this.size()) {
+			this._data = new Float32Array(this.size());
 		}
-		this.data[0] = this.instanceCount;
-		for (let i=0; i<this.instanceCount; i++) {
-			this.data.subarray(4 + i*32, 4 + (i+1)*32 + 16).set(this.models[i].transpose().data);
-			this.data.subarray(4 + 16 + i*32, 4 + 16 + (i+1)*32 + 16).set(this.normals[i].transpose().data);
+		this._data[0] = this._instanceCount;
+		for (let i=0; i<this._instanceCount; i++) {
+			this._data.subarray(4 + i*32, 4 + (i+1)*32 + 16).set(this.models[i].transpose().data);
+			this._data.subarray(4 + 16 + i*32, 4 + 16 + (i+1)*32 + 16).set(this.normals[i].transpose().data);
 		}
-		return this.data;
+		return this._data;
 	}
 }
 
 export class RayspheresUniforms extends Uniforms {
-	name = "RayspheresUniforms";
-	useStorageBuffer = true;
+	_name = "RayspheresUniforms";
+	_useStorageBuffer = true;
 	
 	ambient_factor = 0.1;
 	diffuse_factor = 0.6;
@@ -143,27 +143,27 @@ export class RayspheresUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		if (this.data.length != this.size()) {
-			this.data = new Float32Array(this.size());
+		if (this._data.length != this.size()) {
+			this._data = new Float32Array(this.size());
 		}
-		this.data[0] = this.ambient_factor;
-		this.data[1] = this.diffuse_factor;
-		this.data[2] = this.specular_factor;
-		this.data[3] = this.specular_exponent;
-		this.data.subarray(4, 4+3).set(this.light_pos.data);
-		this.data.subarray(8, 8+4).set(this.light_color.data);
-		this.data[12] = this.sphere_count;
-		this.data.subarray(16, 16+4).set(this.background_color.data);
+		this._data[0] = this.ambient_factor;
+		this._data[1] = this.diffuse_factor;
+		this._data[2] = this.specular_factor;
+		this._data[3] = this.specular_exponent;
+		this._data.subarray(4, 4+3).set(this.light_pos.data);
+		this._data.subarray(8, 8+4).set(this.light_color.data);
+		this._data[12] = this.sphere_count;
+		this._data.subarray(16, 16+4).set(this.background_color.data);
 		for (let i=0; i<this.sphere_count; i++) {
-			this.data.subarray(20 + i*8, 20 + (i+1)*8).set(this.sphere_pos[i].data);
-			this.data.subarray(20 + 4 + i*8, 20 + 4 + (i+1)*8).set(this.sphere_color[i].data);
+			this._data.subarray(20 + i*8, 20 + (i+1)*8).set(this.sphere_pos[i].data);
+			this._data.subarray(20 + 4 + i*8, 20 + 4 + (i+1)*8).set(this.sphere_color[i].data);
 		}
-		return this.data;
+		return this._data;
 	}
 }
 
 export class PostUniforms extends Uniforms {
-	name = "PostUniforms";
+	_name = "PostUniforms";
 
 	time = 0;
 	frame = 0;
@@ -175,16 +175,16 @@ export class PostUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		this.data[0] = this.time;
-		this.data[1] = this.frame;
-		this.data.subarray(2, 2+2).set(this.resolution.data);
-		this.data.subarray(4, 4+4).set(this.post_config.data);
-		return this.data;
+		this._data[0] = this.time;
+		this._data[1] = this.frame;
+		this._data.subarray(2, 2+2).set(this.resolution.data);
+		this._data.subarray(4, 4+4).set(this.post_config.data);
+		return this._data;
 	}
 }
 
-export class PostPS1Uniforms extends Uniforms {
-	name = "PostPS1Uniforms";
+export class PostPsxUniforms extends Uniforms {
+	_name = "PostPsxUniforms";
 
 	fog_start = 0.0;
 	fog_end = 10.0;
@@ -195,16 +195,16 @@ export class PostPS1Uniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		this.data[0] = this.fog_start;
-		this.data[1] = this.fog_end;
-		this.data.subarray(4, 4+4).set(this.fog_color.data);
-		return this.data;
+		this._data[0] = this.fog_start;
+		this._data[1] = this.fog_end;
+		this._data.subarray(4, 4+4).set(this.fog_color.data);
+		return this._data;
 	}
 }
 
 export class PostOutlineUniforms extends Uniforms {
-	name = "PostOutlineUniforms";
-	useStorageBuffer = true;
+	_name = "PostOutlineUniforms";
+	_useStorageBuffer = true;
 
 	scale = new Array<number>(16).fill(1);
 	mode = [1].concat(new Array<number>(16-1).fill(0)); // 0 = outline only, 1 = self edges
@@ -215,16 +215,16 @@ export class PostOutlineUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		this.data.subarray(0, 16).set(this.scale);
-		this.data.subarray(16, 32).set(this.mode);
-		this.data.subarray(32, 96).set(this.color.map(c => c.data).flat());
-		return this.data;
+		this._data.subarray(0, 16).set(this.scale);
+		this._data.subarray(16, 32).set(this.mode);
+		this._data.subarray(32, 96).set(this.color.map(c => c.data).flat());
+		return this._data;
 	}
 }
 
 export class PostEchoUniforms extends Uniforms {
-	name = "PostEchoUniforms";
-	useStorageBuffer = true; // vec4f array alignment
+	_name = "PostEchoUniforms";
+	_useStorageBuffer = true; // vec4f array alignment
 
 	pulse_origins = new Array<Vec3>(16).fill(new Vec3());
 	pulse_colors = new Array<Vec4>(16).fill(new Vec4(1, 1, 1, 1));
@@ -235,9 +235,9 @@ export class PostEchoUniforms extends Uniforms {
 	}
 
 	toArray(): Float32Array {
-		this.data.subarray(0, 16*4).set(this.pulse_origins.map(o => [...o.data, 0.0]).flat());
-		this.data.subarray(16*4, 16*4 + 16*4).set(this.pulse_colors.map(c => c.data).flat());
-		this.data.subarray(16*4 + 16*4, 16*4 + 16*4 + 16).set(this.pulse_times);
-		return this.data;
+		this._data.subarray(0, 16*4).set(this.pulse_origins.map(o => [...o.data, 0.0]).flat());
+		this._data.subarray(16*4, 16*4 + 16*4).set(this.pulse_colors.map(c => c.data).flat());
+		this._data.subarray(16*4 + 16*4, 16*4 + 16*4 + 16).set(this.pulse_times);
+		return this._data;
 	}
 }
