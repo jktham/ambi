@@ -64,6 +64,8 @@ struct PostUniforms {
 	frame: f32,
 	resolution: vec2f,
 	post_config: vec4f,
+	view: mat4x4f,
+	projection: mat4x4f,
 };
 
 fn encodeFbData(data: FbData) -> FragmentOut {

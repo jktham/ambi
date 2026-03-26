@@ -37,3 +37,7 @@ export function rndseed(seed: number, min: number = 0, max: number = 1): number 
 export function swap(arr: any[], i: number, j: number) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
 }
+
+export function lerp(a: number, b: number, t: number): number {
+    return a + (b - a) * t;
+}

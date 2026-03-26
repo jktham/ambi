@@ -674,6 +674,8 @@ export class Renderer {
         postBaseUniforms.frame = frame;
         postBaseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
         postBaseUniforms.post_config = scene.postConfig;
+        postBaseUniforms.view = camera.view;
+        postBaseUniforms.projection = camera.projection;
         this.device.queue.writeBuffer(this.postBaseUniformBuffer, 0, postBaseUniforms.toArray().buffer);
 
         let postUniforms = this.postUniformsOverride ?? scene.postUniforms;

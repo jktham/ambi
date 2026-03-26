@@ -1,3 +1,4 @@
+import { lerp, rnd } from "./utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
 export class Uniforms {
@@ -169,9 +170,11 @@ export class PostUniforms extends Uniforms {
 	frame = 0;
 	resolution = new Vec2();
 	post_config = new Vec4();
+	view = new Mat4();
+	projection = new Mat4();
 
 	size(): number {
-		return 8;
+		return 40;
 	}
 
 	toArray(): Float32Array {
@@ -179,6 +182,8 @@ export class PostUniforms extends Uniforms {
 		this._data[1] = this.frame;
 		this._data.subarray(2, 2+2).set(this.resolution.data);
 		this._data.subarray(4, 4+4).set(this.post_config.data);
+		this._data.subarray(8, 8+16).set(this.view.transpose().data);
+		this._data.subarray(24, 24+16).set(this.projection.transpose().data);
 		return this._data;
 	}
 }
@@ -238,6 +243,37 @@ export class PostEchoUniforms extends Uniforms {
 		this._data.subarray(0, 16*4).set(this.pulse_origins.map(o => [...o.data, 0.0]).flat());
 		this._data.subarray(16*4, 16*4 + 16*4).set(this.pulse_colors.map(c => c.data).flat());
 		this._data.subarray(16*4 + 16*4, 16*4 + 16*4 + 16).set(this.pulse_times);
+		return this._data;
+	}
+}
+
+export class PostSsaoUniforms extends Uniforms {
+	_name = "PostSsaoUniforms";
+	_useStorageBuffer = true; // vec3f array alignment
+
+	kernel = new Array<Vec3>(16).fill(new Vec3()).map((_, i) => {
+		let v = new Vec3(
+			rnd(-1, 1),
+			rnd(-1, 1),
+			rnd(0, 1)
+		).normalize();
+
+		let scale = i / 16;
+		scale = lerp(0.1, 1.0, scale*scale);
+		v = v.mul(scale);
+		return v;
+	});
+	samples = 8;
+	radius = 1.0;
+
+	size(): number {
+		return 68;
+	}
+
+	toArray(): Float32Array {
+		this._data.subarray(0, 16*4).set(this.kernel.map(v => [...v.data, 0.0]).flat());
+		this._data[64] = this.samples;
+		this._data[65] = this.radius;
 		return this._data;
 	}
 }
