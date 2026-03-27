@@ -265,6 +265,7 @@ export class PostSsaoUniforms extends Uniforms {
 	});
 	samples = 8;
 	radius = 1.0;
+	noise = true;
 
 	size(): number {
 		return 68;
@@ -274,6 +275,7 @@ export class PostSsaoUniforms extends Uniforms {
 		this._data.subarray(0, 16*4).set(this.kernel.map(v => [...v.data, 0.0]).flat());
 		this._data[64] = this.samples;
 		this._data[65] = this.radius;
+		this._data[66] = this.noise ? 1.0 : 0.0;
 		return this._data;
 	}
 }

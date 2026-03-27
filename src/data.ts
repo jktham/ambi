@@ -4,7 +4,7 @@ import { DebugScene } from "./scenes/debugScene";
 import { DebugDitherScene } from "./scenes/debugDitherScene";
 import { DebugOutlineScene } from "./scenes/debugOutlineScene";
 import { PierScene } from "./scenes/pierScene";
-import { PostOutlineUniforms, PostPsxUniforms, Uniforms } from "./uniforms";
+import { PostOutlineUniforms, PostPsxUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
 import { MuseumScene } from "./scenes/museumScene";
 import { FieldScene } from "./scenes/fieldScene";
 import { DebugTransparencyScene } from "./scenes/debugTransparencyScene";
@@ -33,6 +33,7 @@ export const postShaders: Map<string, [new () => Uniforms, string[]]> = new Map(
 	["post/fb_mask.frag.wgsl", [Uniforms, []]],
 	["post/psx_fog.frag.wgsl", [PostPsxUniforms, []]],
 	["post/outline.frag.wgsl", [PostOutlineUniforms, []]],
+	["post/ssao.frag.wgsl", [PostSsaoUniforms, ["noise/blue_0.png"]]],
 	["post/noise.frag.wgsl", [Uniforms, []]],
 	["post/dither.frag.wgsl", [Uniforms, ["noise/blue_0.png"]]],
 	["post/test.frag.wgsl", [Uniforms, ["house.jpg"]]],
