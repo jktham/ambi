@@ -251,14 +251,14 @@ export class PostSsaoUniforms extends Uniforms {
 	_name = "PostSsaoUniforms";
 	_useStorageBuffer = true; // vec3f array alignment
 
-	kernel = new Array<Vec3>(16).fill(new Vec3()).map((_, i) => {
+	kernel = new Array<Vec3>(64).fill(new Vec3()).map((_, i) => {
 		let v = new Vec3(
 			rnd(-1, 1),
 			rnd(-1, 1),
 			rnd(0, 1)
 		).normalize();
 
-		let scale = i / 16;
+		let scale = i / 64;
 		scale = lerp(0.1, 1.0, scale*scale);
 		v = v.mul(scale);
 		return v;
@@ -268,14 +268,14 @@ export class PostSsaoUniforms extends Uniforms {
 	noise = true;
 
 	size(): number {
-		return 68;
+		return 64*4 + 4; // vec4f array alignment
 	}
 
 	toArray(): Float32Array {
-		this._data.subarray(0, 16*4).set(this.kernel.map(v => [...v.data, 0.0]).flat());
-		this._data[64] = this.samples;
-		this._data[65] = this.radius;
-		this._data[66] = this.noise ? 1.0 : 0.0;
+		this._data.subarray(0, 64*4).set(this.kernel.map(v => [...v.data, 0.0]).flat());
+		this._data[64*4] = this.samples;
+		this._data[64*4 + 1] = this.radius;
+		this._data[64*4 + 2] = this.noise ? 1.0 : 0.0;
 		return this._data;
 	}
 }

@@ -2,7 +2,7 @@
 #import "../noise.wgsl"
 
 struct PostSsaoUniforms {
-	kernel: array<vec3f, 16>,
+	kernel: array<vec3f, 64>,
 	samples: f32,
 	radius: f32,
 	noise: f32,
@@ -31,28 +31,35 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 		let noise = textureLoad(t_noise, vec2u(in.screen.xy) % textureDimensions(t_noise), 0).rgb;
 		rvec = vec3f(noise.rg * 2.0 - 1.0, 0.0);
 	}
-	let tangent = normalize(rvec - data.normal * dot(rvec, data.normal));
-	let bitangent = cross(data.normal, tangent);
-	let tbn = mat3x3f(tangent, bitangent, data.normal);
-	let proj_view = u_post.projection * u_post.view;
+
+	// in view space
+	let normal = (u_post.view * vec4f(data.normal, 0.0)).xyz;
+	let pos = (u_post.view * vec4f(data.pos, 1.0)).xyz;
+	let tangent = normalize(rvec - normal * dot(rvec, normal));
+	let bitangent = cross(normal, tangent);
+	let tbn = mat3x3f(tangent, bitangent, normal);
 
 	let N = i32(u_ssao.samples);
 	let RADIUS = u_ssao.radius;
 
 	var occlusion = 0.0;
 	for (var i=0; i<N; i++) {
-		let sample = tbn * u_ssao.kernel[i] * RADIUS + data.pos;
-		let ndc = proj_view * vec4f(sample, 1.0);
+		let sample = (tbn * u_ssao.kernel[i]) * RADIUS + pos;
+		let ndc = u_post.projection * vec4f(sample, 1.0);
 		let screen = (ndc.xy * vec2f(1.0, -1.0) / ndc.w * 0.5 + 0.5) * u_post.resolution;
 
 		let data_sample = loadFbData(vec2u(screen.xy), fb_color, fb_pos_depth, fb_normal_mask);
-		let offset = data_sample.pos - data.pos;
+		let sample_pos = (u_post.view * vec4f(data_sample.pos, 1.0)).xyz;
+		let offset = sample_pos - pos;
 
-		if (data_sample.depth < data.depth && 
+		const DEPTH_BIAS = 0.005;
+		const NORMAL_BIAS = 0.01;
+		if (data_sample.depth < data.depth - DEPTH_BIAS && 
 			length(offset) < RADIUS && 
-			dot(data.normal, normalize(offset)) > 0.01
+			dot(normal, normalize(offset)) > NORMAL_BIAS
 		) {
-			occlusion += 1.0 / (1.0 + length(offset));
+			let range_factor = smoothstep(0.0, 1.0, RADIUS / abs(data.depth - data_sample.depth));
+			occlusion += range_factor;
 		}
 	}
 	occlusion = 1 - occlusion / f32(N);
