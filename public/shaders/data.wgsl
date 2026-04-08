@@ -76,7 +76,7 @@ fn encodeFbData(data: FbData) -> FragmentOut {
 	return out;
 }
 
-fn loadFbData(pixel: vec2u, fb_color: texture_storage_2d<rgba8unorm, read>, fb_pos_depth: texture_storage_2d<rgba32float, read>, fb_normal_mask: texture_storage_2d<rgba8unorm, read>) -> FbData {
+fn loadFbData(pixel: vec2i, fb_color: texture_storage_2d<rgba8unorm, read>, fb_pos_depth: texture_storage_2d<rgba32float, read>, fb_normal_mask: texture_storage_2d<rgba8unorm, read>) -> FbData {
 	var data: FbData;
 	let color = textureLoad(fb_color, pixel);
 	let pd = textureLoad(fb_pos_depth, pixel);

@@ -19,7 +19,7 @@ struct PostOutlineUniforms {
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
 	_ = u_post.time;
-	let pixel: vec2u = vec2u(in.screen.xy);
+	let pixel = vec2i(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 
 	const sobel_v = mat3x3f(-1, -2, -1, 0, 0, 0, 1, 2, 1);
@@ -39,7 +39,7 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	for (var i=0; i<N; i++) {
 		for (var j=0; j<N; j++) {
 			let p = clamp(vec2i(pixel) + S*vec2i(i-N/2, j-N/2), vec2i(1), vec2i(u_post.resolution - 1));
-			var data_p = loadFbData(vec2u(p), fb_color, fb_pos_depth, fb_normal_mask);
+			var data_p = loadFbData(vec2i(p), fb_color, fb_pos_depth, fb_normal_mask);
 			if (data_p.depth == 0.0) {
 				data_p.depth = 9999.0;
 			}

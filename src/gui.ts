@@ -180,7 +180,7 @@ export class Gui {
 	private initUniformConfig(shader: string, uniforms: Uniforms, textures: string[]) {
 		this.uniformSizes.clear();
 		this.uniformConfig.textContent = "";
-		if (uniforms.size() == 0 && textures.length == 0) {
+		if (uniforms._size() == 0 && textures.length == 0) {
 			return;
 		}
 

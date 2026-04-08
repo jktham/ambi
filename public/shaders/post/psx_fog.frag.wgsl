@@ -19,7 +19,7 @@ struct PostPsxUniforms {
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
 	_ = u_post.time;
-	let pixel = vec2u(in.screen.xy);
+	let pixel = vec2i(in.screen.xy);
 	var data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 
 	var fog_factor = 1.0 - ((u_psx.fog_end - data.depth) / (u_psx.fog_end - u_psx.fog_start));
@@ -40,7 +40,7 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	for (var i = -GLOW_SAMPLES; i <= GLOW_SAMPLES; i += GLOW_STEP) {
 		for (var j = -GLOW_SAMPLES; j <= GLOW_SAMPLES; j += GLOW_STEP) {
 			let r = sqrt(f32(i*i + j*j));
-			var d = loadFbData(vec2u(vec2i(pixel) + vec2i(i, j)), fb_color, fb_pos_depth, fb_normal_mask);
+			var d = loadFbData(pixel + vec2i(i, j), fb_color, fb_pos_depth, fb_normal_mask);
 			if (d.mask == 255 && r <= GLOW_RADIUS) {
 				let glow_radius_new = max(GLOW_RADIUS - r, 0.0) / GLOW_RADIUS;
 				if (glow_radius_new > glow_radius) {

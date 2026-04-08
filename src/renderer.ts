@@ -242,7 +242,7 @@ export class Renderer {
     private async initWorld(scene: Scene) {
         this.destroyWorldBuffers();
 
-        const globalUniformLength = new GlobalUniforms().size();
+        const globalUniformLength = new GlobalUniforms()._size();
         const globalUniformBuffer = this.device.createBuffer({
             label: "global uniform buffer",
             size: globalUniformLength * 4,
@@ -418,31 +418,31 @@ export class Renderer {
     private async createUniformBuffers(vertUniforms: Uniforms, fragUniforms: Uniforms, pipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBuffer, GPUBindGroup]> {
         const globalUniformBuffer = this.globalUniformBuffer;
 
-        const objectUniformLength = new ObjectUniforms().size();
+        const objectUniformLength = new ObjectUniforms()._size();
         const objectUniformBuffer = this.device.createBuffer({
             label: "object base uniform buffer",
             size: objectUniformLength * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
 
-        const vertUniformLength = vertUniforms.size();
+        const vertUniformLength = vertUniforms._size();
         const vertUniformBuffer = this.device.createBuffer({
             label: "vert uniform buffer",
             size: vertUniformLength * 4,
             usage: ((vertUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (vertUniformLength > 0) {
-            this.device.queue.writeBuffer(vertUniformBuffer, 0, vertUniforms.toArray().buffer);
+            this.device.queue.writeBuffer(vertUniformBuffer, 0, vertUniforms._update().buffer);
         }
 
-        const fragUniformLength = fragUniforms.size();
+        const fragUniformLength = fragUniforms._size();
         const fragUniformBuffer = this.device.createBuffer({
             label: "frag uniform buffer",
             size: fragUniformLength * 4,
             usage: ((fragUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (fragUniformLength > 0) {
-            this.device.queue.writeBuffer(fragUniformBuffer, 0, fragUniforms.toArray().buffer);
+            this.device.queue.writeBuffer(fragUniformBuffer, 0, fragUniforms._update().buffer);
         }
 
         let uniformBindings: GPUBindGroupEntry[] = [];
@@ -530,21 +530,21 @@ export class Renderer {
     }
 
     private async createPostUniformBuffers(postUniforms: Uniforms, postPipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBindGroup]> {
-        const postBaseUniformLength = new PostUniforms().size();
+        const postBaseUniformLength = new PostUniforms()._size();
         const postBaseUniformBuffer = this.device.createBuffer({
             label: "post base uniform buffer",
             size: postBaseUniformLength * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
         
-        const postUniformLength = postUniforms.size();
+        const postUniformLength = postUniforms._size();
         const postUniformBuffer = this.device.createBuffer({
             label: "post uniform buffer",
             size: postUniformLength * 4,
             usage: ((postUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (postUniformLength > 0) {
-            this.device.queue.writeBuffer(postUniformBuffer, 0, postUniforms.toArray().buffer);
+            this.device.queue.writeBuffer(postUniformBuffer, 0, postUniforms._update().buffer);
         }
 
         let postUniformBindings: GPUBindGroupEntry[] = [];
@@ -603,7 +603,7 @@ export class Renderer {
         globalUniforms.projection = camera.projection;
 
         const globalUniformBuffer = this.globalUniformBuffer;
-        this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms.toArray().buffer);
+        this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms._update().buffer);
 
         // object uniforms, only update if changed
         for (let object of scene.objects) {
@@ -630,12 +630,12 @@ export class Renderer {
                 continue;
             }
 
-            this.device.queue.writeBuffer(objectUniformBuffer, 0, objectUniforms.toArray().buffer);
-            if (object.vertUniforms.size() > 0) {
-                this.device.queue.writeBuffer(vertUniformBuffer, 0, object.vertUniforms.toArray().buffer);
+            this.device.queue.writeBuffer(objectUniformBuffer, 0, objectUniforms._update().buffer);
+            if (object.vertUniforms._size() > 0) {
+                this.device.queue.writeBuffer(vertUniformBuffer, 0, object.vertUniforms._update().buffer);
             }
-            if (object.fragUniforms.size() > 0) {
-                this.device.queue.writeBuffer(fragUniformBuffer, 0, object.fragUniforms.toArray().buffer);
+            if (object.fragUniforms._size() > 0) {
+                this.device.queue.writeBuffer(fragUniformBuffer, 0, object.fragUniforms._update().buffer);
             }
         }
         profiler.stop("  bufferWorld");
@@ -676,11 +676,11 @@ export class Renderer {
         postBaseUniforms.post_config = scene.postConfig;
         postBaseUniforms.view = camera.view;
         postBaseUniforms.projection = camera.projection;
-        this.device.queue.writeBuffer(this.postBaseUniformBuffer, 0, postBaseUniforms.toArray().buffer);
+        this.device.queue.writeBuffer(this.postBaseUniformBuffer, 0, postBaseUniforms._update().buffer);
 
         let postUniforms = this.postUniformsOverride ?? scene.postUniforms;
-        if (postUniforms.size() > 0) {
-            this.device.queue.writeBuffer(this.postUniformBuffer, 0, postUniforms.toArray().buffer);
+        if (postUniforms._size() > 0) {
+            this.device.queue.writeBuffer(this.postUniformBuffer, 0, postUniforms._update().buffer);
         }
         profiler.stop("  bufferPost");
 

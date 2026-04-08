@@ -13,7 +13,7 @@
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
 	_ = u_post.time;
-	let pixel: vec2u = vec2u(in.screen.xy);
+	let pixel = vec2i(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 
 	let color = textureSample(t_color0, t_sampler, in.uv);

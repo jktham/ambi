@@ -1,6 +1,6 @@
 import type { Camera } from "../camera";
 import { Scene, WorldObject } from "../scene";
-import { PhongUniforms } from "../uniforms";
+import { PhongUniforms, PostDitherUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
 export class DebugDitherScene extends Scene {
@@ -10,6 +10,7 @@ export class DebugDitherScene extends Scene {
 	postShader = "post/dither.frag.wgsl";
 	resolution = new Vec2(320, 180);
 	postTextures = ["noise/blue_0.png"];
+	postUniforms = new PostDitherUniforms();
 	
 	init() {
 		this.objects = [];

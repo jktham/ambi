@@ -5,13 +5,13 @@ export class Uniforms {
 	_name = "Uniforms";
 	_useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag, for large or dynamic buffers
 	_instanceCount = 0; // draw instanced if > 0
-	_data = new Float32Array(this.size());
+	_data = new Float32Array(this._size());
 	
-	size(): number {
+	_size(): number {
 		return 0; // * 4 bytes
 	}
 
-	toArray(): Float32Array {
+	_update(): Float32Array {
 		return this._data;
 	}
 }
@@ -27,11 +27,11 @@ export class GlobalUniforms extends Uniforms {
 	view = new Mat4();
 	projection = new Mat4();
 
-	size(): number {
+	_size(): number {
 		return 60;
 	}
 
-	toArray(): Float32Array {
+	_update(): Float32Array {
 		this._data[0] = this.time;
 		this._data[1] = this.frame;
 		this._data[2] = this.fov;
@@ -56,11 +56,11 @@ export class ObjectUniforms extends Uniforms {
 	model = new Mat4();
 	normal = new Mat4();
 
-	size(): number {
+	_size(): number {
 		return 48;
 	}
 
-	toArray(): Float32Array {
+	_update(): Float32Array {
 		this._data[0] = this.mask;
 		this._data[1] = this.cull;
 		this._data[2] = this.id;
@@ -83,11 +83,11 @@ export class PhongUniforms extends Uniforms {
 	light_pos = new Vec3();
 	light_color = new Vec4(1.0, 1.0, 1.0, 1.0);
 
-	size(): number {
+	_size(): number {
 		return 12;
 	}
 
-	toArray(): Float32Array {
+	_update(): Float32Array {
 		this._data[0] = this.ambient_factor;
 		this._data[1] = this.diffuse_factor;
 		this._data[2] = this.specular_factor;
@@ -106,13 +106,13 @@ export class InstancedUniforms extends Uniforms {
 	models: Mat4[] = [];
 	normals: Mat4[] = [];
 
-	size(): number {
+	_size(): number {
 		return 4 + 32*this._instanceCount;
 	}
 
-	toArray(): Float32Array {
-		if (this._data.length != this.size()) {
-			this._data = new Float32Array(this.size());
+	_update(): Float32Array {
+		if (this._data.length != this._size()) {
+			this._data = new Float32Array(this._size());
 		}
 		this._data[0] = this._instanceCount;
 		for (let i=0; i<this._instanceCount; i++) {
@@ -139,13 +139,13 @@ export class RayspheresUniforms extends Uniforms {
 	sphere_pos: Vec4[] = []; // xyz = center, w = radius
 	sphere_color: Vec4[] = [];
 
-	size(): number {
+	_size(): number {
 		return 20 + 8*this.sphere_count;
 	}
 
-	toArray(): Float32Array {
-		if (this._data.length != this.size()) {
-			this._data = new Float32Array(this.size());
+	_update(): Float32Array {
+		if (this._data.length != this._size()) {
+			this._data = new Float32Array(this._size());
 		}
 		this._data[0] = this.ambient_factor;
 		this._data[1] = this.diffuse_factor;
@@ -173,11 +173,11 @@ export class PostUniforms extends Uniforms {
 	view = new Mat4();
 	projection = new Mat4();
 
-	size(): number {
+	_size(): number {
 		return 40;
 	}
 
-	toArray(): Float32Array {
+	_update(): Float32Array {
 		this._data[0] = this.time;
 		this._data[1] = this.frame;
 		this._data.subarray(2, 2+2).set(this.resolution.data);
@@ -195,11 +195,11 @@ export class PostPsxUniforms extends Uniforms {
 	fog_end = 10.0;
 	fog_color = new Vec4(0.6, 0.6, 0.6, 1.0);
 
-	size(): number {
+	_size(): number {
 		return 8;
 	}
 
-	toArray(): Float32Array {
+	_update(): Float32Array {
 		this._data[0] = this.fog_start;
 		this._data[1] = this.fog_end;
 		this._data.subarray(4, 4+4).set(this.fog_color.data);
@@ -215,11 +215,11 @@ export class PostOutlineUniforms extends Uniforms {
 	mode = [1].concat(new Array<number>(16-1).fill(0)); // 0 = outline only, 1 = self edges
 	color = new Array<Vec4>(16).fill(new Vec4()).map(_ => new Vec4(1, 1, 1, 1));
 
-	size(): number {
+	_size(): number {
 		return 96;
 	}
 
-	toArray(): Float32Array {
+	_update(): Float32Array {
 		this._data.subarray(0, 16).set(this.scale);
 		this._data.subarray(16, 32).set(this.mode);
 		this._data.subarray(32, 96).set(this.color.map(c => c.data).flat());
@@ -235,11 +235,11 @@ export class PostEchoUniforms extends Uniforms {
 	pulse_colors = new Array<Vec4>(16).fill(new Vec4(1, 1, 1, 1));
 	pulse_times = new Array<number>(16).fill(0);
 
-	size(): number {
+	_size(): number {
 		return 16*4 + 16*4 + 16;
 	}
 
-	toArray(): Float32Array {
+	_update(): Float32Array {
 		this._data.subarray(0, 16*4).set(this.pulse_origins.map(o => [...o.data, 0.0]).flat());
 		this._data.subarray(16*4, 16*4 + 16*4).set(this.pulse_colors.map(c => c.data).flat());
 		this._data.subarray(16*4 + 16*4, 16*4 + 16*4 + 16).set(this.pulse_times);
@@ -267,15 +267,61 @@ export class PostSsaoUniforms extends Uniforms {
 	radius = 1.0;
 	noise = true;
 
-	size(): number {
+	_size(): number {
 		return 64*4 + 4; // vec4f array alignment
 	}
 
-	toArray(): Float32Array {
+	_update(): Float32Array {
 		this._data.subarray(0, 64*4).set(this.kernel.map(v => [...v.data, 0.0]).flat());
 		this._data[64*4] = this.samples;
 		this._data[64*4 + 1] = this.radius;
 		this._data[64*4 + 2] = this.noise ? 1.0 : 0.0;
+		return this._data;
+	}
+}
+
+export class PostDitherUniforms extends Uniforms {
+	_name = "PostDitherUniforms";
+
+	res = 64;
+	scale = 1;
+	strength = 0.92;
+	threshold = 0.5;
+	frames = 3;
+	speed = 10.0;
+
+	_size(): number {
+		return 6;
+	}
+
+	_update(): Float32Array {
+		this._data[0] = this.res;
+		this._data[1] = this.scale;
+		this._data[2] = this.strength;
+		this._data[3] = this.threshold;
+		this._data[4] = this.frames;
+		this._data[5] = this.speed;
+		return this._data;
+	}
+}
+
+export class PostAsciiUniforms extends Uniforms {
+	_name = "PostAsciiUniforms";
+
+	size = 7;
+	scale = 4;
+	samples = 4;
+	stages = 8;
+
+	_size(): number {
+		return 4;
+	}
+
+	_update(): Float32Array {
+		this._data[0] = this.size;
+		this._data[1] = this.scale;
+		this._data[2] = this.samples;
+		this._data[3] = this.stages;
 		return this._data;
 	}
 }

@@ -23,7 +23,7 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
 	_ = u_post.time;
 	_ = t_noise;
-	let pixel: vec2u = vec2u(in.screen.xy);
+	let pixel = vec2i(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 
 	var rvec = vec3f(0, 0, 1);
@@ -48,7 +48,7 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 		let ndc = u_post.projection * vec4f(sample, 1.0);
 		let screen = (ndc.xy * vec2f(1.0, -1.0) / ndc.w * 0.5 + 0.5) * u_post.resolution;
 
-		let data_sample = loadFbData(vec2u(screen.xy), fb_color, fb_pos_depth, fb_normal_mask);
+		let data_sample = loadFbData(vec2i(screen.xy), fb_color, fb_pos_depth, fb_normal_mask);
 		let sample_pos = (u_post.view * vec4f(data_sample.pos, 1.0)).xyz;
 		let offset = sample_pos - pos;
 

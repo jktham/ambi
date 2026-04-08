@@ -1,6 +1,17 @@
 #import "../data.wgsl"
+#import "../lighting.wgsl"
+
+struct PostDitherUniforms {
+	res: f32,
+	scale: f32,
+	strength: f32,
+	threshold: f32,
+	frames: f32,
+	speed: f32,
+};
 
 @group(0) @binding(0) var<uniform> u_post: PostUniforms;
+@group(0) @binding(1) var<uniform> u_dither: PostDitherUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
 @group(1) @binding(1) var t_noise: texture_2d<f32>;
@@ -13,22 +24,24 @@
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
 	_ = u_post.time;
-	let pixel: vec2u = vec2u(in.screen.xy);
+	let pixel = vec2i(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 	
-	let threshold = 0.5;
-	let lum_factors = vec4f(0.2126, 0.7152, 0.0722, 0.0);
-	var lum = dot(data.color, lum_factors);
+	var lum = luminance(data.color);
 
-	const noise_res = vec2(64, 64);
-	const noise_scale = 1;
-	const noise_strength = 0.92;
-	let noise = (textureLoad(t_noise, (pixel / noise_scale) % noise_res, 0).rgb - 0.5) * noise_strength;
+	let RES = vec2i(i32(u_dither.res), i32(u_dither.res));
+	let SCALE = i32(u_dither.scale);
+	let STRENGTH = u_dither.strength;
+	let THRESHOLD = u_dither.threshold;
+	let SPEED = i32(u_dither.speed);
 
-	let i = u32(u_post.frame) % 30 / 10;
-	lum += noise[i];
+	let noise = (textureLoad(t_noise, (pixel / SCALE) % RES, 0).rgb - 0.5) * STRENGTH;
 
-	let quantized = select(vec4f(0.0, 0.0, 0.0, 1.0), vec4f(1.0, 1.0, 1.0, 1.0), lum >= threshold);
+	let FRAMES = i32(u_dither.frames);
+	let i = i32(u_post.frame) % (FRAMES*SPEED) / SPEED;
+	lum += noise[u32(i)];
+
+	let quantized = select(vec4f(0.0, 0.0, 0.0, 1.0), vec4f(1.0, 1.0, 1.0, 1.0), lum >= THRESHOLD);
 
 	return quantized;
 }
