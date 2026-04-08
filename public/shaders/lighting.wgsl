@@ -10,3 +10,7 @@ fn phong(color: vec4f, pos: vec3f, normal: vec3f, view_pos: vec3f, ambient_facto
 
 	return color * vec4f(light_color.rgb * (ambient + diffuse + specular), 1.0);
 }
+
+fn luminance(color: vec4f) -> f32 {
+	return dot(color, vec4f(0.2126, 0.7152, 0.0722, 0.0));
+}
