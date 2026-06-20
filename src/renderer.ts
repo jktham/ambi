@@ -1,7 +1,8 @@
 import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
-import { Resources } from "./resources";
-import type { Scene, WorldObject } from "./scene";
+import { Assets as Assets } from "./assets";
+import type { Scene } from "./scene";
+import type { Entity } from "./entity";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
 
@@ -34,18 +35,18 @@ export class Renderer {
     private postFrameBufferBindGroup!: GPUBindGroup;
     private postTextureBindGroup!: GPUBindGroup;
 
-    private resources: Resources;
+    private assets: Assets;
 
 	postShaderOverride?: string;
 	postUniformsOverride?: Uniforms;
 	postTexturesOverride?: string[];
     resolution: Vec2 = new Vec2();
 
-    constructor(canvas: HTMLCanvasElement, resources: Resources) {
+    constructor(canvas: HTMLCanvasElement, assets: Assets) {
         canvas.width = 960;
         canvas.height = 540;
 		this.canvas = canvas;
-        this.resources = resources;
+        this.assets = assets;
     }
 
     async init() {
@@ -160,7 +161,7 @@ export class Renderer {
 
     async loadScene(scene: Scene) {
         this.setResolution(scene.resolution);
-        await this.preloadResources(scene);
+        await this.preloadAssets(scene);
         await this.initWorld(scene);
         await this.initPost(scene);
     }
@@ -211,12 +212,12 @@ export class Renderer {
         (this.postFrameBufferBindGroup as any) = undefined;
     }
 
-    private async preloadResources(scene: Scene) {
+    private async preloadAssets(scene: Scene) {
         let shaders = new Set<string>();
         let meshes = new Set<string>();
         let textures = new Set<string>();
         let mtls = new Set<string>();
-        for (let object of scene.objects) {
+        for (let object of scene.entities) {
             shaders.add(object.vertShader);
             shaders.add(object.fragShader);
             meshes.add(object.mesh);
@@ -232,10 +233,10 @@ export class Renderer {
         shaders.add(this.postShaderOverride ?? scene.postShader);
 
         let promises: Promise<any>[] = [];
-        promises.push(...[...shaders].map((s) => this.resources.loadShader(s)));
-        promises.push(...[...meshes].map((m) => this.resources.loadMesh(m)));
-        promises.push(...[...textures].map((t) => this.resources.loadTexture(t)));
-        promises.push(...[...mtls].map((m) => this.resources.loadMtl(m)));
+        promises.push(...[...shaders].map((s) => this.assets.loadShader(s)));
+        promises.push(...[...meshes].map((m) => this.assets.loadMesh(m)));
+        promises.push(...[...textures].map((t) => this.assets.loadTexture(t)));
+        promises.push(...[...mtls].map((m) => this.assets.loadMtl(m)));
         await Promise.all(promises);
     }
 
@@ -250,7 +251,7 @@ export class Renderer {
         });
         this.globalUniformBuffer = globalUniformBuffer;
 
-        for (let object of scene.objects) {
+        for (let object of scene.entities) {
             if (!object.visible) {
                 continue;
             }
@@ -258,14 +259,14 @@ export class Renderer {
         }
         for (let trigger of scene.triggers) {
             if (trigger.bbox && trigger.bbox.mesh !== undefined) {
-                let bbox = await this.resources.loadBbox(trigger.bbox.mesh);
+                let bbox = await this.assets.loadBbox(trigger.bbox.mesh);
                 trigger.bbox.min = bbox.min;
                 trigger.bbox.max = bbox.max;
             }
         }
     }
 
-    private async initObject(object: WorldObject) {
+    private async initObject(object: Entity) {
         // pipeline
         if (!this.pipelines.has(object.id)) { // turns out we have to make one per object due to layout auto bindgroup constraints
             const pipeline = await this.createPipeline(object.vertShader, object.fragShader);
@@ -281,7 +282,7 @@ export class Renderer {
 
         // bbox (this should go somewhere else probably but eh)
         if (object.bbox && object.bbox.mesh !== undefined) {
-            let bbox = await this.resources.loadBbox(object.bbox.mesh);
+            let bbox = await this.assets.loadBbox(object.bbox.mesh);
             object.bbox.min = bbox.min;
             object.bbox.max = bbox.max;
         }
@@ -297,7 +298,7 @@ export class Renderer {
 
         // override first texture if mtl specified
         if (object.mtl) {
-            let mtlTexture = await this.resources.loadMtl(object.mtl);
+            let mtlTexture = await this.assets.loadMtl(object.mtl);
             object.textures[0] = mtlTexture;
         }
 
@@ -342,11 +343,11 @@ export class Renderer {
     private async createPipeline(vertShader: string, fragShader: string): Promise<GPURenderPipeline> {
         const vertexShader = this.device.createShaderModule({
             label: "vertex shader",
-            code: await this.resources.loadShader(vertShader),
+            code: await this.assets.loadShader(vertShader),
         });
         const fragmentShader = this.device.createShaderModule({
             label: "fragment shader",
-            code: await this.resources.loadShader(fragShader),
+            code: await this.assets.loadShader(fragShader),
         });
         const depthStencilState: GPUDepthStencilState = {
             depthWriteEnabled: true,
@@ -405,7 +406,7 @@ export class Renderer {
     }
 
     private async createVertexBuffer(mesh: string): Promise<GPUBuffer> {
-        const vertexData = await this.resources.loadMesh(mesh);
+        const vertexData = await this.assets.loadMesh(mesh);
         const vertexBuffer = this.device.createBuffer({
             label: "vertex buffer",
             size: vertexData.byteLength,
@@ -465,7 +466,7 @@ export class Renderer {
     }
 
     private async createTextureBuffer(texture: string, pipeline: GPURenderPipeline): Promise<GPUTexture> {
-        const textureData = await this.resources.loadTexture(texture);
+        const textureData = await this.assets.loadTexture(texture);
         const textureBuffer = this.device.createTexture({
             label: "texture buffer",
             size: [textureData.width, textureData.height],
@@ -501,11 +502,11 @@ export class Renderer {
     private async createPostPipeline(postShader: string): Promise<GPURenderPipeline> {
         const postVertexShader = this.device.createShaderModule({
             label: "post vertex shader",
-            code: await this.resources.loadShader("post/base.vert.wgsl"),
+            code: await this.assets.loadShader("post/base.vert.wgsl"),
         });
         const postFragmentShader = this.device.createShaderModule({
             label: "post fragment shader",
-            code: await this.resources.loadShader(postShader),
+            code: await this.assets.loadShader(postShader),
         });
 
         const postPipeline = this.device.createRenderPipeline({
@@ -577,7 +578,7 @@ export class Renderer {
 
     async drawScene(scene: Scene, camera: Camera, time: number, frame: number, profiler: Profiler) {
         // initialize new objects
-        for (let object of scene.objects) {
+        for (let object of scene.entities) {
             if (!object.visible) {
                 continue;
             }
@@ -587,7 +588,7 @@ export class Renderer {
         }
 
         // z-sort objects
-        scene.objects.sort((a, b) => b.z - a.z);
+        scene.entities.sort((a, b) => b.z - a.z);
 
         // update world buffers
         profiler.start("  bufferWorld");
@@ -606,7 +607,7 @@ export class Renderer {
         this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms._update().buffer);
 
         // object uniforms, only update if changed
-        for (let object of scene.objects) {
+        for (let object of scene.entities) {
             if (!object.visible || !object.changed) {
                 continue;
             }
@@ -644,7 +645,7 @@ export class Renderer {
         profiler.start("  drawWorld");
         const encoder = this.device.createCommandEncoder({ label: "render encoder" });
         const pass = encoder.beginRenderPass(this.renderPassDescriptor);
-        for (let object of scene.objects) {
+        for (let object of scene.entities) {
             if (!object.visible) {
                 continue;
             }
@@ -653,7 +654,7 @@ export class Renderer {
             const uniformBindGroup = this.uniformBindGroups.get(object.id);
             const textureBindGroup = this.textureBindGroups.get(object.id);
             if (!pipeline || !vertexBuffer || !uniformBindGroup || !textureBindGroup) {
-                console.error(`missing object resources ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
+                console.error(`missing object assets ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
                 continue;
             }
 

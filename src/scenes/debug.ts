@@ -1,6 +1,7 @@
 import { Bbox } from "../bbox";
 import type { Camera } from "../camera";
-import { Scene, WorldObject } from "../scene";
+import { Scene } from "../scene";
+import { Entity } from "../entity";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
@@ -9,22 +10,22 @@ export class DebugScene extends Scene {
 	name = "debug";
 	
 	init() {
-		this.objects = [];
+		this.entities = [];
 
-		let obj = new WorldObject();
+		let obj = new Entity();
 		obj.model = Mat4.translate(new Vec3(0, 1, -1.5));
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.model = Mat4.translate(new Vec3(-1, 0, -2));
 		obj.color = new Vec4(1.0, 0.0, 0.0, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.model = Mat4.translate(new Vec3(1, 0, -2));
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -38,10 +39,10 @@ export class DebugScene extends Scene {
 		monkeBbox.model = obj.model;
 		obj.bbox = monkeBbox;
 
-		this.objects.push(obj);
+		this.entities.push(obj);
 
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.tags = ["monke_instanced"];
 		obj.mesh = "monke.obj";
 		obj.vertShader = "world/instanced.vert.wgsl";
@@ -58,15 +59,15 @@ export class DebugScene extends Scene {
 			(obj.vertUniforms as InstancedUniforms).models.push(model);
 			(obj.vertUniforms as InstancedUniforms).normals.push(model.inverse().transpose());
 		}
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 10);
 		obj.mesh = "quad.json";
 		obj.textures = ["house.jpg"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.objects.push(obj);
+		this.entities.push(obj);
 
 		this.triggers = [];
 		let t = new Trigger();
@@ -78,12 +79,12 @@ export class DebugScene extends Scene {
 	}
 
 	update(time: number, deltaTime: number, camera: Camera) {
-		this.objects[0].model = this.objects[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
-		this.objects[0].changed = true;
-		this.objects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
-		this.objects[1].changed = true;
+		this.entities[0].model = this.entities[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
+		this.entities[0].changed = true;
+		this.entities[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
+		this.entities[1].changed = true;
 
-		let monke = this.getObject("monke_instanced")!;
+		let monke = this.getEntity("monke_instanced")!;
 		let monkeUniforms = monke.vertUniforms as InstancedUniforms;
 		for (let i=0; i<monkeUniforms._instanceCount; i++) {
 			let model = monkeUniforms.models[i].mul(Mat4.rotate(new Vec3(deltaTime, deltaTime, deltaTime)));
@@ -93,13 +94,13 @@ export class DebugScene extends Scene {
 		monke.changed = true;
 
 		let light = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);
-		for (let obj of this.objects) {
+		for (let obj of this.entities) {
 			(obj.fragUniforms as PhongUniforms).light_pos = light;
 			obj.changed = true;
 		}
 
-		if (time > 3 && this.getObjects("added_after_init").length == 0) {
-			let obj = new WorldObject();
+		if (time > 3 && this.getEntities("added_after_init").length == 0) {
+			let obj = new Entity();
 			obj.tags = ["added_after_init"];
 			obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 1);
 			obj.mesh = "monke.obj";
@@ -107,7 +108,7 @@ export class DebugScene extends Scene {
 			obj.bbox = new Bbox([obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)]);
 			obj.fragShader = "world/phong.frag.wgsl";
 			obj.fragUniforms = new PhongUniforms();
-			this.objects.push(obj);
+			this.entities.push(obj);
 		}
 	}
 }

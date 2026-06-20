@@ -4,29 +4,33 @@ import { Input } from "./input";
 import { Scene } from "./scene";
 import { Gui } from "./gui";
 import { Uniforms } from "./uniforms";
-import { Resources } from "./resources";
+import { Assets } from "./assets";
 import { scenes } from "./data";
 import type { Vec2 } from "./vec";
 import { Profiler } from "./profiler";
+import { Collisions } from "./collisions";
 
 export class Engine {
-	resources: Resources;
+	assets: Assets;
 	renderer: Renderer;
+	collisions: Collisions;
 	camera: Camera;
 	input: Input;
 	scene: Scene;
 	gui: Gui;
 	profiler: Profiler;
+
 	private deltaHist: number[] = [];
 	private scheduledFrameHandle: number = 0;
 
 	constructor(canvas: HTMLCanvasElement) {
-		this.resources = new Resources();
-		this.renderer = new Renderer(canvas, this.resources);
-		this.camera = new Camera(canvas, this.resources);
+		this.assets = new Assets();
+		this.renderer = new Renderer(canvas, this.assets);
+		this.collisions = new Collisions(this.assets);
+		this.camera = new Camera(canvas, this.collisions);
 		this.input = new Input(canvas);
-		this.scene = new Scene();
-		this.gui = new Gui(this);
+		this.scene = new Scene(this);
+		this.gui = new Gui(this); // needs some things to be constructed already
 		this.profiler = new Profiler();
 	}
 
@@ -41,10 +45,10 @@ export class Engine {
 
 		let scene = scenes.get(name);
 		if (scene) {
-			this.scene = new scene();
+			this.scene = new scene(this);
 		} else {
 			console.error(`no scene called ${name}`);
-			this.scene = new Scene();
+			this.scene = new Scene(this);
 		}
 
 		this.renderer.postShaderOverride = undefined;
@@ -62,7 +66,7 @@ export class Engine {
 
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
-		await this.camera.loadColliders(this.scene.objects);
+		await this.collisions.loadColliders(this.scene.entities);
 		this.loop();
 	}
 
@@ -123,7 +127,7 @@ export class Engine {
 		this.profiler.stop("  updateScene");
 
 		this.camera.updateView(); // in case position/rotation changed by update
-		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.objects.length}/${this.scene.objects.filter(o => o.visible).length}/${this.scene.objects.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
+		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.entities.length}/${this.scene.entities.filter(o => o.visible).length}/${this.scene.entities.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
 		
 		this.profiler.stop("update");
 		if (frame % 120 == 0) this.profiler.print();

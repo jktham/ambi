@@ -1,5 +1,6 @@
 import type { Camera } from "../camera";
-import { Scene, WorldObject } from "../scene";
+import { Scene } from "../scene";
+import { Entity } from "../entity";
 import { InstancedUniforms, PhongUniforms, PostEchoUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 
@@ -11,19 +12,19 @@ export class DebugEchoScene extends Scene {
 	postUniforms = new PostEchoUniforms();
 	
 	init() {
-		this.objects = [];
+		this.entities = [];
 
 		let phong = new PhongUniforms();
 		phong.light_pos = new Vec3(0, 10, 0);
 
-		let obj = new WorldObject();
+		let obj = new Entity();
 		obj.mesh = "quad.obj";
 		obj.model = Mat4.trs(new Vec3(), new Vec3(), 20);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.mesh = "monke.obj";
 		obj.vertShader = "world/instanced.vert.wgsl";
 		obj.vertUniforms = new InstancedUniforms();
@@ -39,19 +40,19 @@ export class DebugEchoScene extends Scene {
 			inst.models.push(model);
 			inst.normals.push(model.inverse().transpose());
 		}
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.tags = ["pulse_source"];
 		obj.mesh = "sphere.obj";
 		obj.textures = ["blank.png"];
 		obj.model = Mat4.trs(new Vec3(0, 10, 0), new Vec3(), 1);
-		this.objects.push(obj);
+		this.entities.push(obj);
 	}
 
 	lastPulseTime = 0;
 	update(time: number, deltaTime: number, camera: Camera) {
-		let src = this.getObject("pulse_source")!;
+		let src = this.getEntity("pulse_source")!;
 		src.model = Mat4.trs(new Vec3(Math.cos(time)*10, 2, Math.sin(time)*10), new Vec3(), 1);
 		src.changed = true;
 		if (time - this.lastPulseTime > 1.6) {

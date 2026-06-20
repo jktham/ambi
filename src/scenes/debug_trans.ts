@@ -1,5 +1,6 @@
 import type { Camera } from "../camera";
-import { Scene, WorldObject } from "../scene";
+import { Scene } from "../scene";
+import { Entity } from "../entity";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 
@@ -8,18 +9,18 @@ export class DebugTransparencyScene extends Scene {
 	spawnPos = new Vec3(0, 0, 5);
 	
 	init() {
-		this.objects = [];
+		this.entities = [];
 
-		let obj = new WorldObject();
+		let obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test_trans.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -27,9 +28,9 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -37,9 +38,9 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = -1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(-0.5, 3, 0), new Vec3(), 1);
 		obj.mesh = "sphere.obj";
 		obj.textures = ["test.png"];
@@ -47,9 +48,9 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0.5, 3, 0), new Vec3(), 1);
 		obj.mesh = "sphere.obj";
 		obj.textures = ["test.png"];
@@ -57,18 +58,18 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/skybox.frag.wgsl";
 		obj.z = 1000.0;
-		this.objects.push(obj);
+		this.entities.push(obj);
 
-		obj = new WorldObject();
+		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
@@ -76,12 +77,12 @@ export class DebugTransparencyScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
 		obj.z = 900.0;
-		this.objects.push(obj);
+		this.entities.push(obj);
 	}
 
 	update(time: number, deltaTime: number, camera: Camera) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
-		for (let obj of this.objects) {
+		for (let obj of this.entities) {
 			(obj.fragUniforms as PhongUniforms).light_pos = lightPos;
 		}
 

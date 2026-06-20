@@ -1,6 +1,7 @@
 import { Bbox } from "../bbox";
 import type { Camera, CameraMode } from "../camera";
-import { Scene, WorldObject } from "../scene";
+import { Scene } from "../scene";
+import { Entity } from "../entity";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 
@@ -31,12 +32,12 @@ export class BrutalScene extends Scene {
 				let tile = cells[i][j].candidates[0];
 				if (!tile) continue;
 
-				let colliderObj = new WorldObject();
+				let colliderObj = new Entity();
 				colliderObj.visible = false;
 				colliderObj.model = Mat4.trs(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
 				colliderObj.collider = tile.mesh;
 				colliderObj.bbox = new Bbox([colliderObj.model.transform(new Vec3()).sub(scale/2), colliderObj.model.transform(new Vec3()).add(scale/2)]);
-				this.objects.push(colliderObj);
+				this.entities.push(colliderObj);
 
 				instanceModels.get(tile.mesh)!.push(colliderObj.model);
 			}
@@ -48,22 +49,22 @@ export class BrutalScene extends Scene {
 			u.normals = models.map(m => m.inverse().transpose());
 			u._instanceCount = models.length;
 
-			let tileObj = new WorldObject();
+			let tileObj = new Entity();
 			tileObj.mesh = mesh;
 			tileObj.textures = ["concrete.jpg"];
 			tileObj.fragShader = "world/phong.frag.wgsl";
 			tileObj.fragUniforms = phong;
 			tileObj.vertShader = "world/instanced.vert.wgsl";
 			tileObj.vertUniforms = u;
-			this.objects.push(tileObj);
+			this.entities.push(tileObj);
 		}
 
-		let sun = new WorldObject();
+		let sun = new Entity();
 		sun.model = Mat4.trs(phong.light_pos, new Vec3(), 20.0);
 		sun.mesh = "sphere.obj";
 		sun.textures = ["blank.png"];
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);
-		this.objects.push(sun);
+		this.entities.push(sun);
 	}
 
 	update(time: number, deltaTime: number, camera: Camera) {

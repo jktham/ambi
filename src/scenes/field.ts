@@ -1,5 +1,6 @@
 import type { Camera, CameraMode } from "../camera";
-import { Scene, WorldObject } from "../scene";
+import { Scene } from "../scene";
+import { Entity } from "../entity";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
@@ -22,16 +23,13 @@ export class FieldScene extends Scene {
 	grassSwaySpeeds: number[] = [];
 	grassSwayScales: number[] = [];
 
-	constructor() {
-		super();
+	init() {
 		(this.postUniforms as PostPsxUniforms).fog_start = -5.0;
 		(this.postUniforms as PostPsxUniforms).fog_end = 20.0;
 		(this.postUniforms as PostPsxUniforms).fog_color = new Vec4(0.20, 0.20, 0.20, 1.0);
-	}
 
-	init() {
 		for (let chunkOffset of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)]) {
-			let ground = new WorldObject();;
+			let ground = new Entity();;
 			ground.mesh = "field/ground.obj";
 			ground.textures = ["ground.jpg"];
 			ground.fragShader = "world/psx.frag.wgsl";
@@ -41,16 +39,16 @@ export class FieldScene extends Scene {
 				new Vec3(0, 0, 0), 
 				this.CHUNK_SIZE
 			);
-			this.objects.push(ground);
+			this.entities.push(ground);
 		}
 
-		let sky = new WorldObject();
+		let sky = new Entity();
 		sky.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
 		sky.mesh = "cube.obj";
 		sky.textures = ["test.png"];
 		sky.fragShader = "world/skybox.frag.wgsl";
 		sky.color = new Vec4(0.1, 0.1, 0.1, 1.0);
-		this.objects.push(sky);
+		this.entities.push(sky);
 
 		for (let i=0; i<this.GRASS_COUNT; i++) {
 			let origin = Mat4.trs(
@@ -66,7 +64,7 @@ export class FieldScene extends Scene {
 		}
 
 		for (let chunkOffset of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)]) {
-			let grass = new WorldObject();
+			let grass = new Entity();
 			grass.tags = ["grass"];
 			grass.model = Mat4.translate(new Vec3(chunkOffset.x * this.CHUNK_SIZE/2, 0, chunkOffset.y * this.CHUNK_SIZE/2));
 			grass.color = new Vec4(0.6, 0.6, 0.6, 1.0);
@@ -83,7 +81,7 @@ export class FieldScene extends Scene {
 				grassUniforms.normals.push(this.grassModels[i].inverse().transpose());
 			}
 			grass.vertUniforms = grassUniforms;
-			this.objects.push(grass);
+			this.entities.push(grass);
 		}
 	}
 
@@ -93,7 +91,7 @@ export class FieldScene extends Scene {
 			this.grassModels[i] = this.grassOrigins[i].mul(sway);
 		}
 
-		let grass = this.getObjects("grass")!;
+		let grass = this.getEntities("grass")!;
 		for (let g of grass) {
 			let grassUniforms = g.vertUniforms as InstancedUniforms;
 			for (let i=0; i<this.GRASS_COUNT; i++) {

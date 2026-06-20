@@ -1,16 +1,17 @@
 import { Scene } from "./scene";
-import { BrutalScene } from "./scenes/brutalScene";
-import { DebugScene } from "./scenes/debugScene";
-import { DebugDitherScene } from "./scenes/debugDitherScene";
-import { DebugOutlineScene } from "./scenes/debugOutlineScene";
-import { PierScene } from "./scenes/pierScene";
+import { BrutalScene } from "./scenes/brutal";
+import { DebugScene } from "./scenes/debug";
+import { DebugDitherScene } from "./scenes/debug_dither";
+import { DebugOutlineScene } from "./scenes/debug_outline";
+import { PierScene } from "./scenes/pier";
 import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
-import { MuseumScene } from "./scenes/museumScene";
-import { FieldScene } from "./scenes/fieldScene";
-import { DebugTransparencyScene } from "./scenes/debugTransparencyScene";
-import { DebugEchoScene } from "./scenes/debugEchoScene";
+import { MuseumScene } from "./scenes/museum";
+import { FieldScene } from "./scenes/field";
+import { DebugTransparencyScene } from "./scenes/debug_trans";
+import { DebugEchoScene } from "./scenes/debug_echo";
+import type { Engine } from "./engine";
 
-export const scenes: Map<string, new () => Scene> = new Map([
+export const scenes: Map<string, new (engine: Engine) => Scene> = new Map([
 	["none", Scene],
 	["museum", MuseumScene],
 	["pier", PierScene],

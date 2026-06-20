@@ -1,11 +1,12 @@
 import { lerp, rnd } from "./utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "./vec";
 
+/** uniform data, underscore prefixed values are excluded from gui, otherwise name matches shader */
 export class Uniforms {
 	_name = "Uniforms";
 	_useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag, for large or dynamic buffers
 	_instanceCount = 0; // draw instanced if > 0
-	_data = new Float32Array(this._size());
+	_data = new Float32Array(this._size()); // sent to shader each frame
 	
 	_size(): number {
 		return 0; // * 4 bytes

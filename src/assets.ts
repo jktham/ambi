@@ -1,7 +1,8 @@
 import { Bbox } from "./bbox";
 import { Vec3 } from "./vec";
 
-export class Resources {
+/** loads, processes and caches assets */
+export class Assets {
 	private shaders: Map<string, string> = new Map();
 	private meshes: Map<string, Float32Array> = new Map();
 	private textures: Map<string, ImageData> = new Map();
@@ -65,7 +66,7 @@ export class Resources {
 		}
 	}
 
-	// returns new bbox without model or mesh, only use min/max
+	/** returns new bbox without model or mesh, only use min/max */
 	async loadBbox(name: string): Promise<Bbox> {
 		let cached = this.bboxes.get(name);
 		if (cached) {
@@ -122,7 +123,7 @@ export class Resources {
 		}
 	}
 
-	// returns name of first texture in mtl
+	/** returns name of first texture in mtl */
 	async loadMtl(name: string): Promise<string> {
 		let cached = this.mtls.get(name);
 		if (cached) {
