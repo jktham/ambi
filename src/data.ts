@@ -10,6 +10,7 @@ import { DebugTransparencyScene } from "./scenes/dbg_trns";
 import { DebugEchoScene } from "./scenes/dbg_echo";
 import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
 import type { Engine } from "./engine";
+import { DebugPixelsScene } from "./scenes/dbg_pxls";
 
 export const scenes: Map<string, new (engine: Engine) => Scene> = new Map([
 	["none", Scene],
@@ -22,6 +23,7 @@ export const scenes: Map<string, new (engine: Engine) => Scene> = new Map([
 	["dbg_outl", DebugOutlineScene],
 	["dbg_trns", DebugTransparencyScene],
 	["dbg_echo", DebugEchoScene],
+	["dbg_pxls", DebugPixelsScene],
 ]);
 
 // <path, [uniforms constructor, textures]>
@@ -43,7 +45,8 @@ export const postShaders: Map<string, [new () => Uniforms, string[]]> = new Map(
 
 export const resolutionPresets: Map<string, string> = new Map([
 	["divine", "1x1"],
-	["crusty", "80x45"],
+	["yum", "32x18"],
+	["crusty", "96x54"],
 	["psx", "320x180"],
 	["mid", "960x540"],
 	["hd", "1920x1080"],
