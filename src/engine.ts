@@ -1,5 +1,5 @@
 import { Renderer } from "./renderer";
-import { Camera, type CameraMode } from "./camera";
+import { type CameraMode } from "./player";
 import { Input } from "./input";
 import { Scene } from "./scene";
 import { Gui } from "./gui";
@@ -9,14 +9,17 @@ import { scenes } from "./data";
 import type { Vec2 } from "./vec";
 import { Profiler } from "./profiler";
 import { Collisions } from "./collisions";
+import { Player } from "./player";
 
 export class Engine {
 	assets: Assets;
 	renderer: Renderer;
-	collisions: Collisions;
-	camera: Camera;
+
 	input: Input;
+	collisions: Collisions;
+	player: Player;
 	scene: Scene;
+
 	gui: Gui;
 	profiler: Profiler;
 
@@ -26,10 +29,12 @@ export class Engine {
 	constructor(canvas: HTMLCanvasElement) {
 		this.assets = new Assets();
 		this.renderer = new Renderer(canvas, this.assets);
-		this.collisions = new Collisions(this.assets);
-		this.camera = new Camera(canvas, this.collisions);
+
 		this.input = new Input(canvas);
-		this.scene = new Scene(this);
+		this.collisions = new Collisions(this.assets);
+		this.player = new Player();
+		this.scene = new Scene();
+
 		this.gui = new Gui(this); // needs some things to be constructed already
 		this.profiler = new Profiler();
 	}
@@ -45,19 +50,19 @@ export class Engine {
 
 		let scene = scenes.get(name);
 		if (scene) {
-			this.scene = new scene(this);
+			this.scene = new scene();
 		} else {
 			console.error(`no scene called ${name}`);
-			this.scene = new Scene(this);
+			this.scene = new Scene();
 		}
 
 		this.renderer.postShaderOverride = undefined;
 		this.renderer.postUniformsOverride = undefined;
 		this.renderer.postTexturesOverride = undefined;
 
-		this.camera.mode = this.scene.cameraMode;
-		this.camera.position = this.scene.spawnPos;
-		this.camera.rotation = this.scene.spawnRot;
+		this.player.mode = this.scene.cameraMode;
+		this.player.position = this.scene.spawnPos;
+		this.player.rotation = this.scene.spawnRot;
 
 		this.gui.updateScene(this.scene.name);
 		this.gui.updatePost("scene", this.scene.postShader, this.scene.postUniforms, this.scene.postTextures);
@@ -67,6 +72,7 @@ export class Engine {
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
 		await this.collisions.loadColliders(this.scene.entities);
+
 		this.loop();
 	}
 
@@ -87,11 +93,12 @@ export class Engine {
 			this.gui.updatePost(path, this.scene.postShader, this.renderer.postUniformsOverride, this.renderer.postTexturesOverride);
 		}
 		await this.renderer.loadPost(this.scene);
+
 		this.loop();
 	}
 
 	setCameraMode(cameraMode: CameraMode) {
-		this.camera.mode = cameraMode;
+		this.player.mode = cameraMode;
 		this.gui.updateCameraMode(cameraMode);
 	}
 
@@ -109,24 +116,26 @@ export class Engine {
 		}
 		let deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / 60.0;
 
-		this.profiler.start("  updateCamera");
-        this.camera.updatePosition(this.input.activeActions, deltaTime);
-        this.camera.updateRotation(this.input.cursorChange);
+		this.profiler.start("  updatePlayer");
+        this.player.updatePosition(this.input.activeActions, deltaTime, this.collisions);
+        this.player.updateRotation(this.input.cursorChange);
         this.input.resetChange();
-		this.profiler.stop("  updateCamera");
+		this.profiler.stop("  updatePlayer");
 
 		this.profiler.start("  updateScene");
-		this.scene.update(time, deltaTime, this.camera);
+		this.scene.update(time, deltaTime, this.player);
 		for (let trigger of this.scene.triggers) {
-			if (trigger.enabled) await trigger.test(this.camera.position);
+			if (trigger.enabled) await trigger.test(this.player.position);
 		}
 		if (this.input.activeActions.has("interact")) {
-			this.scene.interact(time, this.camera);
+			this.scene.interact(time, this.player);
 			this.input.activeActions.delete("interact"); // only trigger once per press
 		}
 		this.profiler.stop("  updateScene");
 
-		this.camera.updateView(); // in case position/rotation changed by update
+		// update camera matrices
+		this.player.updateCamera();
+
 		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.entities.length}/${this.scene.entities.filter(o => o.visible).length}/${this.scene.entities.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
 		
 		this.profiler.stop("update");
@@ -135,7 +144,7 @@ export class Engine {
 
 	private draw(time: number, frame: number) {
 		this.profiler.start("draw");
-		this.renderer.drawScene(this.scene, this.camera, time, frame, this.profiler);
+		this.renderer.drawScene(this.scene, this.player.camera, time, frame, this.profiler);
 		this.profiler.stop("draw");
 	}
 

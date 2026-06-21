@@ -1,8 +1,8 @@
-import type { Camera } from "../camera";
 import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { InstancedUniforms, PhongUniforms, PostEchoUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
+import type { Player } from "../player";
 
 export class DebugEchoScene extends Scene {
 	name = "dbg_echo";
@@ -51,7 +51,7 @@ export class DebugEchoScene extends Scene {
 	}
 
 	lastPulseTime = 0;
-	update(time: number, deltaTime: number, camera: Camera) {
+	update(time: number, deltaTime: number, player: Player) {
 		let src = this.getEntity("pulse_source")!;
 		src.model = Mat4.trs(new Vec3(Math.cos(time)*10, 2, Math.sin(time)*10), new Vec3(), 1);
 		src.changed = true;
@@ -61,8 +61,8 @@ export class DebugEchoScene extends Scene {
 		}
 	}
 
-	interact(time: number, camera: Camera) {
-		this.sendPulse(camera.position, new Vec4(1, 1, 1, 1), time);
+	interact(time: number, player: Player) {
+		this.sendPulse(player.position, new Vec4(1, 1, 1, 1), time);
 	}
 
 	sendPulse(origin: Vec3, color: Vec4, time: number) {

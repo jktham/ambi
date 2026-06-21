@@ -1,10 +1,10 @@
 import { Bbox } from "../bbox";
-import type { Camera } from "../camera";
 import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
+import type { Player } from "../player";
 
 export class DebugInstancingScene extends Scene {
 	name = "dbg_inst";
@@ -78,7 +78,7 @@ export class DebugInstancingScene extends Scene {
 
 	}
 
-	update(time: number, deltaTime: number, camera: Camera) {
+	update(time: number, deltaTime: number, player: Player) {
 		this.entities[0].model = this.entities[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
 		this.entities[0].changed = true;
 		this.entities[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));

@@ -1,8 +1,9 @@
-import type { Camera, CameraMode } from "../camera";
+import type { Player, CameraMode } from "../player";
 import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
+import type { Engine } from "../engine";
 
 export class PierScene extends Scene {
 	name = "pier";
@@ -14,10 +15,16 @@ export class PierScene extends Scene {
 	postShader = "post/psx_fog.frag.wgsl";
 	postUniforms = new PostPsxUniforms();
 
-	init() {
+	constructor() {
+		super();
+		
 		(this.postUniforms as PostPsxUniforms).fog_start = -2.0;
 		(this.postUniforms as PostPsxUniforms).fog_end = 10.0;
 		(this.postUniforms as PostPsxUniforms).fog_color = new Vec4(0.60, 0.60, 0.60, 1.0);
+	}
+
+	init() {
+		this.entities = [];
 
 		let pier = new Entity();
 		pier.mesh = "pier/pier.obj";
@@ -91,7 +98,7 @@ export class PierScene extends Scene {
 		this.entities.push(lantern_holder);
 	}
 
-	update(time: number, deltaTime: number, camera: Camera) {
+	update(time: number, deltaTime: number, player: Player) {
 		let snow = this.getEntity("snow")!;
 		let snowUniforms = snow.vertUniforms as InstancedUniforms;
 		for (let i=0; i<snowUniforms._instanceCount; i++) {

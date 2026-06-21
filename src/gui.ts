@@ -1,9 +1,10 @@
-import { cameraModes, type CameraMode } from "./camera";
+import { cameraModes, type CameraMode } from "./player";
 import { postShaders, resolutionPresets, scenes } from "./data";
 import type { Engine } from "./engine";
 import { Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
 
+/** </3 */
 export class Gui {
 	private engine: Engine;
 	private info: HTMLSpanElement = document.getElementById("gui-info")! as HTMLSpanElement;
@@ -82,19 +83,17 @@ export class Gui {
 			}
 		});
 
-		this.fovRange.value = engine.camera.fov.toString();
-		this.fovInput.value = engine.camera.fov.toString();
+		this.fovRange.value = engine.player.camera.fov.toString();
+		this.fovInput.value = engine.player.camera.fov.toString();
 		this.fovRange.addEventListener("input", (e) => {
 			let value = Number((e.target as HTMLInputElement).value);
 			this.fovInput.value = value.toString();
-			engine.camera.fov = value;
-			engine.camera.updateProjection();
+			engine.player.camera.fov = value;
 		});
 		this.fovInput.addEventListener("input", (e) => {
 			let value = Number((e.target as HTMLInputElement).value);
 			this.fovRange.value = value.toString();
-			engine.camera.fov = value;
-			engine.camera.updateProjection();
+			engine.player.camera.fov = value;
 		});
 
 		this.keyboardInput.addEventListener("input", (e) => {
@@ -206,7 +205,7 @@ export class Gui {
 				input.value = v.toString();
 				input.addEventListener("change", e => {
 					if ((e.target as HTMLInputElement).value == "") (e.target as HTMLInputElement).value = "0";
-					(e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.replace(/[^\d.]/g, "");
+					(e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.replace(/[^+\-\d.]/g, "");
 					uniData[k] = Number((e.target as HTMLInputElement).value);
 				});
 				label.textContent += "number";

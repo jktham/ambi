@@ -9,10 +9,9 @@ import { DebugOutlineScene } from "./scenes/dbg_outl";
 import { DebugTransparencyScene } from "./scenes/dbg_trns";
 import { DebugEchoScene } from "./scenes/dbg_echo";
 import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
-import type { Engine } from "./engine";
 import { DebugPixelsScene } from "./scenes/dbg_pxls";
 
-export const scenes: Map<string, new (engine: Engine) => Scene> = new Map([
+export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
 	["museum", MuseumScene],
 	["pier", PierScene],

@@ -1,9 +1,10 @@
-import type { Camera, CameraMode } from "../camera";
+import type { Player, CameraMode } from "../player";
 import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
+import type { Engine } from "../engine";
 
 export class FieldScene extends Scene {
 	name = "field";
@@ -23,10 +24,17 @@ export class FieldScene extends Scene {
 	grassSwaySpeeds: number[] = [];
 	grassSwayScales: number[] = [];
 
-	init() {
+	constructor() {
+		super();
+		
+		// always initialize postuniforms in constructor, important for override reset
 		(this.postUniforms as PostPsxUniforms).fog_start = -5.0;
-		(this.postUniforms as PostPsxUniforms).fog_end = 20.0;
+		(this.postUniforms as PostPsxUniforms).fog_end = 12.0;
 		(this.postUniforms as PostPsxUniforms).fog_color = new Vec4(0.20, 0.20, 0.20, 1.0);
+	}
+
+	init() {
+		this.entities = [];
 
 		for (let chunkOffset of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)]) {
 			let ground = new Entity();;
@@ -85,7 +93,7 @@ export class FieldScene extends Scene {
 		}
 	}
 
-	update(time: number, deltaTime: number, camera: Camera) {
+	update(time: number, deltaTime: number, player: Player) {
 		for (let i=0; i<this.GRASS_COUNT; i++) {
 			let sway = Mat4.rotate(new Vec3(0, 0, Math.sin(this.grassSwaySpeeds[i] * time + this.grassSwayOffsets[i]) * this.grassSwayScales[i]));
 			this.grassModels[i] = this.grassOrigins[i].mul(sway);
@@ -101,9 +109,9 @@ export class FieldScene extends Scene {
 			g.changed = true;
 		}
 
-		if (camera.position.x > this.CHUNK_SIZE/2) camera.position.x -= this.CHUNK_SIZE;
-		if (camera.position.x < -this.CHUNK_SIZE/2) camera.position.x += this.CHUNK_SIZE;
-		if (camera.position.z > this.CHUNK_SIZE/2) camera.position.z -= this.CHUNK_SIZE;
-		if (camera.position.z < -this.CHUNK_SIZE/2) camera.position.z += this.CHUNK_SIZE;
+		if (player.position.x > this.CHUNK_SIZE/2) player.position.x -= this.CHUNK_SIZE;
+		if (player.position.x < -this.CHUNK_SIZE/2) player.position.x += this.CHUNK_SIZE;
+		if (player.position.z > this.CHUNK_SIZE/2) player.position.z -= this.CHUNK_SIZE;
+		if (player.position.z < -this.CHUNK_SIZE/2) player.position.z += this.CHUNK_SIZE;
 	}
 }

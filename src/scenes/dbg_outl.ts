@@ -1,8 +1,9 @@
-import type { Camera } from "../camera";
 import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
+import type { Player } from "../player";
+import type { Engine } from "../engine";
 
 export class DebugOutlineScene extends Scene {
 	name = "dbg_outl";
@@ -10,8 +11,10 @@ export class DebugOutlineScene extends Scene {
 
 	postShader = "post/outline.frag.wgsl";
 	resolution = new Vec2(1920, 1080);
-	
-	init() {
+
+	constructor() {
+		super();
+		
 		let u = new PostOutlineUniforms();
 		u.scale[0] = 2;
 		u.scale[1] = 1;
@@ -23,7 +26,9 @@ export class DebugOutlineScene extends Scene {
 		u.color[2] = new Vec4(0, 1, 0, 1);
 		u.color[3] = new Vec4(0, 0, 1, 1);
 		this.postUniforms = u;
-
+	}
+	
+	init() {
 		this.entities = [];
 
 		let obj = new Entity();
@@ -86,7 +91,7 @@ export class DebugOutlineScene extends Scene {
 		this.entities.push(obj);
 	}
 
-	update(time: number, deltaTime: number, camera: Camera) {
+	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		for (let obj of this.entities) {
 			if ((obj.fragUniforms as PhongUniforms).light_pos) {

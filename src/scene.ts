@@ -1,13 +1,10 @@
-import type { Camera, CameraMode } from "./camera";
-import type { Engine } from "./engine";
+import type { Player, CameraMode } from "./player";
 import type { Entity } from "./entity";
 import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
 import { Vec2, Vec3, Vec4 } from "./vec";
 
 export class Scene {
-	engine: Engine; // engine handle, in case we need to do stuff from inside the scene
-	
 	name: string = "none";
 	resolution: Vec2 = new Vec2(960, 540);
 	spawnPos: Vec3 = new Vec3();
@@ -22,22 +19,18 @@ export class Scene {
 	entities: Entity[] = [];
 	triggers: Trigger[] = [];
 
-	constructor(engine: Engine) {
-		this.engine = engine;
-	}
-
 	/** called before scene load, no assets available yet */
 	init() {
 
 	}
 
 	/** called every frame after scene is loaded */
-	update(time: number, deltaTime: number, camera: Camera) {
+	update(time: number, deltaTime: number, player: Player) {
 		
 	}
 
 	/** called once when player hits interact button */
-	interact(time: number, camera: Camera) {
+	interact(time: number, player: Player) {
 
 	}
 

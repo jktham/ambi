@@ -1,11 +1,12 @@
 import { Bbox } from "../bbox";
-import type { Camera, CameraMode } from "../camera";
+import type { Player, CameraMode } from "../player";
 import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms, PostOutlineUniforms, RayspheresUniforms } from "../uniforms";
 import { rnd, rndarr, rndseed, rndvec3, rndvec4 } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
+import { engine } from "../main";
 
 export class MuseumScene extends Scene {
 	name = "museum";
@@ -18,14 +19,20 @@ export class MuseumScene extends Scene {
 	roomSlots: number[] = [0, 1, 2, 3, 4]; // CNESW
 	roomObjects: Entity[][] = [[], [], [], [], []];
 	roomTriggers: Trigger[][] = [[], [], [], [], []];
-	
-	init() {
+
+	constructor() {
+		super();
+		
 		this.postUniforms.scale.fill(2);
 		this.postUniforms.mode.fill(1);
 		this.postUniforms.color = this.postUniforms.color.map(_ => new Vec4(0, 0, 0, 1));
 		this.postUniforms.mode[14] = 0;
 		this.postUniforms.color[15] = new Vec4(1, 1, 1, 1);
 		this.postUniforms.scale[13] = 0;
+	}
+	
+	init() {
+		this.entities = [];
 
 		let phong = new PhongUniforms();
 		phong.light_pos = new Vec3(400, 1200, 800);
@@ -221,27 +228,27 @@ export class MuseumScene extends Scene {
 		this.entities.push(obj);
 	}
 
-	update(time: number, deltaTime: number, camera: Camera) {
-		if (camera.position.z < -22) {
-			camera.position.z += 44;
+	update(time: number, deltaTime: number, player: Player) {
+		if (player.position.z < -22) {
+			player.position.z += 44;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(1);
 			this.applyRoomOffsets();
 		}
-		if (camera.position.x > 22) {
-			camera.position.x -= 44;
+		if (player.position.x > 22) {
+			player.position.x -= 44;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(2);
 			this.applyRoomOffsets();
 		}
-		if (camera.position.z > 22) {
-			camera.position.z -= 44;
+		if (player.position.z > 22) {
+			player.position.z -= 44;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(3);
 			this.applyRoomOffsets();
 		}
-		if (camera.position.x < -22) {
-			camera.position.x += 44;
+		if (player.position.x < -22) {
+			player.position.x += 44;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(4);
 			this.applyRoomOffsets();
@@ -254,7 +261,7 @@ export class MuseumScene extends Scene {
 		}
 		for (let i=0; i<lodObjects.length; i++) {
 			for (let obj of lodObjects[i]) {
-				let dist = camera.position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
+				let dist = player.position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
 				if (i == 0) {
 					obj.visible = dist < lodDistances[i] ? true : false;
 					obj.collidable = dist < lodDistances[i] ? true : false;
@@ -286,8 +293,8 @@ export class MuseumScene extends Scene {
 
 		let interactSpheresObjects = this.getEntities("interactsphere");
 		for (let obj of interactSpheresObjects) {
-			let offset = obj.model.transform(new Vec3(0, 0, 0)).sub(camera.position);
-			if (offset.length() < 3 && offset.normalize().dot(camera.front) > 0.8) {
+			let offset = obj.model.transform(new Vec3(0, 0, 0)).sub(player.position);
+			if (offset.length() < 3 && offset.normalize().dot(player.front) > 0.8) {
 				this.postUniforms.color[14] = new Vec4(0.0, 0.9, 0.1, 1);
 				this.postUniforms.scale[14] = 8;
 			} else {
@@ -297,11 +304,11 @@ export class MuseumScene extends Scene {
 		}
 	}
 
-	interact(time: number, camera: Camera) {
+	interact(time: number, player: Player) {
 		let interactSpheresObjects = this.getEntities("interactsphere");
 		for (let obj of interactSpheresObjects) {
-			let offset = obj.model.transform(new Vec3(0, 0, 0)).sub(camera.position);
-			if (offset.length() < 3 && offset.normalize().dot(camera.front) > 0.8) {
+			let offset = obj.model.transform(new Vec3(0, 0, 0)).sub(player.position);
+			if (offset.length() < 3 && offset.normalize().dot(player.front) > 0.8) {
 				let uni = obj.fragUniforms as RayspheresUniforms;
 				uni.sphere_color[0] = rndvec4();
 				uni.sphere_color[0].w = 1;
@@ -461,7 +468,7 @@ export class MuseumScene extends Scene {
 				t.bbox = new Bbox();
 				t.bbox.model = Mat4.translate(positions[i][j]);
 				t.bbox.mesh = `museum/portal_${["h", "v", "h", "v"][i]}.obj`;
-				t.onEnter = async () => await this.engine.setScene(scenes[i][j]);
+				t.onEnter = async () => await engine.setScene(scenes[i][j]);
 				triggers.push(t);
 			}
 		}

@@ -1,8 +1,8 @@
-import type { Camera } from "../camera";
 import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
+import type { Player } from "../player";
 
 export class DebugTransparencyScene extends Scene {
 	name = "dbg_trns";
@@ -80,7 +80,7 @@ export class DebugTransparencyScene extends Scene {
 		this.entities.push(obj);
 	}
 
-	update(time: number, deltaTime: number, camera: Camera) {
+	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		for (let obj of this.entities) {
 			(obj.fragUniforms as PhongUniforms).light_pos = lightPos;

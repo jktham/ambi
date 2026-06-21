@@ -4,7 +4,7 @@ import { Vec3 } from "./vec";
 export class Trigger {
 	bbox: Bbox = new Bbox();
 	enabled: boolean = true;
-	active: boolean = false; // true while camera in trigger
+	active: boolean = false; // true while player in trigger
 	onEnter?: Function;
 	onLeave?: Function;
 
