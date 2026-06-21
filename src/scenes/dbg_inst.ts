@@ -6,8 +6,8 @@ import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 
-export class DebugScene extends Scene {
-	name = "debug";
+export class DebugInstancingScene extends Scene {
+	name = "dbg_inst";
 	
 	init() {
 		this.entities = [];

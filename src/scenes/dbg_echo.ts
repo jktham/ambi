@@ -5,7 +5,7 @@ import { InstancedUniforms, PhongUniforms, PostEchoUniforms } from "../uniforms"
 import { Mat4, Vec3, Vec4 } from "../vec";
 
 export class DebugEchoScene extends Scene {
-	name = "debug_echo";
+	name = "dbg_echo";
 	spawnPos = new Vec3(0, 1.8, 0);
 
 	postShader = "post/echo.frag.wgsl";

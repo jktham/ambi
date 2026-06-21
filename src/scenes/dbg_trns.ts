@@ -5,7 +5,7 @@ import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 
 export class DebugTransparencyScene extends Scene {
-	name = "debug_trans";
+	name = "dbg_trns";
 	spawnPos = new Vec3(0, 0, 5);
 	
 	init() {

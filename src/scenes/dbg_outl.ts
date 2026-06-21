@@ -1,19 +1,29 @@
 import type { Camera } from "../camera";
 import { Scene } from "../scene";
 import { Entity } from "../entity";
-import { PhongUniforms, PostDitherUniforms } from "../uniforms";
+import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 
-export class DebugDitherScene extends Scene {
-	name = "debug_dither";
+export class DebugOutlineScene extends Scene {
+	name = "dbg_outl";
 	spawnPos = new Vec3(0, 0, 5);
 
-	postShader = "post/dither.frag.wgsl";
-	resolution = new Vec2(320, 180);
-	postTextures = ["noise/blue_0.png"];
-	postUniforms = new PostDitherUniforms();
+	postShader = "post/outline.frag.wgsl";
+	resolution = new Vec2(1920, 1080);
 	
 	init() {
+		let u = new PostOutlineUniforms();
+		u.scale[0] = 2;
+		u.scale[1] = 1;
+		u.scale[2] = 2;
+		u.scale[3] = 8;
+		u.mode[0] = 1;
+		u.mode[1] = 1;
+		u.color[1] = new Vec4(1, 0, 0, 1);
+		u.color[2] = new Vec4(0, 1, 0, 1);
+		u.color[3] = new Vec4(0, 0, 1, 1);
+		this.postUniforms = u;
+
 		this.entities = [];
 
 		let obj = new Entity();
@@ -47,6 +57,17 @@ export class DebugDitherScene extends Scene {
 		this.entities.push(obj);
 
 		obj = new Entity();
+		obj.tags = ["rotate"];
+		obj.model = Mat4.trs(new Vec3(0, 3, 0), new Vec3(), 1);
+		obj.mesh = "monke.obj";
+		obj.textures = ["test.png"];
+		obj.color = new Vec4(0.5, 0.5, 0.5, 0.0);
+		obj.mask = 4;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = new PhongUniforms();
+		this.entities.push(obj);
+
+		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
@@ -68,7 +89,13 @@ export class DebugDitherScene extends Scene {
 	update(time: number, deltaTime: number, camera: Camera) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		for (let obj of this.entities) {
-			(obj.fragUniforms as PhongUniforms).light_pos = lightPos;
+			if ((obj.fragUniforms as PhongUniforms).light_pos) {
+				(obj.fragUniforms as PhongUniforms).light_pos = lightPos;
+			}
+			obj.changed = true;
+		}
+		for (let obj of this.getEntities("rotate")) {
+			obj.model = Mat4.rotate(new Vec3(0, 1, 0).mul(deltaTime)).mul(obj.model);
 			obj.changed = true;
 		}
 
