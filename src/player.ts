@@ -5,7 +5,7 @@ import type { Entity } from "./entity";
 import type { Action } from "./input";
 import { Vec2, Vec3, Mat4 } from "./vec";
 
-export const cameraModes = ["fly", "walk"] as const;
+export const cameraModes = ["fly", "walk", "static"] as const;
 export type CameraMode = typeof cameraModes[number];
 
 type Collision = {
@@ -36,6 +36,10 @@ export class Player {
 
 	/** update position based on action input */
 	updatePosition(actions: Set<Action>, deltaTime: number) {
+		if (this.mode == "static") {
+			return;
+		}
+
 		let velocity = new Vec3();
 		let front = this.front;
 		let right = this.right;
@@ -84,6 +88,10 @@ export class Player {
 
 	/** update rotation based on cursor input */
 	updateRotation(cursorChange: Vec2) {
+		if (this.mode == "static") {
+			return;
+		}
+		
 		this.rotation.x += cursorChange.x * this.sensitivity / 400.0 * Math.PI;
 		this.rotation.y += cursorChange.y * this.sensitivity / 400.0 * Math.PI;
 		this.rotation.y = Math.min(Math.max(this.rotation.y, -Math.PI/2 + 0.01), Math.PI/2 - 0.01);
