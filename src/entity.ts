@@ -46,9 +46,9 @@ export class Entity {
     vertUniforms: Uniforms = new Uniforms();
     fragUniforms: Uniforms = new Uniforms();
 
-    /** custom config values for vertex shader */
+    /** custom config values for vertex shader that dont warrant a full uniform struct */
     vertConfig: Vec4 = new Vec4();
-    /** custom config values for fragment shader */
+    /** custom config values for fragment shader that dont warrant a full uniform struct */
     fragConfig: Vec4 = new Vec4();
 
     constructor() {

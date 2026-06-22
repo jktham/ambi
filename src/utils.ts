@@ -1,5 +1,6 @@
 import { Vec3, Vec4 } from "./vec";
 
+/** defaults to [0, 1) */
 export function rnd(min: number = 0, max: number = 1): number {
     return Math.random() * (max - min) + min;
 }
@@ -9,6 +10,7 @@ export function rndint(min: number, max: number): number {
     return Math.floor(rnd(min, max));
 }
 
+/** defaults to [0, 1) */
 export function rndvec3(min: Vec3 = new Vec3(0, 0, 0), max: Vec3 = new Vec3(1, 1, 1)): Vec3 {
     return new Vec3(
         rnd(min.x, max.x),
@@ -40,4 +42,8 @@ export function swap(arr: any[], i: number, j: number) {
 
 export function lerp(a: number, b: number, t: number): number {
     return a + (b - a) * t;
+}
+
+export function clamp(v: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, v));
 }

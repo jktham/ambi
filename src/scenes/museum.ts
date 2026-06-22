@@ -4,7 +4,7 @@ import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms, PostOutlineUniforms, RayspheresUniforms } from "../uniforms";
-import { rnd, rndarr, rndseed, rndvec3, rndvec4 } from "../utils";
+import { clamp, rnd, rndarr, rndseed, rndvec3, rndvec4 } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import { engine } from "../main";
 
@@ -71,6 +71,19 @@ export class MuseumScene extends Scene {
 			obj.mask = 0;
 			obj.fragShader = "world/rainbow.frag.wgsl";
 			obj.vertShader = "world/glitch.vert.wgsl";
+			this.roomObjects[r].push(obj);
+		}
+
+		for (let i=0; i<12; i++) {
+			let obj = new Entity();
+			obj.tags = ["rotate", "explode"];
+			obj.model = Mat4.trs(rndvec3(new Vec3(-16, 1, -16), new Vec3(16, 18, 16)), rndvec3().mul(Math.PI), rnd(0.4, 0.8));
+			obj.mesh = `monke.obj`;
+			obj.textures[0] = "blank.png";
+			obj.mask = 0;
+			obj.fragShader = "world/rainbow.frag.wgsl";
+			obj.vertShader = "world/explode.vert.wgsl";
+			obj.vertConfig.x = 1.0; // explode scale
 			this.roomObjects[r].push(obj);
 		}
 
@@ -259,7 +272,7 @@ export class MuseumScene extends Scene {
 		}
 		for (let i=0; i<lodObjects.length; i++) {
 			for (let obj of lodObjects[i]) {
-				let dist = player.position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
+				let dist = player.camera.position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
 				if (i == 0) {
 					obj.visible = dist < lodDistances[i] ? true : false;
 					obj.collidable = dist < lodDistances[i] ? true : false;
@@ -273,6 +286,13 @@ export class MuseumScene extends Scene {
 		let rotateObjects = this.getEntities("rotate");
 		for (let obj of rotateObjects) {
 			obj.model = obj.model.mul(Mat4.rotate(new Vec3(0, 0.5 * deltaTime, 0)));
+			obj.changed = true;
+		}
+
+		let explodeObjects = this.getEntities("explode");
+		for (let obj of explodeObjects) {
+			let dist = obj.model.origin().mul(new Vec3(1, 0.5, 1)).dist(player.camera.position.mul(new Vec3(1, 0.5, 1)));
+			obj.vertConfig.x = clamp((dist - 5.0) / 2.0, 0.0, 10.0);
 			obj.changed = true;
 		}
 

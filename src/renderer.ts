@@ -4,7 +4,7 @@ import { Assets as Assets } from "./assets";
 import type { Scene } from "./scene";
 import type { Entity } from "./entity";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
-import { Vec2, Vec3 } from "./vec";
+import { Vec2 } from "./vec";
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
