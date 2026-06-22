@@ -4,7 +4,6 @@ import { Entity } from "../entity";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
-import type { Engine } from "../engine";
 
 export class FieldScene extends Scene {
 	name = "field";

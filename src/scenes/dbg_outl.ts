@@ -3,7 +3,6 @@ import { Entity } from "../entity";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
-import type { Engine } from "../engine";
 
 export class DebugOutlineScene extends Scene {
 	name = "dbg_outl";

@@ -8,7 +8,6 @@ import { Assets } from "./assets";
 import { scenes } from "./data";
 import type { Vec2 } from "./vec";
 import { Profiler } from "./profiler";
-import { Collisions } from "./collisions";
 import { Player } from "./player";
 
 export class Engine {
@@ -16,7 +15,6 @@ export class Engine {
 	renderer: Renderer;
 
 	input: Input;
-	collisions: Collisions;
 	player: Player;
 	scene: Scene;
 
@@ -31,7 +29,6 @@ export class Engine {
 		this.renderer = new Renderer(canvas, this.assets);
 
 		this.input = new Input(canvas);
-		this.collisions = new Collisions(this.assets);
 		this.player = new Player();
 		this.scene = new Scene();
 
@@ -71,7 +68,7 @@ export class Engine {
 
 		this.scene.init();
 		await this.renderer.loadScene(this.scene);
-		await this.collisions.loadColliders(this.scene.entities);
+		await this.player.loadColliders(this.assets, this.scene.entities);
 
 		this.loop();
 	}
@@ -117,7 +114,7 @@ export class Engine {
 		let deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / 60.0;
 
 		this.profiler.start("  updatePlayer");
-        this.player.updatePosition(this.input.activeActions, deltaTime, this.collisions);
+        this.player.updatePosition(this.input.activeActions, deltaTime);
         this.player.updateRotation(this.input.cursorChange);
         this.input.resetChange();
 		this.profiler.stop("  updatePlayer");
