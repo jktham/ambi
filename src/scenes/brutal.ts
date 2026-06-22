@@ -12,8 +12,6 @@ export class BrutalScene extends Scene {
 	postShader = "post/noise.frag.wgsl";
 
 	init() {
-		this.entities = [];
-		
 		let phong = new PhongUniforms();
 		phong.light_pos = new Vec3(100, 300, 200);
 		phong.light_color = new Vec4(1.0, 0.2, 0.2, 1);

@@ -16,7 +16,7 @@ export class DebugPixelsScene extends Scene {
 		obj.model = Mat4.trs(new Vec3(0, 0, -1), new Vec3(Math.PI/2.0, 0, 0), 2);
 		obj.mesh = "quad.obj";
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
-		obj.fragShader = "world/test_pixels.frag.wgsl";
+		obj.fragShader = "world/px_frame.frag.wgsl";
 		this.entities.push(obj);
 	}
 }

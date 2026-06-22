@@ -588,7 +588,7 @@ export class Renderer {
         }
 
         // z-sort objects
-		let dist = (obj: Entity) => obj.model.transform(new Vec3()).sub(camera.position).length()
+		let dist = (obj: Entity) => obj.model.origin().dist(camera.position)
         scene.entities.filter(obj => obj.zsort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
             obj.z = (i+1) / (arr.length+1); // (0, 1)
 		})

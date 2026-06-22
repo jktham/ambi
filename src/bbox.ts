@@ -3,7 +3,9 @@ import { Mat4, Vec3 } from "./vec";
 export class Bbox {
 	min: Vec3 = new Vec3(Infinity, Infinity, Infinity); // never intersects
 	max: Vec3 = new Vec3(-Infinity, -Infinity, -Infinity);
+	/** transform to world space, ie. reference to parent object */
 	model: Mat4 = new Mat4();
+	/** computes bbox from mesh vertices if specified, overrides min and max on asset load */
 	mesh?: string;
 
 	constructor(bounds?: [Vec3, Vec3]) {

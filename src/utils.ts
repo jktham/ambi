@@ -4,7 +4,7 @@ export function rnd(min: number = 0, max: number = 1): number {
     return Math.random() * (max - min) + min;
 }
 
-// [min, max)
+/** [min, max) */
 export function rndint(min: number, max: number): number {
     return Math.floor(rnd(min, max));
 }

@@ -12,8 +12,6 @@ export class DebugEchoScene extends Scene {
 	postUniforms = new PostEchoUniforms();
 	
 	init() {
-		this.entities = [];
-
 		let phong = new PhongUniforms();
 		phong.light_pos = new Vec3(0, 10, 0);
 

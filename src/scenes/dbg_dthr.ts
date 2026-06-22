@@ -14,8 +14,6 @@ export class DebugDitherScene extends Scene {
 	postUniforms = new PostDitherUniforms();
 	
 	init() {
-		this.entities = [];
-
 		let obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";

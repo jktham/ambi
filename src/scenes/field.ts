@@ -33,8 +33,6 @@ export class FieldScene extends Scene {
 	}
 
 	init() {
-		this.entities = [];
-
 		for (let chunkOffset of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)]) {
 			let ground = new Entity();;
 			ground.mesh = "field/ground.obj";

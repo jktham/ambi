@@ -9,9 +9,13 @@ export class Scene {
 	resolution: Vec2 = new Vec2(960, 540);
 	spawnPos: Vec3 = new Vec3();
 	spawnRot: Vec2 = new Vec2();
-	cameraMode: CameraMode = "fly"; // "fly" ignores colliders, "walk" is locked in plane
+	/** "fly" is 6dof and ignores colliders, \
+	 *  "walk" is locked in plane, \
+	 *  "static" ignores movement input */
+	cameraMode: CameraMode = "fly";
 
-	postShader: string = "post/base.frag.wgsl"; // path to .wgsl file in public/shaders/
+	/** path to .frag.wgsl file in public/shaders/ */
+	postShader: string = "post/base.frag.wgsl";
 	postUniforms: Uniforms = new Uniforms();
 	postTextures: string[] = [];
 	postConfig: Vec4 = new Vec4();

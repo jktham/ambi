@@ -10,8 +10,6 @@ export class DebugInstancingScene extends Scene {
 	name = "dbg_inst";
 	
 	init() {
-		this.entities = [];
-
 		let obj = new Entity();
 		obj.model = Mat4.translate(new Vec3(0, 1, -1.5));
 		obj.fragShader = "world/phong.frag.wgsl";

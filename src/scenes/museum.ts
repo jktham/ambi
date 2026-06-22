@@ -32,8 +32,6 @@ export class MuseumScene extends Scene {
 	}
 	
 	init() {
-		this.entities = [];
-
 		let phong = new PhongUniforms();
 		phong.light_pos = new Vec3(400, 1200, 800);
 		phong.ambient_factor = 0.8;

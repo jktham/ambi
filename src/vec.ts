@@ -46,6 +46,10 @@ export class Vec2 {
 	dot(op: Vec2): number {
 		return this.x*op.x + this.y*op.y;
 	}
+	
+	dist(op: Vec2): number {
+		return this.sub(op).length();
+	}
 
 	length(): number {
 		return Math.sqrt(this.x**2 + this.y**2);
@@ -116,6 +120,10 @@ export class Vec3 {
 			this.x * op.y - this.y * op.x
 		);
 	}
+	
+	dist(op: Vec3): number {
+		return this.sub(op).length();
+	}
 
 	length(): number {
 		return Math.sqrt(this.x**2 + this.y**2 + this.z**2);
@@ -179,6 +187,10 @@ export class Vec4 {
 
 	dot(op: Vec4): number {
 		return this.x*op.x + this.y*op.y + this.z*op.z + this.w*op.w;
+	}
+	
+	dist(op: Vec4): number {
+		return this.sub(op).length();
 	}
 
 	length(): number {
@@ -249,6 +261,11 @@ export class Mat4 {
 		);
 	}
 
+	/** transformed zero vector */
+	origin(): Vec3 {
+		return this.transform(new Vec3(0, 0, 0));
+	}
+
 	inverse(): Mat4 {
 		let r: number[] = new Array(16).fill(0);
 		let m = this.data;
@@ -289,6 +306,7 @@ export class Mat4 {
 		]);
 	}
 
+	/** create matrix from translation */
 	static translate(offset: Vec3): Mat4 {
 		return new Mat4([
 			1, 0, 0, offset.x, 
@@ -298,6 +316,7 @@ export class Mat4 {
 		]);
 	}
 
+	/** create matrix from scale */
 	static scale(factor: number | Vec3): Mat4 {
 		if (factor instanceof Vec3) {
 			return new Mat4([
@@ -316,6 +335,7 @@ export class Mat4 {
 		}
 	}
 
+	/** create matrix from rotation (euler xyz radians) */
 	static rotate(euler: Vec3): Mat4 {
 		let X = new Mat4([
 			1, 0, 0, 0, 
@@ -338,6 +358,7 @@ export class Mat4 {
 		return X.mul(Y).mul(Z);
 	}
 
+	/** create matrix from translation, rotation (euler xyz radians) and scale */
 	static trs(translation: Vec3 = new Vec3(), rotation: Vec3 = new Vec3(), scale: number | Vec3 = 1) {
 		let T = Mat4.translate(translation);
 		let R = Mat4.rotate(rotation);

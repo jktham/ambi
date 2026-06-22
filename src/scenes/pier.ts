@@ -23,8 +23,6 @@ export class PierScene extends Scene {
 	}
 
 	init() {
-		this.entities = [];
-
 		let pier = new Entity();
 		pier.mesh = "pier/pier.obj";
 		pier.collider = "pier/collider.obj";
