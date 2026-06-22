@@ -20,6 +20,7 @@ export class DebugTriggerScene extends Scene {
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		let trg = new Trigger();
@@ -45,6 +46,7 @@ export class DebugTriggerScene extends Scene {
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		trg = new Trigger();
@@ -72,6 +74,7 @@ export class DebugTriggerScene extends Scene {
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		trg = new Trigger();
@@ -99,6 +102,7 @@ export class DebugTriggerScene extends Scene {
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		trg = new Trigger();

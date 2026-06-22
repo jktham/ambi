@@ -4,7 +4,7 @@ import { Assets as Assets } from "./assets";
 import type { Scene } from "./scene";
 import type { Entity } from "./entity";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
-import { Vec2 } from "./vec";
+import { Vec2, Vec3 } from "./vec";
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
@@ -588,6 +588,10 @@ export class Renderer {
         }
 
         // z-sort objects
+		let dist = (obj: Entity) => obj.model.transform(new Vec3()).sub(camera.position).length()
+        scene.entities.filter(obj => obj.zsort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
+            obj.z = (i+1) / (arr.length+1); // (0, 1)
+		})
         scene.entities.sort((a, b) => b.z - a.z);
 
         // update world buffers

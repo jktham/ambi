@@ -9,8 +9,6 @@ export class DebugTransparencyScene extends Scene {
 	spawnPos = new Vec3(0, 0, 5);
 	
 	init() {
-		this.entities = [];
-
 		let obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
@@ -18,6 +16,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		obj = new Entity();
@@ -28,6 +27,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		obj = new Entity();
@@ -38,6 +38,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = -1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		obj = new Entity();
@@ -48,6 +49,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		obj = new Entity();
@@ -58,6 +60,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		obj = new Entity();
@@ -84,6 +87,7 @@ export class DebugTransparencyScene extends Scene {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		for (let obj of this.entities) {
 			(obj.fragUniforms as PhongUniforms).light_pos = lightPos;
+			obj.changed = true;
 		}
 
 	}
