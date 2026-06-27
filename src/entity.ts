@@ -2,9 +2,11 @@ import type { Bbox } from "./bbox";
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec4 } from "./vec";
 
+export type eid = number;
+
 export class Entity {
     /** unique u32 id */
-    id: number;
+    id: eid;
     /** list of non-unique tags, used for querying */
     tags: string[] = [];
     /** set false to skip draw call */

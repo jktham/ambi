@@ -20,7 +20,7 @@ export class Camera {
 		this.projection = this.computeProjection(this.fov, this.aspect);
 	}
 
-	/** compute view matrix from position and rotation */
+	/** compute view matrix from position and rotation in radians */
 	computeView(position: Vec3, rotation: Vec2): Mat4 {
 		return Mat4.rotate(new Vec3(rotation.y, rotation.x, 0)).mul(Mat4.translate(position.mul(1)).inverse());
 	}

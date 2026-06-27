@@ -2,7 +2,7 @@ import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
 import { Assets as Assets } from "./assets";
 import type { Scene } from "./scene";
-import type { Entity } from "./entity";
+import type { Entity, eid } from "./entity";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
 
@@ -11,34 +11,36 @@ export class Renderer {
     private device!: GPUDevice;
     private context!: GPUCanvasContext;
     private presentationFormat!: GPUTextureFormat;
-    private renderPassDescriptor!: GPURenderPassDescriptor;
-    private postRenderPassDescriptor!: GPURenderPassDescriptor;
 
     private colorFrameBuffer!: GPUTexture;
     private posDepthFrameBuffer!: GPUTexture;
     private normalMaskFrameBuffer!: GPUTexture;
 
-    private pipelines: Map<number, GPURenderPipeline> = new Map();
-    private vertexBuffers: Map<string, GPUBuffer> = new Map();
+    private worldRenderPassDescriptor!: GPURenderPassDescriptor;
+    private postRenderPassDescriptor!: GPURenderPassDescriptor;
+
+    private vertexBuffers: Map<string, GPUBuffer> = new Map(); // mesh asset buffer
+    private textureBuffers: Map<string, GPUTexture> = new Map(); // texture asset buffer
+
+    private objectPipelines: Map<eid, GPURenderPipeline> = new Map();
     private globalUniformBuffer!: GPUBuffer;
-    private objectUniformBuffers: Map<number, GPUBuffer> = new Map();
-    private vertUniformBuffers: Map<number, GPUBuffer> = new Map();
-    private fragUniformBuffers: Map<number, GPUBuffer> = new Map();
-    private uniformBindGroups: Map<number, GPUBindGroup> = new Map();
-    private textureBuffers: Map<string, GPUTexture> = new Map();
-    private textureBindGroups: Map<number, GPUBindGroup> = new Map();
+    private objectBaseUniformBuffers: Map<eid, GPUBuffer> = new Map();
+    private objectVertUniformBuffers: Map<eid, GPUBuffer> = new Map();
+    private objectFragUniformBuffers: Map<eid, GPUBuffer> = new Map();
+    private objectUniformBindGroups: Map<eid, GPUBindGroup> = new Map();
+    private objectTextureBindGroups: Map<eid, GPUBindGroup> = new Map();
 
     private postPipeline!: GPURenderPipeline;
     private postBaseUniformBuffer!: GPUBuffer;
-    private postUniformBuffer!: GPUBuffer;
+    private postFragUniformBuffer!: GPUBuffer;
     private postUniformBindGroup!: GPUBindGroup;
-    private postFrameBufferBindGroup!: GPUBindGroup;
     private postTextureBindGroup!: GPUBindGroup;
+    private postFrameBufferBindGroup!: GPUBindGroup;
 
     private assets: Assets;
 
 	postShaderOverride?: string;
-	postUniformsOverride?: Uniforms;
+	postFragUniformsOverride?: Uniforms;
 	postTexturesOverride?: string[];
     resolution: Vec2 = new Vec2();
 
@@ -55,6 +57,8 @@ export class Renderer {
         this.createFrameBufferTextures();
         this.configureRenderPass();
     }
+
+    // ---- webgpu housekeeping ----
 
 	private async getGPUDevice() {
         try {
@@ -89,6 +93,8 @@ export class Renderer {
         });
     }
 
+    // ---- config render targets ----
+
     private configureRenderPass() {
         const depthTextureDesc: GPUTextureDescriptor = {
             size: { width: this.canvas.width, height: this.canvas.height },
@@ -98,7 +104,7 @@ export class Renderer {
         };
         const depthTexture = this.device.createTexture(depthTextureDesc);
 
-        this.renderPassDescriptor = {
+        this.worldRenderPassDescriptor = {
             label: "render pass descriptor",
             colorAttachments: [{
                 clearValue: [0.0, 0.0, 0.0, 0.0],
@@ -143,21 +149,29 @@ export class Renderer {
             label: "color framebuffer",
             size: [this.canvas.width, this.canvas.height],
             format: "rgba8unorm",
-            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST,
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
         });
         this.posDepthFrameBuffer = this.device.createTexture({
             label: "pos/depth framebuffer",
             size: [this.canvas.width, this.canvas.height],
             format: "rgba32float",
-            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST,
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
         });
         this.normalMaskFrameBuffer = this.device.createTexture({
             label: "normal/mask framebuffer",
             size: [this.canvas.width, this.canvas.height],
             format: "rgba8unorm",
-            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST,
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
         });
     }
+
+    private destroyFrameBufferTextures() {
+        this.colorFrameBuffer.destroy();
+        this.posDepthFrameBuffer.destroy();
+        this.normalMaskFrameBuffer.destroy();
+    }
+
+    // ---- create and destroy asset-dependent resources ---- 
 
     async loadScene(scene: Scene) {
         this.setResolution(scene.resolution);
@@ -179,35 +193,29 @@ export class Renderer {
         this.configureRenderPass();
     }
 
-    private destroyFrameBufferTextures() {
-        this.colorFrameBuffer.destroy();
-        this.posDepthFrameBuffer.destroy();
-        this.normalMaskFrameBuffer.destroy();
-    }
-
     private destroyWorldBuffers() {
         this.vertexBuffers.forEach(b => b.destroy());
-        this.objectUniformBuffers.forEach(b => b.destroy());
-        this.vertUniformBuffers.forEach(b => b.destroy());
-        this.fragUniformBuffers.forEach(b => b.destroy());
+        this.objectBaseUniformBuffers.forEach(b => b.destroy());
+        this.objectVertUniformBuffers.forEach(b => b.destroy());
+        this.objectFragUniformBuffers.forEach(b => b.destroy());
 
-        this.pipelines = new Map();
+        this.objectPipelines = new Map();
         this.vertexBuffers = new Map();
         (this.globalUniformBuffer as any) = undefined;
-        this.objectUniformBuffers = new Map();
-        this.vertUniformBuffers = new Map();
-        this.fragUniformBuffers = new Map();
-        this.uniformBindGroups = new Map();
-        this.textureBindGroups = new Map();
+        this.objectBaseUniformBuffers = new Map();
+        this.objectVertUniformBuffers = new Map();
+        this.objectFragUniformBuffers = new Map();
+        this.objectUniformBindGroups = new Map();
+        this.objectTextureBindGroups = new Map();
     }
 
     private destroyPostBuffers() {
         this.postBaseUniformBuffer?.destroy();
-        this.postUniformBuffer?.destroy();
+        this.postFragUniformBuffer?.destroy();
 
         (this.postPipeline as any) = undefined;
         (this.postBaseUniformBuffer as any) = undefined;
-        (this.postUniformBuffer as any) = undefined;
+        (this.postFragUniformBuffer as any) = undefined;
         (this.postUniformBindGroup as any) = undefined;
         (this.postFrameBufferBindGroup as any) = undefined;
     }
@@ -268,11 +276,11 @@ export class Renderer {
 
     private async initObject(object: Entity) {
         // pipeline
-        if (!this.pipelines.has(object.id)) { // turns out we have to make one per object due to layout auto bindgroup constraints
-            const pipeline = await this.createPipeline(object.vertShader, object.fragShader);
-            this.pipelines.set(object.id, pipeline);
+        if (!this.objectPipelines.has(object.id)) { // turns out we have to make one per object due to layout auto bindgroup constraints
+            const pipeline = await this.createObjectPipeline(object.vertShader, object.fragShader);
+            this.objectPipelines.set(object.id, pipeline);
         }
-        const pipeline = this.pipelines.get(object.id)!;
+        const pipeline = this.objectPipelines.get(object.id)!;
 
         // vertex buffer
         if (!this.vertexBuffers.has(object.mesh)) {
@@ -288,12 +296,12 @@ export class Renderer {
         }
 
         // uniforms
-        if (!this.objectUniformBuffers.has(object.id)) {
-            const [objectUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindGroup] = await this.createUniformBuffers(object.vertUniforms, object.fragUniforms, pipeline);
-            this.objectUniformBuffers.set(object.id, objectUniformBuffer);
-            this.vertUniformBuffers.set(object.id, vertUniformBuffer);
-            this.fragUniformBuffers.set(object.id, fragUniformBuffer);
-            this.uniformBindGroups.set(object.id, uniformBindGroup);
+        if (!this.objectBaseUniformBuffers.has(object.id)) {
+            const [objectUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindGroup] = await this.createObjectUniformBuffers(object.vertUniforms, object.fragUniforms, pipeline);
+            this.objectBaseUniformBuffers.set(object.id, objectUniformBuffer);
+            this.objectVertUniformBuffers.set(object.id, vertUniformBuffer);
+            this.objectFragUniformBuffers.set(object.id, fragUniformBuffer);
+            this.objectUniformBindGroups.set(object.id, uniformBindGroup);
         }
 
         // override first texture if mtl specified
@@ -309,10 +317,10 @@ export class Renderer {
                 this.textureBuffers.set(texture, textureBuffer);
             }
         }
-        if (!this.textureBindGroups.has(object.id)) {
+        if (!this.objectTextureBindGroups.has(object.id)) {
             const textureBuffers = object.textures.map(texture => this.textureBuffers.get(texture)!);
             const textureBindGroup = await this.createTextureBindGroup(textureBuffers, pipeline);
-            this.textureBindGroups.set(object.id, textureBindGroup);
+            this.objectTextureBindGroups.set(object.id, textureBindGroup);
         }
     }
 
@@ -323,7 +331,7 @@ export class Renderer {
         this.postPipeline = await this.createPostPipeline(this.postShaderOverride ?? scene.postShader);
 
         // post uniforms
-        [this.postBaseUniformBuffer, this.postUniformBuffer, this.postUniformBindGroup] = await this.createPostUniformBuffers(this.postUniformsOverride ?? scene.postUniforms, this.postPipeline);
+        [this.postBaseUniformBuffer, this.postFragUniformBuffer, this.postUniformBindGroup] = await this.createPostUniformBuffers(this.postFragUniformsOverride ?? scene.postUniforms, this.postPipeline);
 
         // framebuffer textures
         this.postFrameBufferBindGroup = this.createPostFrameBufferBindGroup(this.postPipeline);
@@ -340,7 +348,7 @@ export class Renderer {
         this.postTextureBindGroup = textureBindGroup;
     }
 
-    private async createPipeline(vertShader: string, fragShader: string): Promise<GPURenderPipeline> {
+    private async createObjectPipeline(vertShader: string, fragShader: string): Promise<GPURenderPipeline> {
         const vertexShader = this.device.createShaderModule({
             label: "vertex shader",
             code: await this.assets.loadShader(vertShader),
@@ -355,7 +363,7 @@ export class Renderer {
             format: 'depth24plus-stencil8' as GPUTextureFormat,
         };
         const pipeline = this.device.createRenderPipeline({
-            label: "render pipeline",
+            label: "world render pipeline",
             layout: "auto",
             vertex: {
                 module: vertexShader,
@@ -405,18 +413,8 @@ export class Renderer {
         return pipeline;
     }
 
-    private async createVertexBuffer(mesh: string): Promise<GPUBuffer> {
-        const vertexData = await this.assets.loadMesh(mesh);
-        const vertexBuffer = this.device.createBuffer({
-            label: "vertex buffer",
-            size: vertexData.byteLength,
-            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-        });
-        this.device.queue.writeBuffer(vertexBuffer, 0, vertexData.buffer);
-        return vertexBuffer;
-    }
-
-    private async createUniformBuffers(vertUniforms: Uniforms, fragUniforms: Uniforms, pipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBuffer, GPUBindGroup]> {
+    /** create object uniforms and bindgroup at group 0 */
+    private async createObjectUniformBuffers(vertUniforms: Uniforms, fragUniforms: Uniforms, pipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBuffer, GPUBindGroup]> {
         const globalUniformBuffer = this.globalUniformBuffer;
 
         const objectUniformLength = new ObjectUniforms()._size();
@@ -465,6 +463,19 @@ export class Renderer {
         return [objectUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindGroup];
     }
 
+    /** create vertex buffer from mesh asset path and write */
+    private async createVertexBuffer(mesh: string): Promise<GPUBuffer> {
+        const vertexData = await this.assets.loadMesh(mesh);
+        const vertexBuffer = this.device.createBuffer({
+            label: "vertex buffer",
+            size: vertexData.byteLength,
+            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        });
+        this.device.queue.writeBuffer(vertexBuffer, 0, vertexData.buffer);
+        return vertexBuffer;
+    }
+
+    /** create texture buffer from texture asset path and write */
     private async createTextureBuffer(texture: string, pipeline: GPURenderPipeline): Promise<GPUTexture> {
         const textureData = await this.assets.loadTexture(texture);
         const textureBuffer = this.device.createTexture({
@@ -482,6 +493,7 @@ export class Renderer {
         return textureBuffer;
     }
 
+    /** create texture bindgroup at group 1 from set of texture buffers */
     private async createTextureBindGroup(textureBuffers: GPUTexture[], pipeline: GPURenderPipeline): Promise<GPUBindGroup> {
         const sampler = this.device.createSampler({
             addressModeU: "repeat", 
@@ -498,6 +510,8 @@ export class Renderer {
         });
         return textureBindGroup;
     }
+
+    // ---- post resources ----
 
     private async createPostPipeline(postShader: string): Promise<GPURenderPipeline> {
         const postVertexShader = this.device.createShaderModule({
@@ -530,6 +544,7 @@ export class Renderer {
         return postPipeline;
     }
 
+    /** create post uniforms and bindgroup at group 0 */
     private async createPostUniformBuffers(postUniforms: Uniforms, postPipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBindGroup]> {
         const postBaseUniformLength = new PostUniforms()._size();
         const postBaseUniformBuffer = this.device.createBuffer({
@@ -563,6 +578,7 @@ export class Renderer {
         return [postBaseUniformBuffer, postUniformBuffer, postUniformBindGroup];
     }
 
+    /** create post fb bindgroup at group 2 */
     private createPostFrameBufferBindGroup(postPipeline: GPURenderPipeline): GPUBindGroup {
         const postFrameBufferBindGroup = this.device.createBindGroup({
             label: "post framebuffer bindgroup",
@@ -576,13 +592,15 @@ export class Renderer {
         return postFrameBufferBindGroup;
     }
 
+    // ---- drawing ----
+
     async drawScene(scene: Scene, camera: Camera, time: number, frame: number, profiler: Profiler) {
         // initialize new objects
         for (let object of scene.entities) {
             if (!object.visible) {
                 continue;
             }
-            if (!this.objectUniformBuffers.has(object.id)) {
+            if (!this.objectBaseUniformBuffers.has(object.id)) {
                 await this.initObject(object);
             }
         }
@@ -594,8 +612,21 @@ export class Renderer {
 		})
         scene.entities.sort((a, b) => b.z - a.z);
 
+        // draw calls
+        this.updateWorldObjectBuffers(scene, profiler);
+
         // update world buffers
         profiler.start("  bufferWorld");
+
+        this.updateWorldGlobalBuffers(camera, time, frame, profiler);
+        this.drawWorld(scene, profiler);
+
+        this.updatePostBuffers(scene, camera, time, frame, profiler);
+        this.drawPost(profiler);
+    }
+
+    private updateWorldGlobalBuffers(camera: Camera, time: number, frame: number, profiler: Profiler) {
+        profiler.start("  bufferWorldGlobal");
 
         // global uniforms, always update
         let globalUniforms = new GlobalUniforms();
@@ -609,6 +640,11 @@ export class Renderer {
 
         const globalUniformBuffer = this.globalUniformBuffer;
         this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms._update().buffer);
+        profiler.stop("  bufferWorldGlobal");
+    }
+
+    private updateWorldObjectBuffers(scene: Scene, profiler: Profiler) {
+        profiler.start("  bufferWorldObject");
 
         // object uniforms, only update if changed
         for (let object of scene.entities) {
@@ -627,9 +663,9 @@ export class Renderer {
             objectUniforms.model = object.model;
             objectUniforms.normal = object.model.inverse().transpose();
 
-            const objectUniformBuffer = this.objectUniformBuffers.get(object.id);
-            const vertUniformBuffer = this.vertUniformBuffers.get(object.id);
-            const fragUniformBuffer = this.fragUniformBuffers.get(object.id);
+            const objectUniformBuffer = this.objectBaseUniformBuffers.get(object.id);
+            const vertUniformBuffer = this.objectVertUniformBuffers.get(object.id);
+            const fragUniformBuffer = this.objectFragUniformBuffers.get(object.id);
             if (!objectUniformBuffer || !vertUniformBuffer || !fragUniformBuffer) {
                 console.error(`missing uniform buffers ${object.id}`);
                 continue;
@@ -643,20 +679,39 @@ export class Renderer {
                 this.device.queue.writeBuffer(fragUniformBuffer, 0, object.fragUniforms._update().buffer);
             }
         }
-        profiler.stop("  bufferWorld");
+        profiler.stop("  bufferWorldObject");
+    }
 
-        // draw world
+    private updatePostBuffers(scene: Scene, camera: Camera, time: number, frame: number, profiler: Profiler) {
+        profiler.start("  bufferPost");
+        let postBaseUniforms = new PostUniforms();
+        postBaseUniforms.time = time;
+        postBaseUniforms.frame = frame;
+        postBaseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
+        postBaseUniforms.post_config = scene.postConfig;
+        postBaseUniforms.view = camera.view;
+        postBaseUniforms.projection = camera.projection;
+        this.device.queue.writeBuffer(this.postBaseUniformBuffer, 0, postBaseUniforms._update().buffer);
+
+        let postUniforms = this.postFragUniformsOverride ?? scene.postUniforms;
+        if (postUniforms._size() > 0) {
+            this.device.queue.writeBuffer(this.postFragUniformBuffer, 0, postUniforms._update().buffer);
+        }
+        profiler.stop("  bufferPost");
+    }
+
+    private drawWorld(scene: Scene, profiler: Profiler) {
         profiler.start("  drawWorld");
-        const encoder = this.device.createCommandEncoder({ label: "render encoder" });
-        const pass = encoder.beginRenderPass(this.renderPassDescriptor);
+        const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
+        const pass = encoder.beginRenderPass(this.worldRenderPassDescriptor);
         for (let object of scene.entities) {
             if (!object.visible) {
                 continue;
             }
-            const pipeline = this.pipelines.get(object.id);
+            const pipeline = this.objectPipelines.get(object.id);
             const vertexBuffer = this.vertexBuffers.get(object.mesh);
-            const uniformBindGroup = this.uniformBindGroups.get(object.id);
-            const textureBindGroup = this.textureBindGroups.get(object.id);
+            const uniformBindGroup = this.objectUniformBindGroups.get(object.id);
+            const textureBindGroup = this.objectTextureBindGroups.get(object.id);
             if (!pipeline || !vertexBuffer || !uniformBindGroup || !textureBindGroup) {
                 console.error(`missing object assets ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
                 continue;
@@ -671,25 +726,9 @@ export class Renderer {
         pass.end();
         this.device.queue.submit([encoder.finish()]);
         profiler.stop("  drawWorld");
+    }
 
-        // update post buffers
-        profiler.start("  bufferPost");
-        let postBaseUniforms = new PostUniforms();
-        postBaseUniforms.time = time;
-        postBaseUniforms.frame = frame;
-        postBaseUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
-        postBaseUniforms.post_config = scene.postConfig;
-        postBaseUniforms.view = camera.view;
-        postBaseUniforms.projection = camera.projection;
-        this.device.queue.writeBuffer(this.postBaseUniformBuffer, 0, postBaseUniforms._update().buffer);
-
-        let postUniforms = this.postUniformsOverride ?? scene.postUniforms;
-        if (postUniforms._size() > 0) {
-            this.device.queue.writeBuffer(this.postUniformBuffer, 0, postUniforms._update().buffer);
-        }
-        profiler.stop("  bufferPost");
-
-        // draw post
+    private drawPost(profiler: Profiler) {
         profiler.start("  drawPost");
         (this.postRenderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = this.context.getCurrentTexture().createView();
         const postEncoder = this.device.createCommandEncoder({ label: "post render encoder" });

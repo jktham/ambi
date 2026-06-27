@@ -54,7 +54,7 @@ export class Engine {
 		}
 
 		this.renderer.postShaderOverride = undefined;
-		this.renderer.postUniformsOverride = undefined;
+		this.renderer.postFragUniformsOverride = undefined;
 		this.renderer.postTexturesOverride = undefined;
 
 		this.player.mode = this.scene.cameraMode;
@@ -79,15 +79,15 @@ export class Engine {
 
 		if (path == "scene") {
 			this.renderer.postShaderOverride = undefined;
-			this.renderer.postUniformsOverride = undefined;
+			this.renderer.postFragUniformsOverride = undefined;
 			this.renderer.postTexturesOverride = textures?.length > 0 ? textures : undefined;
 			this.gui.updatePost(path, this.scene.postShader, this.scene.postUniforms, this.renderer.postTexturesOverride ?? this.scene.postTextures);
 
 		} else {
 			this.renderer.postShaderOverride = path;
-			this.renderer.postUniformsOverride = uniforms;
+			this.renderer.postFragUniformsOverride = uniforms;
 			this.renderer.postTexturesOverride = textures;
-			this.gui.updatePost(path, this.scene.postShader, this.renderer.postUniformsOverride, this.renderer.postTexturesOverride);
+			this.gui.updatePost(path, this.scene.postShader, this.renderer.postFragUniformsOverride, this.renderer.postTexturesOverride);
 		}
 		await this.renderer.loadPost(this.scene);
 
@@ -132,6 +132,7 @@ export class Engine {
 
 		// update camera matrices
 		this.player.updateCamera();
+		this.scene.shadowSource?.updateMatrices();
 
 		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.entities.length}/${this.scene.entities.filter(o => o.visible).length}/${this.scene.entities.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
 		
