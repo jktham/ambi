@@ -41,7 +41,7 @@ fn main(in: VertexIn, @builtin(instance_index) i: u32) -> PsxVertexOut {
 	out.ndc = vec4f(rounded_ndc, out.ndc.z, out.ndc.w);
 	out.w = out.ndc.w;
 
-	out.shadow_space = u_global.shadow_transform * u_object.model * vec4f(in.pos, 1.0);
+	out.shadow_space = u_global.shadow_transform * model * vec4f(in.pos, 1.0);
 
 	return out;
 }
