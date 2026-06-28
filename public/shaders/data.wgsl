@@ -6,21 +6,23 @@ struct VertexIn {
 };
 
 struct VertexOut {
-	@builtin(position) ndc: vec4f,
+	@builtin(position) ndc: vec4f, // -1..1
 	@location(0) pos: vec3f,
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
-	@location(4) bary: vec3f
+	@location(4) bary: vec3f,
+	@location(5) shadow_space: vec4f // -1..1
 };
 
 struct FragmentIn {
-	@builtin(position) screen: vec4f,
+	@builtin(position) screen: vec4f, // 0..res
 	@location(0) pos: vec3f,
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
-	@location(4) bary: vec3f
+	@location(4) bary: vec3f,
+	@location(5) shadow_space: vec4f // -1..1
 };
 
 struct FragmentOut {
@@ -46,6 +48,7 @@ struct GlobalUniforms {
 	view: mat4x4f,
 	view_inv: mat4x4f,
 	projection: mat4x4f,
+	shadow_transform: mat4x4f,
 };
 
 struct ObjectUniforms {

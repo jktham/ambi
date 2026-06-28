@@ -4,7 +4,7 @@ import { Assets as Assets } from "./assets";
 import type { Scene } from "./scene";
 import type { Entity, eid } from "./entity";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
-import { Vec2 } from "./vec";
+import { Mat4, Vec2 } from "./vec";
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
@@ -12,6 +12,8 @@ export class Renderer {
     private context!: GPUCanvasContext;
     private presentationFormat!: GPUTextureFormat;
 
+    private depthTexture!: GPUTexture;
+    private shadowMapTexture!: GPUTexture;
     private colorFrameBuffer!: GPUTexture;
     private posDepthFrameBuffer!: GPUTexture;
     private normalMaskFrameBuffer!: GPUTexture;
@@ -96,14 +98,6 @@ export class Renderer {
     // ---- config render targets ----
 
     private configureRenderPass() {
-        const depthTextureDesc: GPUTextureDescriptor = {
-            size: { width: this.canvas.width, height: this.canvas.height },
-            dimension: '2d',
-            format: 'depth24plus-stencil8',
-            usage: GPUTextureUsage.RENDER_ATTACHMENT
-        };
-        const depthTexture = this.device.createTexture(depthTextureDesc);
-
         this.worldRenderPassDescriptor = {
             label: "render pass descriptor",
             colorAttachments: [{
@@ -123,13 +117,10 @@ export class Renderer {
                 view: this.normalMaskFrameBuffer.createView()
             }],
             depthStencilAttachment: {
-                view: depthTexture.createView(),
                 depthClearValue: 0,
                 depthLoadOp: 'clear',
                 depthStoreOp: 'store',
-                stencilClearValue: 0,
-                stencilLoadOp: 'clear',
-                stencilStoreOp: 'store'
+                view: this.depthTexture.createView(),
             }
         };
 
@@ -145,6 +136,19 @@ export class Renderer {
     }
 
     private createFrameBufferTextures() {
+        this.depthTexture = this.device.createTexture({
+            label: "depth texture",
+            size: { width: this.canvas.width, height: this.canvas.height },
+            format: 'depth32float',
+            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
+        });
+        this.shadowMapTexture = this.device.createTexture({
+            label: "shadow map texture",
+            size: { width: this.canvas.width, height: this.canvas.height },
+            format: 'depth32float',
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
+        });
+
         this.colorFrameBuffer = this.device.createTexture({
             label: "color framebuffer",
             size: [this.canvas.width, this.canvas.height],
@@ -155,7 +159,7 @@ export class Renderer {
             label: "pos/depth framebuffer",
             size: [this.canvas.width, this.canvas.height],
             format: "rgba32float",
-            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
         });
         this.normalMaskFrameBuffer = this.device.createTexture({
             label: "normal/mask framebuffer",
@@ -166,6 +170,8 @@ export class Renderer {
     }
 
     private destroyFrameBufferTextures() {
+        this.depthTexture.destroy();
+        this.shadowMapTexture.destroy();
         this.colorFrameBuffer.destroy();
         this.posDepthFrameBuffer.destroy();
         this.normalMaskFrameBuffer.destroy();
@@ -357,11 +363,7 @@ export class Renderer {
             label: "fragment shader",
             code: await this.assets.loadShader(fragShader),
         });
-        const depthStencilState: GPUDepthStencilState = {
-            depthWriteEnabled: true,
-            depthCompare: 'greater' as GPUCompareFunction,
-            format: 'depth24plus-stencil8' as GPUTextureFormat,
-        };
+
         const pipeline = this.device.createRenderPipeline({
             label: "world render pipeline",
             layout: "auto",
@@ -403,7 +405,11 @@ export class Renderer {
                     },
                 ]
             },
-            depthStencil: depthStencilState,
+            depthStencil: {
+                depthWriteEnabled: true,
+                depthCompare: 'greater' as GPUCompareFunction,
+                format: 'depth32float' as GPUTextureFormat,
+            },
             primitive: {
                 topology: "triangle-list",
                 frontFace: "ccw",
@@ -452,6 +458,16 @@ export class Renderer {
         }
         if (fragUniformLength > 0) {
             uniformBindings.push({ binding: 3, resource: { buffer: fragUniformBuffer }});
+        }
+
+        // optional shadow depth texture at (0, 4)
+        if (fragUniforms._useShadowMap) {
+            const sampler = this.device.createSampler({
+                addressModeU: "clamp-to-edge", 
+                addressModeV: "clamp-to-edge"
+            });
+            uniformBindings.push({ binding: 4, resource: sampler });
+            uniformBindings.push({ binding: 5, resource: this.shadowMapTexture });
         }
 
         const uniformBindGroup = this.device.createBindGroup({
@@ -612,20 +628,28 @@ export class Renderer {
 		})
         scene.entities.sort((a, b) => b.z - a.z);
 
-        // draw calls
+        // update object buffers once
         this.updateWorldObjectBuffers(scene, profiler);
 
-        // update world buffers
-        profiler.start("  bufferWorld");
+        if (scene.shadowSource) {
+            // draw from shadow source pov
+            this.updateWorldGlobalBuffers(scene, scene.shadowSource, time, frame, profiler);
+            this.drawWorld(scene, profiler);
 
-        this.updateWorldGlobalBuffers(camera, time, frame, profiler);
+            // copy depth buffer to shadow map texture
+            const encoder = this.device.createCommandEncoder({ label: "copy depth encoder" });
+            encoder.copyTextureToTexture({texture: this.depthTexture}, {texture: this.shadowMapTexture}, {width: this.depthTexture.width, height: this.depthTexture.height})
+            this.device.queue.submit([encoder.finish()]); // todo: prevent destroy while in use
+        }
+
+        this.updateWorldGlobalBuffers(scene, camera, time, frame, profiler);
         this.drawWorld(scene, profiler);
 
         this.updatePostBuffers(scene, camera, time, frame, profiler);
         this.drawPost(profiler);
     }
 
-    private updateWorldGlobalBuffers(camera: Camera, time: number, frame: number, profiler: Profiler) {
+    private updateWorldGlobalBuffers(scene: Scene, camera: Camera, time: number, frame: number, profiler: Profiler) {
         profiler.start("  bufferWorldGlobal");
 
         // global uniforms, always update
@@ -637,6 +661,8 @@ export class Renderer {
         globalUniforms.view_pos = camera.position;
         globalUniforms.view = camera.view;
         globalUniforms.projection = camera.projection;
+        globalUniforms.shadow_view = scene.shadowSource?.view ?? new Mat4();
+        globalUniforms.shadow_projection = scene.shadowSource?.projection ?? new Mat4();
 
         const globalUniformBuffer = this.globalUniformBuffer;
         this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms._update().buffer);

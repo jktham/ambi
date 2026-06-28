@@ -14,6 +14,6 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = u_post.time;
 	let pixel = vec2i(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
-	let d = pow(1.0 - (1.0 / (data.depth + 1.0)), 2.0);
+	let d = pow(1.0 - (1.0 / (data.depth + 1.0)), 20.0);
 	return vec4f(d, d, d, 1.0);
 }

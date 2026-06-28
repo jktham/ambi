@@ -3,6 +3,7 @@ import type { Entity } from "./entity";
 import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
 import { Vec2, Vec3, Vec4 } from "./vec";
+import type { Camera } from "./camera";
 
 export class Scene {
 	name: string = "none";
@@ -19,6 +20,9 @@ export class Scene {
 	postUniforms: Uniforms = new Uniforms();
 	postTextures: string[] = [];
 	postConfig: Vec4 = new Vec4();
+
+	/** casts shadows from this camera, if not set skips shadow render pass */
+	shadowSource?: Camera;
 
 	entities: Entity[] = [];
 	triggers: Trigger[] = [];

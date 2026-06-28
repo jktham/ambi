@@ -16,5 +16,7 @@ fn main(in: VertexIn, @builtin(vertex_index) vi: u32) -> VertexOut {
 	bary[vi % 3] = 1.0;
 	out.bary = bary;
 
+	out.shadow_space = u_global.shadow_transform * u_object.model * vec4f(in.pos, 1.0);
+
 	return out;
 }

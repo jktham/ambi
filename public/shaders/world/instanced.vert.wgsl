@@ -30,5 +30,7 @@ fn main(in: VertexIn, @builtin(vertex_index) vi: u32, @builtin(instance_index) i
 	bary[vi % 3] = 1.0;
 	out.bary = bary;
 
+	out.shadow_space = u_global.shadow_transform * model * vec4f(in.pos, 1.0);
+
 	return out;
 }

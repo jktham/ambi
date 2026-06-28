@@ -272,7 +272,7 @@ export class MuseumScene extends Scene {
 		}
 		for (let i=0; i<lodObjects.length; i++) {
 			for (let obj of lodObjects[i]) {
-				let dist = player.camera.position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
+				let dist = player.position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
 				if (i == 0) {
 					obj.visible = dist < lodDistances[i] ? true : false;
 					obj.collidable = dist < lodDistances[i] ? true : false;
@@ -291,7 +291,7 @@ export class MuseumScene extends Scene {
 
 		let explodeObjects = this.getEntities("explode");
 		for (let obj of explodeObjects) {
-			let dist = obj.model.origin().mul(new Vec3(1, 0.5, 1)).dist(player.camera.position.mul(new Vec3(1, 0.5, 1)));
+			let dist = obj.model.origin().mul(new Vec3(1, 0.5, 1)).dist(player.position.mul(new Vec3(1, 0.5, 1)));
 			obj.vertConfig.x = clamp((dist - 5.0) / 2.0, 0.0, 10.0);
 			obj.changed = true;
 		}

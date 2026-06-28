@@ -7,7 +7,8 @@ struct PsxVertexOut {
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
 	@location(4) w: f32,
-	@location(5) bary: vec3f
+	@location(5) bary: vec3f,
+	@location(6) shadow_space: vec4f
 };
 
 struct Instance {
@@ -39,6 +40,8 @@ fn main(in: VertexIn, @builtin(instance_index) i: u32) -> PsxVertexOut {
 	var rounded_ndc: vec2f = (round((out.ndc.xy / out.ndc.w) * (u_global.resolution / 2)) / (u_global.resolution / 2)) * out.ndc.w;
 	out.ndc = vec4f(rounded_ndc, out.ndc.z, out.ndc.w);
 	out.w = out.ndc.w;
+
+	out.shadow_space = u_global.shadow_transform * u_object.model * vec4f(in.pos, 1.0);
 
 	return out;
 }

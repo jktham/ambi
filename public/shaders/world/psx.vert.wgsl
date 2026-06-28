@@ -7,7 +7,8 @@ struct PsxVertexOut {
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
 	@location(4) w: f32,
-	@location(5) bary: vec3f
+	@location(5) bary: vec3f,
+	@location(6) shadow_space: vec4f
 };
 
 @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
@@ -29,6 +30,8 @@ fn main(in: VertexIn, @builtin(vertex_index) vi: u32) -> PsxVertexOut {
 	var bary = vec3f(0.0);
 	bary[vi % 3] = 1.0;
 	out.bary = bary;
+
+	out.shadow_space = u_global.shadow_transform * u_object.model * vec4f(in.pos, 1.0);
 
 	return out;
 }

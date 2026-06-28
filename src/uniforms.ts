@@ -6,6 +6,7 @@ export class Uniforms {
 	_name = "Uniforms";
 	_useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag, for large or dynamic buffers
 	_instanceCount = 0; // draw instanced if > 0
+	_useShadowMap = false; // include shadow depth buffer in bindgroup
 	_data = new Float32Array(this._size()); // sent to shader each frame
 	
 	_size(): number {
@@ -27,9 +28,11 @@ export class GlobalUniforms extends Uniforms {
 	view_pos = new Vec3();
 	view = new Mat4();
 	projection = new Mat4();
+	shadow_view = new Mat4();
+	shadow_projection = new Mat4();
 
 	_size(): number {
-		return 60;
+		return 76;
 	}
 
 	_update(): Float32Array {
@@ -41,6 +44,7 @@ export class GlobalUniforms extends Uniforms {
 		this._data.subarray(12, 12+16).set(this.view.transpose().data);
 		this._data.subarray(28, 28+16).set(this.view.inverse().transpose().data);
 		this._data.subarray(44, 44+16).set(this.projection.transpose().data);
+		this._data.subarray(60, 60+16).set(this.shadow_projection.mul(this.shadow_view).transpose().data);
 		return this._data;
 	}
 }
@@ -95,6 +99,34 @@ export class PhongUniforms extends Uniforms {
 		this._data[3] = this.specular_exponent;
 		this._data.subarray(4, 4+3).set(this.light_pos.data);
 		this._data.subarray(8, 8+4).set(this.light_color.data);
+		return this._data;
+	}
+}
+
+export class PhongShadowUniforms extends Uniforms {
+	_name = "PhongShadowUniforms";
+	_useShadowMap = true;
+
+	ambient_factor = 0.1;
+	diffuse_factor = 0.6;
+	specular_factor = 0.3;
+	specular_exponent = 32.0;
+	light_pos = new Vec3();
+	light_color = new Vec4(1.0, 1.0, 1.0, 1.0);
+	shadow_bias = 0.00001;
+
+	_size(): number {
+		return 16;
+	}
+
+	_update(): Float32Array {
+		this._data[0] = this.ambient_factor;
+		this._data[1] = this.diffuse_factor;
+		this._data[2] = this.specular_factor;
+		this._data[3] = this.specular_exponent;
+		this._data.subarray(4, 4+3).set(this.light_pos.data);
+		this._data.subarray(8, 8+4).set(this.light_color.data);
+		this._data[12] = this.shadow_bias;
 		return this._data;
 	}
 }

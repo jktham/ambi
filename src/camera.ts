@@ -3,6 +3,8 @@ import { Vec2, Vec3, Mat4 } from "./vec";
 export class Camera {
 	fov: number = 100.0;
 	aspect: number = 16.0/9.0;
+	near: number = 0.001;
+	far: number = 1000.0;
 
 	position: Vec3 = new Vec3();
 	rotation: Vec2 = new Vec2();
@@ -27,14 +29,12 @@ export class Camera {
 
 	/** compute projection matrix from fov and aspect ratio */
 	computeProjection(fov: number, aspect: number): Mat4 {
-		const near = 0.001;
-		const far = 1000.0;
 		const phi = Math.tan((1.0 - fov / 180.0) * Math.PI / 2.0);
 
 		return new Mat4([
 			phi, 0.0, 0.0, 0.0,
 			0.0, phi * aspect, 0.0, 0.0,
-			0.0, 0.0, near / (far - near), far * near / (far - near), // reverse z
+			0.0, 0.0, this.near / (this.far - this.near), this.far * this.near / (this.far - this.near), // reverse z
 			0.0, 0.0, -1.0, 0.0
 		]);
 	}
