@@ -467,7 +467,7 @@ export class Renderer {
                 addressModeV: "clamp-to-edge"
             });
             uniformBindings.push({ binding: 4, resource: sampler });
-            uniformBindings.push({ binding: 5, resource: this.shadowMapTexture });
+            uniformBindings.push({ binding: 5, resource: this.shadowMapTexture.createView() });
         }
 
         const uniformBindGroup = this.device.createBindGroup({
