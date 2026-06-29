@@ -2,6 +2,7 @@ export class Vec2 {
 	data: number[];
 	size: number = 2;
 
+	/** defaults to zero vector */
 	constructor(x: number = 0, y: number = 0) {
 		this.data = [x, y];
 	}
@@ -66,6 +67,7 @@ export class Vec3 {
 	data: number[];
 	size: number = 3;
 
+	/** defaults to zero vector */
 	constructor(x: number = 0, y: number = 0, z: number = 0) {
 		this.data = [x, y, z];
 	}
@@ -140,6 +142,7 @@ export class Vec4 {
 	data: number[];
 	size: number = 4;
 
+	/** defaults to zero vector */
 	constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
 		this.data = [x, y, z, w];
 	}
@@ -208,6 +211,7 @@ export class Mat4 {
 	data: number[];
 	size: number = 16;
 
+	/** defaults to identity matrix */
 	constructor(data?: number[]) {
 		if (!data) {
 			this.data = [
@@ -306,7 +310,7 @@ export class Mat4 {
 		]);
 	}
 
-	/** create matrix from translation */
+	/** create translation matrix */
 	static translate(offset: Vec3): Mat4 {
 		return new Mat4([
 			1, 0, 0, offset.x, 
@@ -316,7 +320,7 @@ export class Mat4 {
 		]);
 	}
 
-	/** create matrix from scale */
+	/** create scaling matrix */
 	static scale(factor: number | Vec3): Mat4 {
 		if (factor instanceof Vec3) {
 			return new Mat4([
@@ -335,7 +339,7 @@ export class Mat4 {
 		}
 	}
 
-	/** create matrix from rotation (euler xyz radians) */
+	/** create rotation matrix from euler xyz radians */
 	static rotate(euler: Vec3): Mat4 {
 		let X = new Mat4([
 			1, 0, 0, 0, 
@@ -358,12 +362,49 @@ export class Mat4 {
 		return X.mul(Y).mul(Z);
 	}
 
-	/** create matrix from translation, rotation (euler xyz radians) and scale */
-	static trs(translation: Vec3 = new Vec3(), rotation: Vec3 = new Vec3(), scale: number | Vec3 = 1) {
+	/** create rotation matrix from pitch yaw roll angles in radians */
+	static rotatePitchYawRoll(pitch: number, yaw: number, roll: number): Mat4 {
+		let X = new Mat4([
+			1, 0, 0, 0, 
+			0, Math.cos(-pitch), -Math.sin(-pitch), 0, 
+			0, Math.sin(-pitch), Math.cos(-pitch), 0, 
+			0, 0, 0, 1
+		]);
+		let Y = new Mat4([
+			Math.cos(-yaw), 0, Math.sin(-yaw), 0, 
+			0, 1, 0, 0, 
+			-Math.sin(-yaw), 0, Math.cos(-yaw), 0, 
+			0, 0, 0, 1
+		]);
+		let Z = new Mat4([
+			Math.cos(-roll), -Math.sin(-roll), 0, 0, 
+			Math.sin(-roll), Math.cos(-roll), 0, 0, 
+			0, 0, 1, 0, 
+			0, 0, 0, 1
+		]);
+		return Z.mul(Y).mul(X);
+	}
+
+	/** create transformation matrix from translation, rotation (euler xyz radians) and scale */
+	static trs(translation: Vec3 = new Vec3(), rotation: Vec3 = new Vec3(), scale: number | Vec3 = 1): Mat4 {
 		let T = Mat4.translate(translation);
 		let R = Mat4.rotate(rotation);
 		let S = Mat4.scale(scale);
 		return T.mul(R).mul(S);
+	}
+
+	/** create rotation matrix looking at target from eye, up defaults to +Y. does not include a translation! */
+	static lookAt(eye: Vec3, target: Vec3, up: Vec3 = new Vec3(0, 1, 0)): Mat4 {
+		let front = target.sub(eye).normalize();
+		let right = front.cross(up);
+
+		// right handed, no translation
+		return new Mat4([
+			right.x, up.x, -front.x, 0, 
+			right.y, up.y, -front.y, 0, 
+			right.z, up.z, -front.z, 0, 
+			0, 0, 0, 1
+		]);
 	}
 
 }

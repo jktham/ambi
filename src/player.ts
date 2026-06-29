@@ -26,7 +26,7 @@ export class Player {
 
 	velocity: Vec3 = new Vec3();
 	position: Vec3 = new Vec3();
-	rotation: Vec2 = new Vec2();
+	rotation: Vec2 = new Vec2(); // pitch, yaw
 	front: Vec3 = new Vec3();
 	right: Vec3 = new Vec3();
 	up: Vec3 = new Vec3();
@@ -103,8 +103,7 @@ export class Player {
 
 	/** update player camera transforms, keep in sync with player pos */
 	updateCamera() {
-		this.camera.position = this.position.add(new Vec3(0.0, this.height, 0.0));
-		this.camera.rotation = this.rotation;
+		this.camera.model = Mat4.translate(this.position.add(new Vec3(0.0, this.height, 0.0))).mul(Mat4.rotatePitchYawRoll(this.rotation.y, this.rotation.x, 0));
 		this.camera.updateMatrices();
 	}
 	

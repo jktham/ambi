@@ -1,4 +1,4 @@
-import { Vec2, Vec3, Mat4 } from "./vec";
+import { Mat4 } from "./vec";
 
 export class Camera {
 	fov: number = 100.0;
@@ -6,9 +6,7 @@ export class Camera {
 	near: number = 0.001;
 	far: number = 1000.0;
 
-	position: Vec3 = new Vec3();
-	rotation: Vec2 = new Vec2();
-
+	model: Mat4 = new Mat4();
 	view: Mat4 = new Mat4();
 	projection: Mat4 = new Mat4();
 
@@ -18,22 +16,22 @@ export class Camera {
 
 	/** update view and projection matrices */
 	updateMatrices() {
-		this.view = this.computeView(this.position, this.rotation);
-		this.projection = this.computeProjection(this.fov, this.aspect);
+		this.view = this.computeView();
+		this.projection = this.computeProjection();
 	}
 
-	/** compute view matrix from position and rotation in radians */
-	computeView(position: Vec3, rotation: Vec2): Mat4 {
-		return Mat4.rotate(new Vec3(rotation.y, rotation.x, 0)).mul(Mat4.translate(position.mul(1)).inverse());
+	/** compute view matrix from model transform */
+	computeView(): Mat4 {
+		return this.model.inverse();
 	}
 
-	/** compute projection matrix from fov and aspect ratio */
-	computeProjection(fov: number, aspect: number): Mat4 {
-		const phi = Math.tan((1.0 - fov / 180.0) * Math.PI / 2.0);
+	/** compute projection matrix from near and far planes, fov and aspect ratio */
+	computeProjection(): Mat4 {
+		const phi = Math.tan((1.0 - this.fov / 180.0) * Math.PI / 2.0);
 
 		return new Mat4([
 			phi, 0.0, 0.0, 0.0,
-			0.0, phi * aspect, 0.0, 0.0,
+			0.0, phi * this.aspect, 0.0, 0.0,
 			0.0, 0.0, this.near / (this.far - this.near), this.far * this.near / (this.far - this.near), // reverse z
 			0.0, 0.0, -1.0, 0.0
 		]);

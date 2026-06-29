@@ -33,12 +33,19 @@ fn main(in: FragmentIn) -> FragmentOut {
 	data.normal = in.normal;
 	data.mask = u32(u_object.mask);
 
+	// slope based bias
 	let bias = max(u_phong.shadow_bias * (1.0 - dot(in.normal, normalize(u_phong.light_pos - in.pos))), u_phong.shadow_bias / 10.0);
 
 	var shade = false;
 	if (shadowspace_depth + bias < shadowmap_depth) {
 		shade = true;
 	}
+
+	// cleared value
+	if (shadowmap_depth == 0.0) {
+		shade = false;
+	}
+	// outside frustum
 	if (shadow_uv.x > 1.0 || shadow_uv.x < 0.0 || shadow_uv.y > 1.0 || shadow_uv.y < 0.0 || shadow_uv.z > 1.0 || shadow_uv.z < 0.0) {
 		shade = false;
 	}

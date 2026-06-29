@@ -47,3 +47,11 @@ export function lerp(a: number, b: number, t: number): number {
 export function clamp(v: number, min: number, max: number): number {
     return Math.max(min, Math.min(max, v));
 }
+
+export function rad(degrees: number) {
+    return Math.PI / 180.0 * degrees;
+}
+
+export function deg(radians: number) {
+    return 180.0 / Math.PI * radians;
+}

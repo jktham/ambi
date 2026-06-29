@@ -622,7 +622,7 @@ export class Renderer {
         }
 
         // z-sort objects
-		let dist = (obj: Entity) => obj.model.origin().dist(camera.position)
+		let dist = (obj: Entity) => obj.model.origin().dist(camera.model.origin())
         scene.entities.filter(obj => obj.zsort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
             obj.z = (i+1) / (arr.length+1); // (0, 1)
 		})
@@ -658,7 +658,7 @@ export class Renderer {
         globalUniforms.frame = frame;
         globalUniforms.fov = camera.fov;
         globalUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
-        globalUniforms.view_pos = camera.position;
+        globalUniforms.view_pos = camera.model.origin();
         globalUniforms.view = camera.view;
         globalUniforms.projection = camera.projection;
         globalUniforms.shadow_view = scene.shadowSource?.view ?? new Mat4();
