@@ -624,7 +624,8 @@ export class Renderer {
         // z-sort objects
 		let dist = (obj: Entity) => obj.model.origin().dist(camera.model.origin())
         scene.entities.filter(obj => obj.zsort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
-            obj.z = (i+1) / (arr.length+1); // (0, 1)
+            let z_frac = (i+1) / (arr.length+1); // (0, 1)
+            obj.z = Math.floor(obj.z) + z_frac;
 		})
         scene.entities.sort((a, b) => b.z - a.z);
 

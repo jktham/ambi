@@ -24,13 +24,13 @@ export class Entity {
     color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
     /** object to world transform */
     model: Mat4 = new Mat4();
-    /** custom value written to mask framebuffer, for postprocessing pass */
+    /** custom value written to mask framebuffer, for postprocessing pass, [0, 255] */
     mask: number = 0;
     /** 0.0 = no culling, 1.0 = backface culling, -1.0 = frontface culling */
     cull: number = 0.0;
     /** used for draw order, lower = closer to camera */
     z: number = 0.0;
-    /** sort by player distance and set z index every frame, in (0, 1) */
+    /** sort by player distance and sets fractional part of z index every frame, (0, 1) */
     zsort: boolean = false;
     
     /** path to .obj or .json mesh file in public/meshes/, used for fine collision detection */

@@ -168,6 +168,7 @@ export class RayspheresUniforms extends Uniforms {
 	light_color = new Vec4(1.0, 1.0, 1.0, 1.0);
 	
 	sphere_count = 0;
+	relative_pos = 1; // 1: sphere pos relative to model, 0: sphere pos absolute
 	background_color = new Vec4(0.0, 0.0, 0.0, 0.0);
 	sphere_pos: Vec4[] = []; // xyz = center, w = radius
 	sphere_color: Vec4[] = [];
@@ -187,6 +188,7 @@ export class RayspheresUniforms extends Uniforms {
 		this._data.subarray(4, 4+3).set(this.light_pos.data);
 		this._data.subarray(8, 8+4).set(this.light_color.data);
 		this._data[12] = this.sphere_count;
+		this._data[13] = this.relative_pos;
 		this._data.subarray(16, 16+4).set(this.background_color.data);
 		for (let i=0; i<this.sphere_count; i++) {
 			this._data.subarray(20 + i*8, 20 + (i+1)*8).set(this.sphere_pos[i].data);

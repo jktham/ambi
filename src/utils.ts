@@ -1,6 +1,6 @@
 import { Vec3, Vec4 } from "./vec";
 
-/** defaults to [0, 1) */
+/** excluding max, defaults to [0, 1) */
 export function rnd(min: number = 0, max: number = 1): number {
     return Math.random() * (max - min) + min;
 }

@@ -14,6 +14,7 @@ struct RaysphereUniforms {
 	light_pos: vec3f,
 	light_color: vec4f,
 	sphere_count: f32,
+	relative_pos: f32,
 	background_color: vec4f,
 	spheres: array<Sphere>,
 }
@@ -67,7 +68,12 @@ fn main(in: FragmentIn) -> FragmentOut {
 		if (u_rayspheres.spheres[j].pos.w == 0.0) {
 			continue;
 		}
-		let t2 = intersectSphere(ray, vec4f((u_object.model * vec4f(u_rayspheres.spheres[i].pos.xyz, 1.0)).xyz, u_rayspheres.spheres[i].pos.w));
+		let pos = select(
+			u_rayspheres.spheres[i].pos.xyz,
+			(u_object.model * vec4f(u_rayspheres.spheres[i].pos.xyz, 1.0)).xyz,
+			u_rayspheres.relative_pos == 1,
+		);
+		let t2 = intersectSphere(ray, vec4f(pos, u_rayspheres.spheres[i].pos.w));
 		if ((t2 > near && t2 < t) || t < near) {
 			t = t2;
 			j = i;
