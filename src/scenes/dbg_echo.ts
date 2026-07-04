@@ -43,7 +43,7 @@ export class DebugEchoScene extends Scene {
 		obj = new Entity();
 		obj.tags = ["pulse_source"];
 		obj.mesh = "sphere.obj";
-		obj.textures = ["blank.png"];
+		obj.textures = ["white.png"];
 		obj.model = Mat4.trs(new Vec3(0, 10, 0), new Vec3(), 1);
 		this.entities.push(obj);
 	}

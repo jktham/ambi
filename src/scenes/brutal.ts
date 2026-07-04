@@ -62,7 +62,7 @@ export class BrutalScene extends Scene {
 		let sun = new Entity();
 		sun.model = Mat4.trs(phong.light_pos, new Vec3(), 20.0);
 		sun.mesh = "sphere.obj";
-		sun.textures = ["blank.png"];
+		sun.textures = ["white.png"];
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);
 		this.entities.push(sun);
 	}

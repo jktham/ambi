@@ -57,7 +57,7 @@ export class PierScene extends Scene {
 		snow.tags = ["snow"];
 		snow.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		snow.mesh = "pier/snow.obj";
-		snow.textures = ["blank.png"];
+		snow.textures = ["white.png"];
 		snow.color = new Vec4(0.9, 0.9, 0.9, 1.0);
 		snow.fragShader = "world/psx.frag.wgsl";
 		snow.vertShader = "world/psx_instanced.vert.wgsl";

@@ -73,7 +73,7 @@ export class MuseumScene extends Scene {
 			obj.tags = [`lod${i}`, "rotate"];
 			obj.model = Mat4.trs(new Vec3(0, 3.5, 0), new Vec3(0, 0, 0), 3);
 			obj.mesh = `museum/monke_lod${i}.obj`;
-			obj.textures[0] = "blank.png";
+			obj.textures[0] = "white.png";
 			obj.mask = 0;
 			obj.fragShader = "world/rainbow.frag.wgsl";
 			obj.vertShader = "world/glitch.vert.wgsl";
@@ -85,7 +85,7 @@ export class MuseumScene extends Scene {
 			obj.tags = ["rotate", "explode"];
 			obj.model = Mat4.trs(rndvec3(new Vec3(-16, 1, -16), new Vec3(16, 18, 16)), rndvec3().mul(Math.PI), rnd(0.4, 0.8));
 			obj.mesh = `monke.obj`;
-			obj.textures[0] = "blank.png";
+			obj.textures[0] = "white.png";
 			obj.mask = 0;
 			obj.fragShader = "world/rainbow.frag.wgsl";
 			obj.vertShader = "world/explode.vert.wgsl";
@@ -105,7 +105,7 @@ export class MuseumScene extends Scene {
 		obj.zsort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
 		obj.collider = "cube.obj";
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
@@ -115,7 +115,7 @@ export class MuseumScene extends Scene {
 		obj.mesh = "cube.obj";
 		obj.z = 0.001;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		let rayspheresUniforms = new RayspheresUniforms();
@@ -140,7 +140,7 @@ export class MuseumScene extends Scene {
 		obj.mesh = "quad_vertical.obj";
 		obj.zsort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
@@ -165,7 +165,7 @@ export class MuseumScene extends Scene {
 		obj.mesh = "quad_vertical.obj";
 		obj.zsort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
@@ -190,7 +190,7 @@ export class MuseumScene extends Scene {
 		obj.mesh = "quad_vertical.obj";
 		obj.zsort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
@@ -215,7 +215,7 @@ export class MuseumScene extends Scene {
 		obj.mesh = "quad_vertical.obj";
 		obj.zsort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
@@ -246,7 +246,7 @@ export class MuseumScene extends Scene {
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0.2, 1, 0.4);
 		obj.collider = "cube.obj";
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = 0;
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -282,7 +282,7 @@ export class MuseumScene extends Scene {
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 0, 1);
 		obj.collider = "cube.obj";
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_WHITE;
 		obj.cull = -1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -294,7 +294,7 @@ export class MuseumScene extends Scene {
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 0, 1);
 		obj.collider = "cube.obj";
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_NONE;
 		obj.cull = 0.0;
 		obj.fragShader = "world/wireframe.frag.wgsl";
@@ -312,7 +312,7 @@ export class MuseumScene extends Scene {
 		obj.model = Mat4.trs(new Vec3(0, 5, 0), new Vec3(0, 0, 0), new Vec3(4, 4, 4));
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
@@ -351,7 +351,7 @@ export class MuseumScene extends Scene {
 		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "museum/room.obj";
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = 0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -509,7 +509,7 @@ export class MuseumScene extends Scene {
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "museum/room.obj";
 		obj.collider = "museum/room.obj";
-		obj.textures[0] = "blank.png";
+		obj.textures[0] = "white.png";
 		obj.mask = 1;
 		obj.z = 1000.0;
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -533,7 +533,7 @@ export class MuseumScene extends Scene {
 			obj.model = Mat4.trs(positions[i], rotations[i], 1);
 			obj.mesh = `museum/tunnel.obj`;
 			obj.collider = `museum/tunnel.obj`;
-			obj.textures[0] = "blank.png";
+			obj.textures[0] = "white.png";
 			obj.mask = 2;
 			obj.z = 1000.0;
 			obj.fragShader = "world/phong.frag.wgsl";
@@ -552,7 +552,7 @@ export class MuseumScene extends Scene {
 			obj.model = Mat4.translate(positions[i]);
 			obj.mesh = `museum/pillar.obj`;
 			obj.collider = `museum/pillar.obj`;
-			obj.textures[0] = "blank.png";
+			obj.textures[0] = "white.png";
 			obj.mask = 3;
 			obj.z = 1000.0;
 			obj.fragShader = "world/phong.frag.wgsl";
@@ -588,7 +588,7 @@ export class MuseumScene extends Scene {
 				let obj = new Entity();
 				obj.model = Mat4.trs(positions[i][j], rotations[i], 1);
 				obj.mesh = `museum/portal_h.obj`;
-				obj.textures[0] = "blank.png";
+				obj.textures[0] = "white.png";
 				obj.fragShader = "world/noise.frag.wgsl";
 				obj.mask = 1;
 				objects.push(obj);
@@ -597,7 +597,7 @@ export class MuseumScene extends Scene {
 				obj.model = Mat4.trs(positions[i][j], rotations[i], 1);
 				obj.mesh = `museum/portal_frame.obj`;
 				obj.collider = `museum/portal_frame.obj`;
-				obj.textures[0] = "blank.png";
+				obj.textures[0] = "white.png";
 				obj.mask = 2;
 				obj.fragShader = "world/phong.frag.wgsl";
 				obj.fragUniforms = this.phong;
@@ -689,7 +689,7 @@ export class MuseumScene extends Scene {
 
 			obj = new Entity();
 			obj.mesh = `museum/portal_frame.obj`;
-			obj.textures[0] = "blank.png";
+			obj.textures[0] = "white.png";
 			obj.mask = 2;
 			obj.fragShader = "world/phong.frag.wgsl";
 			obj.fragUniforms = this.phong;

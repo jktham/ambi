@@ -12,6 +12,7 @@ import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxUnif
 import { DebugPixelsScene } from "./scenes/dbg_pxls";
 import { DebugTriggerScene } from "./scenes/dbg_trgr";
 import { DebugShadowScene } from "./scenes/dbg_shdw";
+import { DebugNormalMapScene } from "./scenes/dbg_nrml";
 
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
@@ -27,6 +28,7 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["dbg_pxls", DebugPixelsScene],
 	["dbg_trgr", DebugTriggerScene],
 	["dbg_shdw", DebugShadowScene],
+	["dbg_nrml", DebugNormalMapScene],
 ]);
 
 // <path, [uniforms constructor, textures]>
