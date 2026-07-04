@@ -1,5 +1,5 @@
 import { Bbox } from "./bbox";
-import { Vec3 } from "./vec";
+import { Vec2, Vec3 } from "./vec";
 
 /** loads, processes and caches assets */
 export class Assets {
@@ -10,6 +10,8 @@ export class Assets {
 	private bboxes: Map<string, Bbox> = new Map();
 	private mtls: Map<string, string> = new Map();
 
+
+	/** load .wgsl shader from public/shaders/ */
 	async loadShader(name: string): Promise<string> {
 		let cached = this.shaders.get(name);
 		if (cached) {
@@ -22,6 +24,7 @@ export class Assets {
 		}
 	}
 
+	/** load .obj or .json mesh from public/meshes/ */
 	async loadMesh(name: string): Promise<Float32Array> {
 		let cached = this.meshes.get(name);
 		if (cached) {
@@ -31,15 +34,14 @@ export class Assets {
 				const type = name.split(".").pop() || "";
 				if (type == "json") {
 					let file = await this.fetchFile(`/meshes/${name}`);
-					let data = JSON.parse(file || "[]") as number[];
+					let data = JSON.parse(file || "[]") as number[]; // should be list of vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz)
 					let mesh = new Float32Array(data);
 					this.meshes.set(name, mesh);
 					return mesh;
 
 				} else if (type == "obj") {
 					let file = await this.fetchFile(`/meshes/${name}`);
-					let data = this.parseObj(file);
-					let mesh = new Float32Array(data);
+					let mesh = this.parseObj(file);
 					this.meshes.set(name, mesh);
 					return mesh;
 
@@ -54,6 +56,7 @@ export class Assets {
 		}
 	}
 
+	/** generate collider based on .obj or .json mesh from public/meshes/ */
 	async loadCollider(name: string): Promise<Vec3[][]> {
 		let cached = this.colliders.get(name);
 		if (cached) {
@@ -79,6 +82,7 @@ export class Assets {
 		}
 	}
 
+	/** load .png, .jpg or .json texture from public/textures/ */
 	async loadTexture(name: string): Promise<ImageData> {
 		let cached = this.textures.get(name);
 		if (cached) {
@@ -88,7 +92,7 @@ export class Assets {
 				const type = name.split(".").pop() || "";
 				if (type == "json") {
 					let file = await this.fetchFile(`/textures/${name}`);
-					let data = JSON.parse(file || "[]") as number[][][];
+					let data = JSON.parse(file || "[]") as number[][][]; // should be [r, g, b, a][m][n] as 0..=255
 					if (data[0]?.[0]?.[0] === undefined) {
 						throw new Error(`invalid image data: ${name}`);
 					}
@@ -123,7 +127,7 @@ export class Assets {
 		}
 	}
 
-	/** returns name of first texture in mtl */
+	/** returns path of first map_Kd entry relative to public/, for basic diffuse map selection */
 	async loadMtl(name: string): Promise<string> {
 		let cached = this.mtls.get(name);
 		if (cached) {
@@ -176,12 +180,13 @@ export class Assets {
 		}
 	}
 
-	private parseObj(file: string): number[] {
-		let v: number[][] = [];
-		let vc: number[][] = [];
-		let vn: number[][] = [];
-		let vt: number[][] = [];
-		let f: number[][][] = [];
+	/** parses .obj file as string, returns flat f32 array of triangulates vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz) */
+	private parseObj(file: string): Float32Array {
+		let v: number[][] = []; // vertex pos xyz
+		let vc: number[][] = []; // vertex color rgba
+		let vn: number[][] = []; // vertex normal xyz
+		let vt: number[][] = []; // vertex texcoord uv
+		let f: number[][][] = []; // faces, list of [v1, v2, v3]
 
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
@@ -203,33 +208,75 @@ export class Assets {
 				let face: number[][] = [];
 				for (let group of words.slice(1)) {
 					let indices = group.split("/").map(i => parseInt(i));
-					let vert = [v[indices[0]-1], vn[indices[2]-1], vc[indices[0]-1], indices[1] ? vt[indices[1]-1] : [0, 0]].flat();
+					let iv = indices[0];
+					let ivc = indices[0];
+					let ivn = indices[2];
+					let ivt = indices[1];
+
+					let pos = v[iv-1];
+					let normal = vn[ivn-1];
+					let color = vc[ivc-1];
+					let uv = ivt ? vt[ivt-1] : [0, 0];
+					let tangent = [0, 0, 0];
+
+					let vert = [pos, normal, color, uv, tangent].flat();
 					face.push(vert);
-				}
-				if (face.length > 3) { // we assume convex
-					for (let i=2; i<face.length; i++) {
+				} if (face.length == 3) {
+					f.push(face);
+				} else if (face.length > 3) { // we assume convex
+					for (let i=2; i<face.length; i++) { // triangulate ngons
 						f.push([face[0], face[i-1], face[i]]);
 					}
-
 				} else {
-					f.push(face);
+					console.warn("invalid mesh face");
 				}
 			}
 		}
-		return f.flat(2);
+
+		// compute tangent as in https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+		for (let i = 0; i < f.length; i++) {
+			let v1 = f[i][0];
+			let v2 = f[i][1];
+			let v3 = f[i][2];
+
+			let edge1 = new Vec3(v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]);
+			let edge2 = new Vec3(v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]);
+			let duv1 = new Vec2(v2[10] - v1[10], v2[11] - v1[11]);
+			let duv2 = new Vec2(v3[10] - v1[10], v3[11] - v1[11]);
+
+			let tangent = new Vec3();
+			let fract = 1.0 / (duv1.x * duv2.y - duv2.x * duv1.y);
+
+			tangent.x = fract * (duv2.y * edge1.x - duv1.y * edge2.x);
+			tangent.y = fract * (duv2.y * edge1.y - duv1.y * edge2.y);
+			tangent.z = fract * (duv2.y * edge1.z - duv1.y * edge2.z);
+			tangent = tangent.normalize();
+
+			for (let j = 0; j < 3; j++) {
+				f[i][0][j+12] = tangent.data[j];
+				f[i][1][j+12] = tangent.data[j];
+				f[i][2][j+12] = tangent.data[j];
+			}
+		}
+
+		let mesh = f.flat(2);
+		return new Float32Array(mesh);
 	}
 
+	/** returns 2d list of vertex positions from full mesh array */
 	private parseCollider(mesh: Float32Array): Vec3[][] {
 		let collider: Vec3[][] = [];
-		for (let i=0; i<mesh.length; i+=12*3) {
+		let s = 15;
+		for (let i=0; i<mesh.length; i+=s*3) {
 			let v0 = new Vec3(mesh[i], mesh[i+1], mesh[i+2]);
-			let v1 = new Vec3(mesh[i+12], mesh[i+13], mesh[i+14]);
-			let v2 = new Vec3(mesh[i+24], mesh[i+25], mesh[i+26]);
+			let v1 = new Vec3(mesh[i+s], mesh[i+s+1], mesh[i+s+2]);
+			let v2 = new Vec3(mesh[i+2*s], mesh[i+2*s+1], mesh[i+2*s+2]);
 			collider.push([v0, v1, v2]);
 		}
 		return collider;
 	}
 
+	/** returns min/max of vertex positions */
 	private parseBbox(mesh: Float32Array): Bbox {
 		let min = new Vec3(Infinity, Infinity, Infinity);
 		let max = new Vec3(-Infinity, -Infinity, -Infinity);
@@ -247,6 +294,7 @@ export class Assets {
 		return new Bbox([min, max]);
 	}
 
+	/** returns path of first map_Kd entry relative to public/, for basic diffuse map selection */
 	private parseMtl(file: string): string {
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
@@ -264,6 +312,7 @@ export class Assets {
 		return "";
 	}
 
+	/** resolve #import in shaders relative to its path */
 	private async preprocessShader(file: string, path: string): Promise<string> {
 		let out = "";
 		for (let line of file.split(/\r?\n/)) {

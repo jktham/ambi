@@ -20,8 +20,12 @@ struct PhongUniforms {
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
+	let tangent = in.tangent;
+	let bitangent = cross(in.normal, in.tangent);
+	let tbn = mat3x3f(tangent, bitangent, in.normal);
+
 	let normalmap = normalize(textureSample(t_normal, t_sampler, in.uv).xyz * 2.0 - 1.0); // [-1, 1]
-	let normal = normalmap;
+	let normal = tbn * normalmap;
 
 	var data: FbData;
 	data.color = phong(in.color, in.pos, normal, u_global.view_pos, u_phong.ambient_factor, u_phong.diffuse_factor, u_phong.specular_factor, u_phong.specular_exponent, u_phong.light_pos, u_phong.light_color) * textureSample(t_color, t_sampler, in.uv);

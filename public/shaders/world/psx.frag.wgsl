@@ -6,8 +6,10 @@ struct PsxFragmentIn {
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
-	@location(4) w: f32,
-	@location(5) bary: vec3f
+	@location(4) tangent: vec3f,
+	@location(5) w: f32,
+	@location(6) bary: vec3f,
+	@location(7) shadow_space: vec4f,
 };
 
 @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;

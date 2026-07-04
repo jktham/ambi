@@ -11,7 +11,7 @@ export class DebugNormalMapScene extends Scene {
 	
 	init() {
 		let obj = new Entity();
-		obj.model = Mat4.trs(new Vec3(-2, 0, 0), new Vec3(rad(-90), 0, rad(-90)), 1);
+		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(rad(-90), 0, rad(-90)), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["brick_diffuse.jpg"];
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -19,8 +19,16 @@ export class DebugNormalMapScene extends Scene {
 		this.entities.push(obj);
 
 		obj = new Entity();
-		obj.model = Mat4.trs(new Vec3(2, 0, 0), new Vec3(rad(-90), 0, rad(-90)), 1);
+		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(rad(-90), 0, rad(-90)), 1);
 		obj.mesh = "cube.obj";
+		obj.textures = ["brick_diffuse.jpg", "brick_normal.jpg"];
+		obj.fragShader = "world/phong_normal.frag.wgsl";
+		obj.fragUniforms = new PhongUniforms();
+		this.entities.push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
+		obj.mesh = "monke.obj";
 		obj.textures = ["brick_diffuse.jpg", "brick_normal.jpg"];
 		obj.fragShader = "world/phong_normal.frag.wgsl";
 		obj.fragUniforms = new PhongUniforms();
@@ -51,6 +59,7 @@ export class DebugNormalMapScene extends Scene {
 		let lightPos = new Vec3(20*Math.cos(time/2), 40, 20*Math.sin(time/2));
 		for (let obj of this.entities) {
 			(obj.fragUniforms as PhongUniforms).light_pos = lightPos;
+			(obj.fragUniforms as PhongUniforms).specular_factor = 0.8;
 			obj.changed = true;
 		}
 

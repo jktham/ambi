@@ -371,12 +371,13 @@ export class Renderer {
                 module: vertexShader,
                 buffers: [
                     {
-                        arrayStride: 12 * 4,
+                        arrayStride: 15 * 4,
                         attributes: [
                             {shaderLocation: 0, offset: 0, format: "float32x3"}, // pos
                             {shaderLocation: 1, offset: 3 * 4, format: "float32x3"}, // normal
                             {shaderLocation: 2, offset: 6 * 4, format: "float32x4"}, // color
                             {shaderLocation: 3, offset: 10 * 4, format: "float32x2"}, // uv
+                            {shaderLocation: 4, offset: 12 * 4, format: "float32x3"}, // tangent
                         ]
                     }
                 ]
@@ -462,7 +463,7 @@ export class Renderer {
 
         // optional shadow depth texture at (0, 4)
         if (fragUniforms._useShadowMap) {
-            const sampler = this.device.createSampler({
+            const sampler = this.device.createSampler({ // non-filtering sampler
                 addressModeU: "clamp-to-edge", 
                 addressModeV: "clamp-to-edge"
             });
@@ -513,7 +514,9 @@ export class Renderer {
     private async createTextureBindGroup(textureBuffers: GPUTexture[], pipeline: GPURenderPipeline): Promise<GPUBindGroup> {
         const sampler = this.device.createSampler({
             addressModeU: "repeat", 
-            addressModeV: "repeat"
+            addressModeV: "repeat",
+            magFilter: "nearest", // for crisp low res textures
+            minFilter: "linear", // for less aliasing
         });
         let textureEntries = textureBuffers.map((t, i) => { return { binding: i+1, resource: t.createView() }});
         const textureBindGroup = this.device.createBindGroup({
@@ -748,7 +751,7 @@ export class Renderer {
             pass.setVertexBuffer(0, vertexBuffer);
             pass.setBindGroup(0, uniformBindGroup);
             pass.setBindGroup(1, textureBindGroup);
-            pass.draw(vertexBuffer.size / 4 / 12, object.vertUniforms._instanceCount || 1);
+            pass.draw(vertexBuffer.size / 4 / 15, object.vertUniforms._instanceCount || 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);

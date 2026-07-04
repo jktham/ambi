@@ -14,6 +14,7 @@ fn main(in: VertexIn, @builtin(vertex_index) vi: u32) -> VertexOut {
 	out.normal = normalize((u_object.normal * vec4f(in.normal, 0.0)).xyz);
 	out.color = in.color * u_object.color;
 	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y);
+	out.tangent = normalize((u_object.normal * vec4f(in.tangent, 0.0)).xyz);
 
 	var bary = vec3f(0.0);
 	bary[vi % 3] = 1.0;

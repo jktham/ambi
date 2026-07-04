@@ -2,7 +2,8 @@ struct VertexIn {
 	@location(0) pos: vec3f,
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
-	@location(3) uv: vec2f
+	@location(3) uv: vec2f,
+	@location(4) tangent: vec3f
 };
 
 struct VertexOut {
@@ -11,8 +12,9 @@ struct VertexOut {
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
-	@location(4) bary: vec3f,
-	@location(5) shadow_space: vec4f // -1..1
+	@location(4) tangent: vec3f,
+	@location(5) bary: vec3f,
+	@location(6) shadow_space: vec4f, // -1..1
 };
 
 struct FragmentIn {
@@ -21,8 +23,9 @@ struct FragmentIn {
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
-	@location(4) bary: vec3f,
-	@location(5) shadow_space: vec4f // -1..1
+	@location(4) tangent: vec3f,
+	@location(5) bary: vec3f,
+	@location(6) shadow_space: vec4f, // -1..1
 };
 
 struct FragmentOut {
