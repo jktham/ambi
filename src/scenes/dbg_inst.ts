@@ -8,19 +8,21 @@ import type { Player } from "../player";
 
 export class DebugInstancingScene extends Scene {
 	name = "dbg_inst";
+
+	phong = new PhongUniforms();
 	
 	init() {
 		let obj = new Entity();
 		obj.model = Mat4.translate(new Vec3(0, 1, -1.5));
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
 		obj = new Entity();
 		obj.model = Mat4.translate(new Vec3(-1, 0, -2));
 		obj.color = new Vec4(1.0, 0.0, 0.0, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
 		obj = new Entity();
@@ -29,7 +31,7 @@ export class DebugInstancingScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.collider = "monke.obj";
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		obj.mask = 200;
 		
 		let monkeBbox = new Bbox();
@@ -46,7 +48,7 @@ export class DebugInstancingScene extends Scene {
 		obj.vertShader = "world/instanced.vert.wgsl";
 		obj.vertUniforms = new InstancedUniforms();
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		obj.mask = 100;
 
 		let count = 1000;
@@ -64,7 +66,7 @@ export class DebugInstancingScene extends Scene {
 		obj.mesh = "quad.json";
 		obj.textures = ["house.jpg"];
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
 		this.triggers = [];
@@ -91,9 +93,9 @@ export class DebugInstancingScene extends Scene {
 		}
 		monke.changed = true;
 
-		let light = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);
+		let lightPos = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);
+		this.phong.light_pos = lightPos;
 		for (let obj of this.entities) {
-			(obj.fragUniforms as PhongUniforms).light_pos = light;
 			obj.changed = true;
 		}
 
@@ -105,7 +107,7 @@ export class DebugInstancingScene extends Scene {
 			obj.collider = "monke.obj";
 			obj.bbox = new Bbox([obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)]);
 			obj.fragShader = "world/phong.frag.wgsl";
-			obj.fragUniforms = new PhongUniforms();
+			obj.fragUniforms = this.phong;
 			this.entities.push(obj);
 		}
 	}

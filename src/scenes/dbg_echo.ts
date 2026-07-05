@@ -10,7 +10,7 @@ export class DebugEchoScene extends Scene {
 
 	postShader = "post/echo.frag.wgsl";
 	postUniforms = new PostEchoUniforms();
-	
+
 	init() {
 		let phong = new PhongUniforms();
 		phong.light_pos = new Vec3(0, 10, 0);

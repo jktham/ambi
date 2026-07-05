@@ -8,6 +8,8 @@ import { rad } from "../utils";
 export class DebugNormalMapScene extends Scene {
 	name = "dbg_nrml";
 	spawnPos = new Vec3(0, 0, 5);
+
+	phong = new PhongUniforms();
 	
 	init() {
 		let obj = new Entity();
@@ -15,7 +17,7 @@ export class DebugNormalMapScene extends Scene {
 		obj.mesh = "cube.obj";
 		obj.textures = ["brick_diffuse.jpg"];
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
 		obj = new Entity();
@@ -23,7 +25,7 @@ export class DebugNormalMapScene extends Scene {
 		obj.mesh = "cube.obj";
 		obj.textures = ["brick_diffuse.jpg", "brick_normal.jpg"];
 		obj.fragShader = "world/phong_normal.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
 		obj = new Entity();
@@ -31,7 +33,7 @@ export class DebugNormalMapScene extends Scene {
 		obj.mesh = "monke.obj";
 		obj.textures = ["brick_diffuse.jpg", "brick_normal.jpg"];
 		obj.fragShader = "world/phong_normal.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
 
@@ -50,16 +52,15 @@ export class DebugNormalMapScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
 		this.entities.push(obj);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 40, 20*Math.sin(time/2));
+		this.phong.light_pos = lightPos;
 		for (let obj of this.entities) {
-			(obj.fragUniforms as PhongUniforms).light_pos = lightPos;
-			(obj.fragUniforms as PhongUniforms).specular_factor = 0.8;
 			obj.changed = true;
 		}
 

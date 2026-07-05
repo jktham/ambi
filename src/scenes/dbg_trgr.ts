@@ -9,6 +9,8 @@ import { Bbox } from "../bbox";
 export class DebugTriggerScene extends Scene {
 	name = "dbg_trgr";
 	spawnPos = new Vec3(0, 0, 5);
+
+	phong = new PhongUniforms();
 	
 	init() {
 		// simple cube, manual bbox
@@ -19,7 +21,7 @@ export class DebugTriggerScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		obj.zsort = true;
 		this.entities.push(obj);
 
@@ -45,7 +47,7 @@ export class DebugTriggerScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		obj.zsort = true;
 		this.entities.push(obj);
 
@@ -73,7 +75,7 @@ export class DebugTriggerScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		obj.zsort = true;
 		this.entities.push(obj);
 
@@ -101,7 +103,7 @@ export class DebugTriggerScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		obj.zsort = true;
 		this.entities.push(obj);
 
@@ -138,15 +140,15 @@ export class DebugTriggerScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = new PhongUniforms();
+		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
 		this.entities.push(obj);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
+		this.phong.light_pos = lightPos;
 		for (let obj of this.entities) {
-			(obj.fragUniforms as PhongUniforms).light_pos = lightPos;
 			obj.changed = true;
 		}
 
