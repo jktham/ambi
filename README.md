@@ -1,0 +1,97 @@
+silly engine for cool scenes and per object shader stages c:
+
+## todo
+
+- engine
+    - [x] webgpu setup, render loop
+    - [x] camera movement, action input
+    - [x] phong shading
+    - [x] asset loading
+    - [x] obj parsing
+    - [ ] triangulate non-convex ngons
+    - [x] vector math helpers, matrix transforms
+    - [x] postprocessing pipeline
+    - [x] world framebuffers (color, posDepth, normalMask)
+    - [x] webgpu support warnings
+    - [x] per object shader stages, uniforms
+    - [x] scene init and update
+    - [x] object tags
+    - [x] scene switching
+    - [x] gui
+    - [x] postprocessing override
+    - [x] mobile input
+    - [x] shader import directive
+    - [x] shader reusable functions
+    - [x] scene query param
+    - [x] horizontal collision
+    - [ ] vertical collision, gravity
+    - [x] generate collider from mesh
+    - [x] bboxes for rough pass
+    - [x] triggers
+    - [x] transparency
+    - [x] z index
+    - [x] cull mode override
+    - [x] fov slider
+    - [x] profiler
+    - [x] split uniform bindgroups
+    - [x] reverse depth buffer
+    - [x] interact
+    - [x] split camera and player logic
+    - [x] auto zsort
+    - [x] shadow mapping, reusing world pipeline
+    - [ ] shadow mapping, with dedicated depth-only pipeline and decoupled shadowmap resolution
+    - [x] asset path type safety
+    - [ ] procedural assets
+    - [ ] renderer overhaul, abstract render passes and standardize bindgroup layouts
+    - [ ] performance optimization
+    - [ ] render to world texture
+
+- scenes
+    - [x] museum (wip), general tests and mini scenes
+    - [x] psx pier, affine texture mapping
+    - [x] psx field, infinite terrain
+    - [x] brutal, wavefunction collapse tile maze
+    - [x] debug scenes (wip), small tests for each feature
+    - [ ] cell, shadow map in fixed area
+    - [ ] echo maze, navigate with sonar pings
+    - [ ] forest, procedural mesh gen
+    - [ ] lake, screenspace reflections
+    - [ ] something with high effort assets
+
+- shaders
+    - vert
+        - [x] base
+        - [x] instancing
+        - [x] psx coordinate transform
+        - [x] psx instanced
+        - [x] glitch
+        - [x] explode
+        - [x] ripple
+    - frag
+        - [x] base
+        - [x] textured
+        - [x] phong
+        - [x] psx affine mapping
+        - [x] worldspace rainbow
+        - [x] screenspace rainbow
+        - [x] skybox
+        - [x] raytraced spheres
+        - [x] frag stage wireframe, barycentric coords
+        - [ ] cel shading
+        - [x] phong with shadowmap
+        - [x] phong with normalmap, tangent space transform
+        - [ ] phong with multiple pointlights
+    - post
+        - [x] framebuffers
+        - [x] psx fog, dither matrix, glow
+        - [x] noise
+        - [x] echo
+        - [x] dither noise texture
+        - [x] dither ascii chars
+        - [x] outline
+        - [x] ambient occlusion
+        - [ ] stencil
+        - [ ] palette mapping
+        - [ ] warp
+        - [ ] screenspace reflections
+
