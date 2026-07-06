@@ -1,3 +1,4 @@
+import type { MeshPath } from "./assets";
 import { Mat4, Vec3 } from "./vec";
 
 export class Bbox {
@@ -6,7 +7,7 @@ export class Bbox {
 	/** transform to world space, ie. reference to parent object */
 	model: Mat4 = new Mat4();
 	/** computes bbox from mesh vertices if specified, overrides min and max on asset load */
-	mesh?: string;
+	mesh?: MeshPath;
 
 	constructor(bounds?: [Vec3, Vec3]) {
 		if (bounds && bounds[0] && bounds[1]) {

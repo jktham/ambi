@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
-import { Assets as Assets } from "./assets";
+import { Assets as Assets, type MeshPath, type MtlPath, type ShaderPath, type TexturePath } from "./assets";
 import type { Scene } from "./scene";
 import type { Entity, eid } from "./entity";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
@@ -21,8 +21,8 @@ export class Renderer {
     private worldRenderPassDescriptor!: GPURenderPassDescriptor;
     private postRenderPassDescriptor!: GPURenderPassDescriptor;
 
-    private vertexBuffers: Map<string, GPUBuffer> = new Map(); // mesh asset buffer
-    private textureBuffers: Map<string, GPUTexture> = new Map(); // texture asset buffer
+    private vertexBuffers: Map<MeshPath, GPUBuffer> = new Map(); // mesh asset buffer
+    private textureBuffers: Map<TexturePath, GPUTexture> = new Map(); // texture asset buffer
 
     private objectPipelines: Map<eid, GPURenderPipeline> = new Map();
     private globalUniformBuffer!: GPUBuffer;
@@ -41,9 +41,9 @@ export class Renderer {
 
     private assets: Assets;
 
-	postShaderOverride?: string;
+	postShaderOverride?: ShaderPath;
 	postFragUniformsOverride?: Uniforms;
-	postTexturesOverride?: string[];
+	postTexturesOverride?: TexturePath[];
     resolution: Vec2 = new Vec2();
 
     constructor(canvas: HTMLCanvasElement, assets: Assets) {
@@ -227,10 +227,10 @@ export class Renderer {
     }
 
     private async preloadAssets(scene: Scene) {
-        let shaders = new Set<string>();
-        let meshes = new Set<string>();
-        let textures = new Set<string>();
-        let mtls = new Set<string>();
+        let shaders = new Set<ShaderPath>();
+        let meshes = new Set<MeshPath>();
+        let textures = new Set<TexturePath>();
+        let mtls = new Set<MtlPath>();
         for (let object of scene.entities) {
             shaders.add(object.vertShader);
             shaders.add(object.fragShader);
@@ -319,7 +319,7 @@ export class Renderer {
         // textures
         for (let texture of object.textures) {
             if (!this.textureBuffers.has(texture)) {
-                const textureBuffer = await this.createTextureBuffer(texture, pipeline);
+                const textureBuffer = await this.createTextureBuffer(texture);
                 this.textureBuffers.set(texture, textureBuffer);
             }
         }
@@ -345,7 +345,7 @@ export class Renderer {
         // post textures
         for (let texture of this.postTexturesOverride ?? scene.postTextures) {
             if (!this.textureBuffers.has(texture)) {
-                const textureBuffer = await this.createTextureBuffer(texture, this.postPipeline);
+                const textureBuffer = await this.createTextureBuffer(texture);
                 this.textureBuffers.set(texture, textureBuffer);
             }
         }
@@ -354,13 +354,13 @@ export class Renderer {
         this.postTextureBindGroup = textureBindGroup;
     }
 
-    private async createObjectPipeline(vertShader: string, fragShader: string): Promise<GPURenderPipeline> {
+    private async createObjectPipeline(vertShader: ShaderPath, fragShader: ShaderPath): Promise<GPURenderPipeline> {
         const vertexShader = this.device.createShaderModule({
-            label: "vertex shader",
+            label: "vertex shader: " + vertShader,
             code: await this.assets.loadShader(vertShader),
         });
         const fragmentShader = this.device.createShaderModule({
-            label: "fragment shader",
+            label: "fragment shader: " + fragShader,
             code: await this.assets.loadShader(fragShader),
         });
 
@@ -481,7 +481,7 @@ export class Renderer {
     }
 
     /** create vertex buffer from mesh asset path and write */
-    private async createVertexBuffer(mesh: string): Promise<GPUBuffer> {
+    private async createVertexBuffer(mesh: MeshPath): Promise<GPUBuffer> {
         const vertexData = await this.assets.loadMesh(mesh);
         const vertexBuffer = this.device.createBuffer({
             label: "vertex buffer",
@@ -493,7 +493,7 @@ export class Renderer {
     }
 
     /** create texture buffer from texture asset path and write */
-    private async createTextureBuffer(texture: string, pipeline: GPURenderPipeline): Promise<GPUTexture> {
+    private async createTextureBuffer(texture: TexturePath): Promise<GPUTexture> {
         const textureData = await this.assets.loadTexture(texture);
         const textureBuffer = this.device.createTexture({
             label: "texture buffer",
@@ -532,7 +532,7 @@ export class Renderer {
 
     // ---- post resources ----
 
-    private async createPostPipeline(postShader: string): Promise<GPURenderPipeline> {
+    private async createPostPipeline(postShader: ShaderPath): Promise<GPURenderPipeline> {
         const postVertexShader = this.device.createShaderModule({
             label: "post vertex shader",
             code: await this.assets.loadShader("post/quad.vert.wgsl"),

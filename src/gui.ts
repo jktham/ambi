@@ -3,6 +3,7 @@ import { postShaders, resolutionPresets, scenes } from "./presets";
 import type { Engine } from "./engine";
 import { Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
+import type { ShaderPath, TexturePath } from "./assets";
 
 /** </3 */
 export class Gui {
@@ -40,7 +41,7 @@ export class Gui {
 			this.postSelect.options.add(new Option(postShader));
 		}
 		this.postSelect.addEventListener("change", async (e) => {
-			let value = (e.target as HTMLSelectElement).value;
+			let value = (e.target as HTMLSelectElement).value as ShaderPath | "scene";
 			await engine.setPost(value, new (postShaders.get(value)?.[0] ?? Uniforms), postShaders.get(value)?.[1] ?? []);
 		});
 		this.postSelect.addEventListener("keydown", (e) => {
@@ -151,7 +152,7 @@ export class Gui {
 		this.sceneSelect.value = name;
 	}
 
-	updatePost(currentShader: string, sceneShader: string, uniforms: Uniforms, textures: string[]) {
+	updatePost(currentShader: ShaderPath | "scene", sceneShader: ShaderPath, uniforms: Uniforms, textures: TexturePath[]) {
 		this.postSelect.value = currentShader;
 		if (currentShader == "scene") {
 			this.postSelect.options[0].label = `scene (${sceneShader})`;
@@ -176,7 +177,7 @@ export class Gui {
 	}
 
 	// this is awful i'll improve it at some point i hope
-	private initUniformConfig(shader: string, uniforms: Uniforms, textures: string[]) {
+	private initUniformConfig(shader: ShaderPath | "scene", uniforms: Uniforms, textures: TexturePath[]) {
 		this.uniformSizes.clear();
 		this.uniformConfig.textContent = "";
 		if (uniforms._size() == 0 && textures.length == 0) {
@@ -296,7 +297,7 @@ export class Gui {
 			input.value = textures.join(";");
 			input.addEventListener("change", async e => {
 				let value = (e.target as HTMLInputElement).value.split(";").filter(s => s != "").concat(new Array(this.uniformSizes.get("textures")).fill("house.jpg")).slice(0, this.uniformSizes.get("textures"));
-				await this.engine.setPost(shader, uniforms, value);
+				await this.engine.setPost(shader, uniforms, value as TexturePath[]);
 			});
 				
 			row.appendChild(label);

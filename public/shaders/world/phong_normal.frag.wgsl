@@ -28,7 +28,7 @@ fn main(in: FragmentIn) -> FragmentOut {
 	let normal = tbn * normalmap;
 
 	var data: FbData;
-	data.color = in.color * u_phong.light_color * phong_factor(in.pos, normal, u_global.view_pos, u_phong.ambient_factor, u_phong.diffuse_factor, u_phong.specular_factor, u_phong.specular_exponent, u_phong.light_pos) * textureSample(t_color, t_sampler, in.uv);
+	data.color = in.color * vec4f(u_phong.light_color.rgb * phong_factor(in.pos, normal, u_global.view_pos, u_phong.ambient_factor, u_phong.diffuse_factor, u_phong.specular_factor, u_phong.specular_exponent, u_phong.light_pos), 1.0) * textureSample(t_color, t_sampler, in.uv);
 	data.pos = in.pos;
 	data.depth = length(u_global.view_pos - in.pos);
 	data.normal = normal;

@@ -4,7 +4,7 @@ import { Input } from "./input";
 import { Scene } from "./scene";
 import { Gui } from "./gui";
 import { Uniforms } from "./uniforms";
-import { Assets } from "./assets";
+import { Assets, type ShaderPath, type TexturePath } from "./assets";
 import { scenes } from "./presets";
 import type { Vec2 } from "./vec";
 import { Profiler } from "./profiler";
@@ -73,7 +73,7 @@ export class Engine {
 		this.loop();
 	}
 
-	async setPost(path: string, uniforms: Uniforms, textures: string[]) {
+	async setPost(path: ShaderPath | "scene", uniforms: Uniforms, textures: TexturePath[]) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
 		this.gui.updateInfo("loading...");
 

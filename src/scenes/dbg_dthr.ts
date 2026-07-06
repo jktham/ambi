@@ -3,14 +3,15 @@ import { Entity } from "../entity";
 import { PhongUniforms, PostDitherUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
+import type { ShaderPath, TexturePath } from "../assets";
 
 export class DebugDitherScene extends Scene {
 	name = "dbg_dthr";
 	spawnPos = new Vec3(0, 0, 5);
 
-	postShader = "post/dither.frag.wgsl";
+	postShader: ShaderPath = "post/dither.frag.wgsl";
 	resolution = new Vec2(320, 180);
-	postTextures = ["noise/blue_0.png"];
+	postTextures: TexturePath[] = ["noise/blue_0.png"];
 	postUniforms = new PostDitherUniforms();
 
 	phong = new PhongUniforms();

@@ -13,6 +13,7 @@ import { DebugPixelsScene } from "./scenes/dbg_pxls";
 import { DebugTriggerScene } from "./scenes/dbg_trgr";
 import { DebugShadowScene } from "./scenes/dbg_shdw";
 import { DebugNormalMapScene } from "./scenes/dbg_nrml";
+import type { ShaderPath, TexturePath } from "./assets";
 
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
@@ -32,7 +33,7 @@ export const scenes: Map<string, new () => Scene> = new Map([
 ]);
 
 // <path, [uniforms constructor, textures]>
-export const postShaders: Map<string, [new () => Uniforms, string[]]> = new Map([
+export const postShaders: Map<ShaderPath | "scene", [new () => Uniforms, TexturePath[]]> = new Map([
 	["scene", [Uniforms, []]],
 	["post/fb_color.frag.wgsl", [Uniforms, []]],
 	["post/fb_depth.frag.wgsl", [Uniforms, []]],

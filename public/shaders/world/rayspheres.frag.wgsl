@@ -80,8 +80,7 @@ fn main(in: FragmentIn) -> FragmentOut {
 		}
 	}
 	if (t > near && t < far) {
-		color = phong(
-			u_rayspheres.spheres[j].color,
+		color = u_rayspheres.spheres[j].color * vec4f(u_rayspheres.light_color.rgb * phong_factor(
 			camera_pos + ray_dir * t,
 			normalize((camera_pos + ray_dir * t) - (u_object.model * vec4f(u_rayspheres.spheres[j].pos.xyz, 1.0)).xyz),
 			u_global.view_pos,
@@ -90,8 +89,7 @@ fn main(in: FragmentIn) -> FragmentOut {
 			u_rayspheres.specular_factor,
 			u_rayspheres.specular_exponent,
 			u_rayspheres.light_pos,
-			u_rayspheres.light_color
-		);
+		), 1.0);
 	} else {
 		t = far;
 	}

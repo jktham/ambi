@@ -1,18 +1,27 @@
 import { Bbox } from "./bbox";
 import { Vec2, Vec3 } from "./vec";
 
+/** path relative to public/shaders/ */
+export type ShaderPath = `${string}.wgsl`;
+/** path relative to public/meshes/ */
+export type MeshPath = `${string}.obj` | `${string}.json`;
+/** path relative to public/textures/ */
+export type TexturePath = `${string}.png` | `${string}.jpg` | `${string}.json`;
+/** path relative to public/meshes/ */
+export type MtlPath = `${string}.mtl`;
+
 /** loads, processes and caches assets */
 export class Assets {
-	private shaders: Map<string, string> = new Map();
-	private meshes: Map<string, Float32Array> = new Map();
-	private textures: Map<string, ImageData> = new Map();
-	private colliders: Map<string, Vec3[][]> = new Map();
-	private bboxes: Map<string, Bbox> = new Map();
-	private mtls: Map<string, string> = new Map();
+	private shaders: Map<ShaderPath, string> = new Map();
+	private meshes: Map<MeshPath, Float32Array> = new Map();
+	private textures: Map<TexturePath, ImageData> = new Map();
+	private colliders: Map<MeshPath, Vec3[][]> = new Map();
+	private bboxes: Map<MeshPath, Bbox> = new Map();
+	private mtls: Map<MtlPath, TexturePath> = new Map();
 
 
 	/** load .wgsl shader from public/shaders/ */
-	async loadShader(name: string): Promise<string> {
+	async loadShader(name: ShaderPath): Promise<string> {
 		let cached = this.shaders.get(name);
 		if (cached) {
 			return cached;
@@ -25,7 +34,7 @@ export class Assets {
 	}
 
 	/** load .obj or .json mesh from public/meshes/ */
-	async loadMesh(name: string): Promise<Float32Array> {
+	async loadMesh(name: MeshPath): Promise<Float32Array> {
 		let cached = this.meshes.get(name);
 		if (cached) {
 			return cached;
@@ -57,7 +66,7 @@ export class Assets {
 	}
 
 	/** generate collider based on .obj or .json mesh from public/meshes/ */
-	async loadCollider(name: string): Promise<Vec3[][]> {
+	async loadCollider(name: MeshPath): Promise<Vec3[][]> {
 		let cached = this.colliders.get(name);
 		if (cached) {
 			return cached;
@@ -69,8 +78,8 @@ export class Assets {
 		}
 	}
 
-	/** returns new bbox without model or mesh, only use min/max */
-	async loadBbox(name: string): Promise<Bbox> {
+	/** returns new bbox based on .obj or .json mesh, only populates min/max */
+	async loadBbox(name: MeshPath): Promise<Bbox> {
 		let cached = this.bboxes.get(name);
 		if (cached) {
 			return cached;
@@ -83,7 +92,7 @@ export class Assets {
 	}
 
 	/** load .png, .jpg or .json texture from public/textures/ */
-	async loadTexture(name: string): Promise<ImageData> {
+	async loadTexture(name: TexturePath): Promise<ImageData> {
 		let cached = this.textures.get(name);
 		if (cached) {
 			return cached;
@@ -128,7 +137,7 @@ export class Assets {
 	}
 
 	/** returns path of first map_Kd entry relative to public/, for basic diffuse map selection */
-	async loadMtl(name: string): Promise<string> {
+	async loadMtl(name: MtlPath): Promise<TexturePath> {
 		let cached = this.mtls.get(name);
 		if (cached) {
 			return cached;
@@ -136,8 +145,8 @@ export class Assets {
 			let path = `/meshes/${name}`;
 			if (!await this.fileExists(path)) {
 				console.warn(`mtl file does not exist: ${path}`);
-				this.mtls.set(name, "");
-				return "";
+				this.mtls.set(name, "error.png");
+				return "error.png";
 			}
 			let file = await this.fetchFile(path);
 			let texture = this.parseMtl(file);
@@ -294,22 +303,26 @@ export class Assets {
 		return new Bbox([min, max]);
 	}
 
-	/** returns path of first map_Kd entry relative to public/, for basic diffuse map selection */
-	private parseMtl(file: string): string {
+	/** returns path of first map_Kd entry relative to public/textures/, for basic diffuse map selection */
+	private parseMtl(file: string): TexturePath {
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
 			if (words[0] == "map_Kd") {
 				let abs = words[1];
 				if (!abs.includes("textures/")) {
 					console.warn(`texture path in mtl does not include "textures/": ${abs}`);
-					return "";
+					return "error.png";
+				}
+				if (!(abs.endsWith(".png") || abs.endsWith(".jpg"))) {
+					console.warn(`texture path in mtl does not end in .png or .jpg: ${abs}`);
+					return "error.png";
 				}
 				let rel = abs.split("textures/").slice(1).join("");
-				return rel;
+				return rel as TexturePath;
 			}
 		}
 		console.warn(`did not find map_Kd in mtl: ${file}`);
-		return "";
+		return "error.png";
 	}
 
 	/** resolve #import in shaders relative to its path */
@@ -319,7 +332,7 @@ export class Assets {
 			if (line.startsWith("#import ")) {
 				let currentPath = path.split("/").slice(0, -1).join("/").replace("/shaders/", "") + "/";
 				let importPath = line.replace(/#import\s+/, "").replace(/"/g, "");
-				line = await this.loadShader(currentPath + importPath);
+				line = await this.loadShader(currentPath + importPath as ShaderPath);
 			}
 			out += line + "\n";
 		}

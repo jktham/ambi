@@ -1,3 +1,4 @@
+import type { MeshPath, MtlPath, ShaderPath, TexturePath } from "./assets";
 import type { Bbox } from "./bbox";
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec4 } from "./vec";
@@ -17,9 +18,9 @@ export class Entity {
     changed: boolean = true;
 
     /** path to .obj or .json mesh file in public/meshes/, actual data later loaded by renderer from assets */
-    mesh: string = "triangle.json";
+    mesh: MeshPath = "triangle.json";
     /** paths to .png or .jpg texture files in public/textures/, maps to textures in shader bindgroup 1, bindings 1..=n */
-    textures: string[] = ["test.png"];
+    textures: TexturePath[] = ["test.png"];
     /** color multiplier used by built in shaders */
     color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
     /** object to world transform */
@@ -36,18 +37,20 @@ export class Entity {
     zsort: boolean = false;
     
     /** path to .obj or .json mesh file in public/meshes/, used for fine collision detection */
-    collider?: string = undefined;
+    collider?: MeshPath = undefined;
     /** bounding box used to skip fine collision if present */
     bbox?: Bbox = undefined;
-    /** path to .mtl file, overrides first texture if specified */
-    mtl?: string = undefined;
+    /** path to .mtl file public/meshes/, overrides first texture with diffuse path if specified */
+    mtl?: MtlPath = undefined;
 
     /** path to .vert.wgsl file in public/shaders/ */
-    vertShader: string = "world/base.vert.wgsl";
+    vertShader: ShaderPath = "world/base.vert.wgsl";
     /** path to .frag.wgsl file in public/shaders/ */
-    fragShader: string = "world/base.frag.wgsl";
+    fragShader: ShaderPath = "world/base.frag.wgsl";
 
+    /** uniform values for vert shader stage */
     vertUniforms: Uniforms = new Uniforms();
+    /** uniform values for frag shader stage */
     fragUniforms: Uniforms = new Uniforms();
 
     /** custom config values for vertex shader that dont warrant a full uniform struct */

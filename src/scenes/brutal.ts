@@ -4,12 +4,13 @@ import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
+import type { MeshPath, ShaderPath } from "../assets";
 
 export class BrutalScene extends Scene {
 	name = "brutal";
 	cameraMode = "walk" as CameraMode;
 	spawnPos = new Vec3(0, 2.0, 0);
-	postShader = "post/noise.frag.wgsl";
+	postShader: ShaderPath = "post/noise.frag.wgsl";
 
 	init() {
 		let phong = new PhongUniforms();
@@ -22,7 +23,7 @@ export class BrutalScene extends Scene {
 		let tiles = getTiles();
 		let cells = generateCells(size, tiles);
 
-		let instanceModels: Map<string, Mat4[]> = new Map();
+		let instanceModels: Map<MeshPath, Mat4[]> = new Map();
 		for (let tile of tiles) {
 			instanceModels.set(tile.mesh, []);
 		}
@@ -72,7 +73,7 @@ const sockets = ["path", "none", "tower"] as const;
 type Socket = typeof sockets[number];
 
 type Tile = {
-	mesh: string;
+	mesh: MeshPath;
 	rotation: number; // 0-3
 	sockets: Socket[][]; // NESW
 	weight: number;

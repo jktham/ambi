@@ -50,7 +50,7 @@ fn main(in: FragmentIn) -> FragmentOut {
 		shade = false;
 	}
 
-	data.color = in.color * u_phong.light_color * phong_factor(in.pos, in.normal, u_global.view_pos, u_phong.ambient_factor, select(u_phong.diffuse_factor, 0.0, shade), select(u_phong.specular_factor, 0.0, shade), u_phong.specular_exponent, u_phong.light_pos) * textureSample(t_color, t_sampler, in.uv);
+	data.color = in.color * vec4f(u_phong.light_color.rgb * phong_factor(in.pos, in.normal, u_global.view_pos, u_phong.ambient_factor, select(u_phong.diffuse_factor, 0.0, shade), select(u_phong.specular_factor, 0.0, shade), u_phong.specular_exponent, u_phong.light_pos), 1.0) * textureSample(t_color, t_sampler, in.uv);
 
 	decideDiscard(data.color, data.pos, data.normal, u_global.view_pos, u_object.cull);
 	return encodeFbData(data);
