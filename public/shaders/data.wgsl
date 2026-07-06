@@ -58,6 +58,7 @@ struct ObjectUniforms {
 	mask: f32,
 	cull: f32,
 	id: f32,
+	uv_scale: f32,
 	color: vec4f,
 	vert_config: vec4f,
 	frag_config: vec4f,

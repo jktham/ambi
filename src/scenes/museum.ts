@@ -12,7 +12,8 @@ const MASK_OUTLINE_NONE = 13;
 const MASK_OUTLINE_EXT_ONLY = 14;
 const MASK_OUTLINE_WHITE = 15;
 
-const N_ROOMS = 6;
+const N_ROOMS = 8;
+const FIRST_ROOM = 0;
 
 export class MuseumScene extends Scene {
 	name = "museum";
@@ -42,6 +43,15 @@ export class MuseumScene extends Scene {
 		this.phong.ambient_factor = 0.8;
 		this.phong.diffuse_factor = 0.2;
 		this.phong.specular_factor = 0.0;
+
+		// initial room shuffle
+		let rooms = Array(N_ROOMS).fill(0).map((_, i) => i).filter(v => v != FIRST_ROOM);
+		this.roomSlots[0] = FIRST_ROOM;
+		for (let i=1; i<5; i++) {
+			let index = rndint(0, rooms.length);
+			this.roomSlots[i] = rooms[index];
+			rooms = rooms.filter(v => v != rooms[index]);
+		}
 	}
 	
 	init() {
@@ -280,10 +290,10 @@ export class MuseumScene extends Scene {
 		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0, 2, 10), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
-		obj.color = new Vec4(0, 0, 0, 1);
+		obj.color = new Vec4(0, 0, 0, 0.1);
 		obj.collider = "cube.obj";
 		obj.textures[0] = "white.png";
-		obj.mask = MASK_OUTLINE_WHITE;
+		obj.mask = 0;
 		obj.cull = -1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -339,6 +349,137 @@ export class MuseumScene extends Scene {
 		obj.model = Mat4.trs(new Vec3(0, 10, 0), new Vec3(0, 0, 0), 7);
 		obj.mesh = "sphere.obj";
 		obj.fragShader = "world/skybox.frag.wgsl";
+		this.roomObjects[r].push(obj);
+
+
+		// room 6: rainbow cube
+		r = 6;
+		o = this.createRoomBase();
+		this.roomObjects[r].push(...o);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(0, 12, 0), new Vec3(rad(35.26), 0, rad(45)), 4);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 0, 1);
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_WHITE;
+		obj.tags = ["rotate-Y"];
+		obj.cull = -1.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = this.phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(0, 12, 0), rndvec3().mul(Math.PI), 2);
+		obj.mesh = "monke.obj";
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_NONE;
+		obj.tags = ["rotateY"];
+		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		this.roomObjects[r].push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(-10, 2, -10), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_WHITE;
+		obj.cull = -1.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = this.phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(-10, 2, -10), rndvec3().mul(Math.PI), 0.5);
+		obj.mesh = "cone.obj";
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_NONE;
+		obj.tags = ["rotateY"];
+		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		this.roomObjects[r].push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(10, 2, -10), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_WHITE;
+		obj.cull = -1.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = this.phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(10, 2, -10), rndvec3().mul(Math.PI), 0.5);
+		obj.mesh = "torus.obj";
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_NONE;
+		obj.tags = ["rotateY"];
+		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		this.roomObjects[r].push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(-10, 2, 10), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_WHITE;
+		obj.cull = -1.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = this.phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(-10, 2, 10), rndvec3().mul(Math.PI), 0.5);
+		obj.mesh = "cylinder.obj";
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_NONE;
+		obj.tags = ["rotateY"];
+		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		this.roomObjects[r].push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(10, 2, 10), new Vec3(0, 0, 0), 1);
+		obj.mesh = "cube.obj";
+		obj.color = new Vec4(0, 0, 0, 1);
+		obj.collider = "cube.obj";
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_WHITE;
+		obj.cull = -1.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = this.phong;
+		this.roomObjects[r].push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(10, 2, 10), rndvec3().mul(Math.PI), 0.5);
+		obj.mesh = "quad.obj";
+		obj.textures[0] = "white.png";
+		obj.mask = MASK_OUTLINE_NONE;
+		obj.tags = ["rotateY"];
+		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		this.roomObjects[r].push(obj);
+
+
+		// room 7: wave plane
+		r = 7;
+		o = this.createRoomBase();
+		this.roomObjects[r].push(...o);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(0, 0.01, 0), new Vec3(), 10.0);
+		obj.mesh = "grid.obj";
+		obj.textures = ["brick_diffuse.jpg"];
+		obj.mask = 0;
+		obj.uv_scale = 4.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = this.phong;
+		obj.vertShader = "world/ripple.vert.wgsl";
+		obj.vertConfig.x = 0.05; // ripple amplitude
+		obj.vertConfig.y = 0.25; // ripple speed
+		obj.vertConfig.z = 0.5; // ripple scale
 		this.roomObjects[r].push(obj);
 
 
@@ -416,6 +557,24 @@ export class MuseumScene extends Scene {
 		let rotateObjects = this.getEntities("rotate");
 		for (let obj of rotateObjects) {
 			obj.model = obj.model.mul(Mat4.rotate(new Vec3(0, 0.5 * deltaTime, 0)));
+			obj.changed = true;
+		}
+
+		let rotateYObjects = this.getEntities("rotateY");
+		for (let obj of rotateYObjects) {
+			let translation = obj.model.origin();
+			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
+			let globalYRot = Mat4.rotate(new Vec3(0, 0.5 * deltaTime, 0));
+			obj.model = Mat4.translate(translation).mul(globalYRot).mul(modelWithoutTranslation);
+			obj.changed = true;
+		}
+
+		let rotateMinusYObjects = this.getEntities("rotate-Y");
+		for (let obj of rotateMinusYObjects) {
+			let translation = obj.model.origin();
+			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
+			let globalYRot = Mat4.rotate(new Vec3(0, -0.25 * deltaTime, 0));
+			obj.model = Mat4.translate(translation).mul(globalYRot).mul(modelWithoutTranslation);
 			obj.changed = true;
 		}
 

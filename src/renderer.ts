@@ -687,6 +687,7 @@ export class Renderer {
             objectUniforms.mask = object.mask;
             objectUniforms.cull = object.cull;
             objectUniforms.id = object.id;
+            objectUniforms.uv_scale = object.uv_scale;
             objectUniforms.color = object.color;
             objectUniforms.vert_config = object.vertConfig;
             objectUniforms.frag_config = object.fragConfig;

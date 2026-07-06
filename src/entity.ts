@@ -28,6 +28,8 @@ export class Entity {
     mask: number = 0;
     /** 0.0 = no culling, 1.0 = backface culling, -1.0 = frontface culling */
     cull: number = 0.0;
+    /** scaling factor for texture coordinates */
+    uv_scale: number = 1.0;
     /** used for draw order, lower = closer to camera */
     z: number = 0.0;
     /** sort by player distance and sets fractional part of z index every frame, (0, 1) */

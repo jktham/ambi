@@ -9,7 +9,11 @@ export class DebugNormalMapScene extends Scene {
 	name = "dbg_nrml";
 	spawnPos = new Vec3(0, 0, 5);
 
-	phong = new PhongUniforms();
+	phong = (() => {
+		let p = new PhongUniforms();
+		p.specular_factor = 1.0;
+		return p;
+	})();
 	
 	init() {
 		let obj = new Entity();

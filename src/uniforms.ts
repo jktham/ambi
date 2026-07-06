@@ -55,6 +55,7 @@ export class ObjectUniforms extends Uniforms {
 	mask = 0;
 	cull = 0.0;
 	id = 0;
+	uv_scale = 1.0;
 	color = new Vec4();
 	vert_config = new Vec4();
 	frag_config = new Vec4();
@@ -69,6 +70,7 @@ export class ObjectUniforms extends Uniforms {
 		this._data[0] = this.mask;
 		this._data[1] = this.cull;
 		this._data[2] = this.id;
+		this._data[3] = this.uv_scale;
 		this._data.subarray(4, 4+4).set(this.color.data);
 		this._data.subarray(8, 8+4).set(this.vert_config.data);
 		this._data.subarray(12, 12+4).set(this.frag_config.data);

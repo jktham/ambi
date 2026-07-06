@@ -36,7 +36,7 @@ fn main(in: VertexIn, @builtin(instance_index) i: u32) -> PsxVertexOut {
 	out.pos = (model * vec4f(in.pos, 1.0)).xyz;
 	out.normal = normalize((normal * vec4f(in.normal, 0.0)).xyz);
 	out.color = in.color * u_object.color * out.ndc.w;
-	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y) * out.ndc.w;
+	out.uv = vec2f(in.uv.x, 1.0 - in.uv.y) * u_object.uv_scale * out.ndc.w;
 
 	var rounded_ndc: vec2f = (round((out.ndc.xy / out.ndc.w) * (u_global.resolution / 2)) / (u_global.resolution / 2)) * out.ndc.w;
 	out.ndc = vec4f(rounded_ndc, out.ndc.z, out.ndc.w);
