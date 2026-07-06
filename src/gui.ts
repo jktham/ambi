@@ -138,8 +138,9 @@ export class Gui {
 			} else if (e.key.toLowerCase() == "m") {
 				this.cameraModeSelect.value = this.cameraModeSelect.options[(this.cameraModeSelect.selectedIndex + 1) % this.cameraModeSelect.options.length].value;
 				this.cameraModeSelect.dispatchEvent(new Event("change"));
-			} else if (e.key.toLowerCase() == "q") {
-				await engine.setScene("museum");
+			} else if (e.key.toLowerCase() == "n") {
+				this.sceneSelect.value = this.sceneSelect.options[(this.sceneSelect.selectedIndex + 1) % this.sceneSelect.options.length].value;
+				this.sceneSelect.dispatchEvent(new Event("change"));
 			}
 		});
 	}
