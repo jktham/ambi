@@ -5,7 +5,7 @@ import { Scene } from "./scene";
 import { Gui } from "./gui";
 import { Uniforms } from "./uniforms";
 import { Assets } from "./assets";
-import { scenes } from "./data";
+import { scenes } from "./presets";
 import type { Vec2 } from "./vec";
 import { Profiler } from "./profiler";
 import { Player } from "./player";

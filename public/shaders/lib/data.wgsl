@@ -34,6 +34,7 @@ struct FragmentOut {
 	@location(2) normal_mask: vec4f
 };
 
+/** world frag shader output */
 struct FbData {
 	color: vec4f,
 	pos: vec3f,

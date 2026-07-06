@@ -1,4 +1,4 @@
-#import "../data.wgsl"
+#import "../lib/data.wgsl"
 
 struct PostEchoUniforms {
 	pulse_origins: array<vec3f, 16>,

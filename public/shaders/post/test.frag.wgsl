@@ -1,4 +1,4 @@
-#import "../data.wgsl"
+#import "../lib/data.wgsl"
 
 @group(0) @binding(0) var<uniform> u_post: PostUniforms;
 

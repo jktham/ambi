@@ -1,7 +1,7 @@
 import { Vec2 } from "./vec";
 
-export const Actions = ["left", "right", "up", "down", "forward", "backward", "sprint", "interact"] as const;
-export type Action = typeof Actions[number];
+export const actions = ["left", "right", "up", "down", "forward", "backward", "sprint", "interact"] as const;
+export type Action = typeof actions[number];
 
 export class Input {
 	private canvas: HTMLCanvasElement;

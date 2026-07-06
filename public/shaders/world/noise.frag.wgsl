@@ -1,5 +1,5 @@
-#import "../data.wgsl"
-#import "../noise.wgsl"
+#import "../lib/data.wgsl"
+#import "../lib/noise.wgsl"
 
 @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;

@@ -1,5 +1,5 @@
 import { cameraModes, type CameraMode } from "./player";
-import { postShaders, resolutionPresets, scenes } from "./data";
+import { postShaders, resolutionPresets, scenes } from "./presets";
 import type { Engine } from "./engine";
 import { Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";

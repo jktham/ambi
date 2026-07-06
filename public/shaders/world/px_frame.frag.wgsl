@@ -1,15 +1,15 @@
-#import "../data.wgsl"
+#import "../lib/data.wgsl"
 
 @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color0: texture_2d<f32>;
+@group(1) @binding(1) var t_color: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
 	_ = t_sampler;
-	_ = t_color0;
+	_ = t_color;
 
 	let px = in.screen.xy - 0.5; // [0, resolution)
 	let uv = px / u_global.resolution; // [0, 1)

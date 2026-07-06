@@ -34,7 +34,7 @@ export const scenes: Map<string, new () => Scene> = new Map([
 // <path, [uniforms constructor, textures]>
 export const postShaders: Map<string, [new () => Uniforms, string[]]> = new Map([
 	["scene", [Uniforms, []]],
-	["post/base.frag.wgsl", [Uniforms, []]],
+	["post/fb_color.frag.wgsl", [Uniforms, []]],
 	["post/fb_depth.frag.wgsl", [Uniforms, []]],
 	["post/fb_normal.frag.wgsl", [Uniforms, []]],
 	["post/fb_pos.frag.wgsl", [Uniforms, []]],

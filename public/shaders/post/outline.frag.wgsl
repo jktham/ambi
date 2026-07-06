@@ -1,4 +1,4 @@
-#import "../data.wgsl"
+#import "../lib/data.wgsl"
 
 struct PostOutlineUniforms {
 	scale: array<f32, 16>,

@@ -1,5 +1,5 @@
-#import "../data.wgsl"
-#import "../lighting.wgsl"
+#import "../lib/data.wgsl"
+#import "../lib/lighting.wgsl"
 
 struct PhongUniforms {
 	ambient_factor: f32,
@@ -20,7 +20,7 @@ struct PhongUniforms {
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
 	var data: FbData;
-	data.color = phong(in.color, in.pos, in.normal, u_global.view_pos, u_phong.ambient_factor, u_phong.diffuse_factor, u_phong.specular_factor, u_phong.specular_exponent, u_phong.light_pos, u_phong.light_color) * textureSample(t_color, t_sampler, in.uv);
+	data.color = in.color * u_phong.light_color * phong_factor(in.pos, in.normal, u_global.view_pos, u_phong.ambient_factor, u_phong.diffuse_factor, u_phong.specular_factor, u_phong.specular_exponent, u_phong.light_pos) * textureSample(t_color, t_sampler, in.uv);
 	data.pos = in.pos;
 	data.depth = length(u_global.view_pos - in.pos);
 	data.normal = in.normal;

@@ -1,4 +1,4 @@
-#import "../data.wgsl"
+#import "../lib/data.wgsl"
 
 struct PostPsxUniforms {
 	fog_start: f32,

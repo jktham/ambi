@@ -243,7 +243,7 @@ export class Renderer {
         for (let trigger of scene.triggers) {
             if (trigger.bbox?.mesh) meshes.add(trigger.bbox.mesh);
         }
-        shaders.add("post/base.vert.wgsl");
+        shaders.add("post/quad.vert.wgsl");
         shaders.add(this.postShaderOverride ?? scene.postShader);
 
         let promises: Promise<any>[] = [];
@@ -535,7 +535,7 @@ export class Renderer {
     private async createPostPipeline(postShader: string): Promise<GPURenderPipeline> {
         const postVertexShader = this.device.createShaderModule({
             label: "post vertex shader",
-            code: await this.assets.loadShader("post/base.vert.wgsl"),
+            code: await this.assets.loadShader("post/quad.vert.wgsl"),
         });
         const postFragmentShader = this.device.createShaderModule({
             label: "post fragment shader",

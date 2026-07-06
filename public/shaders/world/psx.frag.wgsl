@@ -1,4 +1,4 @@
-#import "../data.wgsl"
+#import "../lib/data.wgsl"
 
 struct PsxFragmentIn {
 	@builtin(position) screen: vec4f,

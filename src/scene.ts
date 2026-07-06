@@ -16,7 +16,7 @@ export class Scene {
 	cameraMode: CameraMode = "fly";
 
 	/** path to .frag.wgsl file in public/shaders/ */
-	postShader: string = "post/base.frag.wgsl";
+	postShader: string = "post/fb_color.frag.wgsl";
 	postUniforms: Uniforms = new Uniforms();
 	postTextures: string[] = [];
 	postConfig: Vec4 = new Vec4();

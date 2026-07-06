@@ -1,5 +1,5 @@
-#import "../data.wgsl"
-#import "../lighting.wgsl"
+#import "../lib/data.wgsl"
+#import "../lib/lighting.wgsl"
 
 struct PostDitherUniforms {
 	res: f32,

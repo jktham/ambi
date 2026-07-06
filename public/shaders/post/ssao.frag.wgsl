@@ -1,5 +1,5 @@
-#import "../data.wgsl"
-#import "../noise.wgsl"
+#import "../lib/data.wgsl"
+#import "../lib/noise.wgsl"
 
 struct PostSsaoUniforms {
 	kernel: array<vec3f, 64>,
