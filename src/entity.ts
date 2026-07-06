@@ -1,4 +1,4 @@
-import type { MeshPath, MtlPath, ShaderPath, TexturePath } from "./assets";
+import type { FragShaderPath, MeshPath, MtlPath, TexturePath, VertShaderPath } from "./assets";
 import type { Bbox } from "./bbox";
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec4 } from "./vec";
@@ -44,9 +44,9 @@ export class Entity {
     mtl?: MtlPath = undefined;
 
     /** path to .vert.wgsl file in public/shaders/ */
-    vertShader: ShaderPath = "world/base.vert.wgsl";
+    vertShader: VertShaderPath = "world/base.vert.wgsl";
     /** path to .frag.wgsl file in public/shaders/ */
-    fragShader: ShaderPath = "world/base.frag.wgsl";
+    fragShader: FragShaderPath = "world/base.frag.wgsl";
 
     /** uniform values for vert shader stage */
     vertUniforms: Uniforms = new Uniforms();

@@ -4,7 +4,7 @@ import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
 import { Vec2, Vec3, Vec4 } from "./vec";
 import type { Camera } from "./camera";
-import type { ShaderPath, TexturePath } from "./assets";
+import type { FragShaderPath, TexturePath } from "./assets";
 
 export class Scene {
 	name: string = "none";
@@ -17,7 +17,7 @@ export class Scene {
 	cameraMode: CameraMode = "fly";
 
 	/** path to .frag.wgsl file in public/shaders/ */
-	postShader: ShaderPath = "post/fb_color.frag.wgsl";
+	postShader: FragShaderPath = "post/fb_color.frag.wgsl";
 	postUniforms: Uniforms = new Uniforms();
 	postTextures: TexturePath[] = [];
 	postConfig: Vec4 = new Vec4();

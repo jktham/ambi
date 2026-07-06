@@ -4,7 +4,7 @@ import { Entity } from "../entity";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
-import type { ShaderPath } from "../assets";
+import type { FragShaderPath } from "../assets";
 
 export class FieldScene extends Scene {
 	name = "field";
@@ -13,7 +13,7 @@ export class FieldScene extends Scene {
 	spawnRot = new Vec2(-Math.PI / 2.0, 0);
 	cameraMode = "walk" as CameraMode;
 
-	postShader: ShaderPath = "post/psx_fog.frag.wgsl";
+	postShader: FragShaderPath = "post/psx_fog.frag.wgsl";
 	postUniforms = new PostPsxUniforms();
 
 	CHUNK_SIZE = 30.0;

@@ -4,13 +4,13 @@ import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
-import type { MeshPath, ShaderPath } from "../assets";
+import type { MeshPath, FragShaderPath } from "../assets";
 
 export class BrutalScene extends Scene {
 	name = "brutal";
 	cameraMode = "walk" as CameraMode;
 	spawnPos = new Vec3(0, 2.0, 0);
-	postShader: ShaderPath = "post/noise.frag.wgsl";
+	postShader: FragShaderPath = "post/noise.frag.wgsl";
 
 	init() {
 		let phong = new PhongUniforms();

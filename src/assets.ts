@@ -2,6 +2,10 @@ import { Bbox } from "./bbox";
 import { Vec2, Vec3 } from "./vec";
 
 /** path relative to public/shaders/ */
+export type VertShaderPath = `${string}.vert.wgsl`;
+/** path relative to public/shaders/ */
+export type FragShaderPath = `${string}.frag.wgsl`;
+/** path relative to public/shaders/ */
 export type ShaderPath = `${string}.wgsl`;
 /** path relative to public/meshes/ */
 export type MeshPath = `${string}.obj` | `${string}.json`;

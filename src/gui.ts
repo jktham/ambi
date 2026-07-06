@@ -3,7 +3,7 @@ import { postShaders, resolutionPresets, scenes } from "./presets";
 import type { Engine } from "./engine";
 import { Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
-import type { ShaderPath, TexturePath } from "./assets";
+import type { FragShaderPath, TexturePath } from "./assets";
 
 /** </3 */
 export class Gui {
@@ -41,7 +41,7 @@ export class Gui {
 			this.postSelect.options.add(new Option(postShader));
 		}
 		this.postSelect.addEventListener("change", async (e) => {
-			let value = (e.target as HTMLSelectElement).value as ShaderPath | "scene";
+			let value = (e.target as HTMLSelectElement).value as FragShaderPath | "scene";
 			await engine.setPost(value, new (postShaders.get(value)?.[0] ?? Uniforms), postShaders.get(value)?.[1] ?? []);
 		});
 		this.postSelect.addEventListener("keydown", (e) => {
@@ -153,7 +153,7 @@ export class Gui {
 		this.sceneSelect.value = name;
 	}
 
-	updatePost(currentShader: ShaderPath | "scene", sceneShader: ShaderPath, uniforms: Uniforms, textures: TexturePath[]) {
+	updatePost(currentShader: FragShaderPath | "scene", sceneShader: FragShaderPath, uniforms: Uniforms, textures: TexturePath[]) {
 		this.postSelect.value = currentShader;
 		if (currentShader == "scene") {
 			this.postSelect.options[0].label = `scene (${sceneShader})`;
@@ -178,7 +178,7 @@ export class Gui {
 	}
 
 	// this is awful i'll improve it at some point i hope
-	private initUniformConfig(shader: ShaderPath | "scene", uniforms: Uniforms, textures: TexturePath[]) {
+	private initUniformConfig(shader: FragShaderPath | "scene", uniforms: Uniforms, textures: TexturePath[]) {
 		this.uniformSizes.clear();
 		this.uniformConfig.textContent = "";
 		if (uniforms._size() == 0 && textures.length == 0) {

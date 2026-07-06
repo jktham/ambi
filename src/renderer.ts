@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
-import { Assets as Assets, type MeshPath, type MtlPath, type ShaderPath, type TexturePath } from "./assets";
+import { Assets as Assets, type FragShaderPath, type MeshPath, type MtlPath, type ShaderPath, type TexturePath, type VertShaderPath } from "./assets";
 import type { Scene } from "./scene";
 import type { Entity, eid } from "./entity";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
@@ -41,7 +41,7 @@ export class Renderer {
 
     private assets: Assets;
 
-	postShaderOverride?: ShaderPath;
+	postShaderOverride?: FragShaderPath;
 	postFragUniformsOverride?: Uniforms;
 	postTexturesOverride?: TexturePath[];
     resolution: Vec2 = new Vec2();
@@ -354,7 +354,7 @@ export class Renderer {
         this.postTextureBindGroup = textureBindGroup;
     }
 
-    private async createObjectPipeline(vertShader: ShaderPath, fragShader: ShaderPath): Promise<GPURenderPipeline> {
+    private async createObjectPipeline(vertShader: VertShaderPath, fragShader: FragShaderPath): Promise<GPURenderPipeline> {
         const vertexShader = this.device.createShaderModule({
             label: "vertex shader: " + vertShader,
             code: await this.assets.loadShader(vertShader),
@@ -532,7 +532,7 @@ export class Renderer {
 
     // ---- post resources ----
 
-    private async createPostPipeline(postShader: ShaderPath): Promise<GPURenderPipeline> {
+    private async createPostPipeline(postShader: FragShaderPath): Promise<GPURenderPipeline> {
         const postVertexShader = this.device.createShaderModule({
             label: "post vertex shader",
             code: await this.assets.loadShader("post/quad.vert.wgsl"),
