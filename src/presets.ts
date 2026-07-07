@@ -14,6 +14,7 @@ import { DebugTriggerScene } from "./scenes/dbg_trgr";
 import { DebugShadowScene } from "./scenes/dbg_shdw";
 import { DebugNormalMapScene } from "./scenes/dbg_nrml";
 import type { FragShaderPath, TexturePath } from "./assets";
+import { DebugProjectileScene } from "./scenes/dbg_prjc";
 
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
@@ -28,6 +29,7 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["dbg_echo", DebugEchoScene],
 	["dbg_pxls", DebugPixelsScene],
 	["dbg_trgr", DebugTriggerScene],
+	["dbg_prjc", DebugProjectileScene],
 	["dbg_shdw", DebugShadowScene],
 	["dbg_nrml", DebugNormalMapScene],
 ]);

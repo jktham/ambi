@@ -121,14 +121,23 @@ export class Engine {
 		this.profiler.stop("  updatePlayer");
 
 		this.profiler.start("  updateScene");
+
 		this.scene.update(time, deltaTime, this.player);
+
 		for (let trigger of this.scene.triggers) {
 			if (trigger.enabled) await trigger.test(this.player.position);
 		}
+
 		if (this.input.activeActions.has("interact")) {
 			this.scene.interact(time, this.player);
 			this.input.activeActions.delete("interact"); // only trigger once per press
 		}
+
+		for (let obj of this.scene.entities.filter(obj => obj.lifetime !== undefined)) {
+			obj.lifetime! -= deltaTime;
+		}
+		this.scene.entities.splice(0, this.scene.entities.length,...this.scene.entities.filter(obj => obj.lifetime === undefined || obj.lifetime > 0.0))
+
 		this.profiler.stop("  updateScene");
 
 		// update camera matrices

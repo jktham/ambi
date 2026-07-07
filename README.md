@@ -42,9 +42,13 @@ silly engine for cool scenes and per object shader stages c:
     - [ ] shadow mapping, with dedicated depth-only pipeline and decoupled shadowmap resolution
     - [x] asset path type safety
     - [ ] procedural assets
+    - [ ] text mesh generation
     - [ ] renderer overhaul, abstract render passes and standardize bindgroup layouts
+    - [ ] declare render passes in scene?
     - [ ] performance optimization
     - [ ] render to world texture
+    - [ ] sound sources, audio playback
+    - [ ] material abstraction, named pbr textures
 
 - scenes
     - [x] museum (wip), general tests and mini scenes
@@ -81,6 +85,7 @@ silly engine for cool scenes and per object shader stages c:
         - [x] phong with shadowmap
         - [x] phong with normalmap, tangent space transform
         - [ ] phong with multiple pointlights
+        - [ ] phong with pbr
     - post
         - [x] framebuffers
         - [x] psx fog, dither matrix, glow

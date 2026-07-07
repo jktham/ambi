@@ -35,6 +35,8 @@ export class Entity {
     z: number = 0.0;
     /** sort by player distance and sets fractional part of z index every frame, (0, 1) */
     zsort: boolean = false;
+    /** if defined, object is deleted from scene when lifetime reaches 0 */
+    lifetime?: number = undefined;
     
     /** path to .obj or .json mesh file in public/meshes/, used for fine collision detection */
     collider?: MeshPath = undefined;
