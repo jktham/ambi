@@ -630,7 +630,7 @@ export class Renderer {
         if (scene.shadowSource) {
             // draw from shadow source pov
             this.updateWorldGlobalBuffers(scene, scene.shadowSource, time, frame, profiler);
-            this.drawWorld(scene, profiler);
+            this.drawShadows(scene, profiler);
 
             // copy depth buffer to shadow map texture
             const encoder = this.device.createCommandEncoder({ label: "copy depth encoder" });
@@ -721,6 +721,34 @@ export class Renderer {
             this.device.queue.writeBuffer(this.postFragUniformBuffer, 0, postUniforms._update().buffer);
         }
         profiler.stop("  bufferPost");
+    }
+
+    private drawShadows(scene: Scene, profiler: Profiler) {
+        profiler.start("  drawShadows");
+        const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
+        const pass = encoder.beginRenderPass(this.worldRenderPassDescriptor);
+        for (let object of scene.entities) {
+            if (!object.visible || !object.castShadow) {
+                continue;
+            }
+            const pipeline = this.objectPipelines.get(object.id);
+            const vertexBuffer = this.vertexBuffers.get(object.mesh);
+            const uniformBindGroup = this.objectUniformBindGroups.get(object.id);
+            const textureBindGroup = this.objectTextureBindGroups.get(object.id);
+            if (!pipeline || !vertexBuffer || !uniformBindGroup || !textureBindGroup) {
+                console.error(`missing object assets ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
+                continue;
+            }
+
+            pass.setPipeline(pipeline);
+            pass.setVertexBuffer(0, vertexBuffer);
+            pass.setBindGroup(0, uniformBindGroup);
+            pass.setBindGroup(1, textureBindGroup);
+            pass.draw(vertexBuffer.size / 4 / 15, object.vertUniforms._instanceCount || 1);
+        }
+        pass.end();
+        this.device.queue.submit([encoder.finish()]);
+        profiler.stop("  drawShadows");
     }
 
     private drawWorld(scene: Scene, profiler: Profiler) {

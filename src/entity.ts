@@ -14,6 +14,8 @@ export class Entity {
     visible: boolean = true;
     /** set false to skip collision detection */
     collidable: boolean = true;
+    /** set false to skip draw call in shadow pass */
+    castShadow: boolean = true;
     /** set true if object has changed since last frame, otherwise skip uniform updates */
     changed: boolean = true;
 

@@ -54,16 +54,17 @@ export class DebugShadowScene extends Scene {
 		this.entities.push(obj);
 
 		obj = new Entity();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 100);
+		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/skybox.frag.wgsl";
 		obj.z = 1000.0;
+		obj.castShadow = false;
 		this.entities.push(obj);
 
 		obj = new Entity();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 100);
+		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
