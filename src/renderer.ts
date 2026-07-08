@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
-import { Assets as Assets, type FragShaderPath, type MeshPath, type MtlPath, type ShaderPath, type TexturePath, type VertShaderPath } from "./assets";
+import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type MeshPath, type MtlPath, type ShaderPath, type TexturePath, type VertShaderPath } from "./assets";
 import type { Scene } from "./scene";
 import type { Entity, eid } from "./entity";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
@@ -371,7 +371,7 @@ export class Renderer {
                 module: vertexShader,
                 buffers: [
                     {
-                        arrayStride: 15 * 4,
+                        arrayStride: MESH_STRIDE * 4,
                         attributes: [
                             {shaderLocation: 0, offset: 0, format: "float32x3"}, // pos
                             {shaderLocation: 1, offset: 3 * 4, format: "float32x3"}, // normal
@@ -744,7 +744,7 @@ export class Renderer {
             pass.setVertexBuffer(0, vertexBuffer);
             pass.setBindGroup(0, uniformBindGroup);
             pass.setBindGroup(1, textureBindGroup);
-            pass.draw(vertexBuffer.size / 4 / 15, object.vertUniforms._instanceCount || 1);
+            pass.draw(vertexBuffer.size / 4 / MESH_STRIDE, object.vertUniforms._instanceCount || 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);
@@ -772,7 +772,7 @@ export class Renderer {
             pass.setVertexBuffer(0, vertexBuffer);
             pass.setBindGroup(0, uniformBindGroup);
             pass.setBindGroup(1, textureBindGroup);
-            pass.draw(vertexBuffer.size / 4 / 15, object.vertUniforms._instanceCount || 1);
+            pass.draw(vertexBuffer.size / 4 / MESH_STRIDE, object.vertUniforms._instanceCount || 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);

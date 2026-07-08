@@ -14,6 +14,12 @@ export type TexturePath = `${string}.png` | `${string}.jpg` | `${string}.json`;
 /** path relative to public/meshes/ */
 export type MtlPath = `${string}.mtl`;
 
+const ERROR_MESH: MeshPath = "error.obj";
+const ERROR_COLLIDER: MeshPath = "cube.obj";
+const ERROR_TEXTURE: TexturePath = "error.png";
+
+export const MESH_STRIDE = 15;
+
 /** loads, processes and caches assets */
 export class Assets {
 	private shaders: Map<ShaderPath, string> = new Map();
@@ -26,137 +32,155 @@ export class Assets {
 
 	/** load .wgsl shader from public/shaders/ */
 	async loadShader(name: ShaderPath): Promise<string> {
-		let cached = this.shaders.get(name);
-		if (cached) {
-			return cached;
-		} else {
-			let file = await this.fetchFile(`/shaders/${name}`);
-			let processed = await this.preprocessShader(file, `/shaders/${name}`);
-			this.shaders.set(name, processed);
-			return processed;
+		if (this.shaders.has(name)) {
+			return this.shaders.get(name)!;
 		}
+
+		if (!await this.fileExists(`/shaders/${name}`)) {
+			throw new Error(`shader does not exist: ${name}`); // cant recover from this really
+		}
+		
+		let file = await this.fetchFile(`/shaders/${name}`);
+		let processed = await this.preprocessShader(file, `/shaders/${name}`);
+		this.shaders.set(name, processed);
+		return processed;
 	}
 
 	/** load .obj or .json mesh from public/meshes/ */
 	async loadMesh(name: MeshPath): Promise<Float32Array> {
-		let cached = this.meshes.get(name);
-		if (cached) {
-			return cached;
+		if (this.meshes.has(name)) {
+			return this.meshes.get(name)!;
+		}
+
+		if (!await this.fileExists(`/meshes/${name}`)) {
+			console.warn(`mesh does not exist: ${name}`);
+			return this.loadMesh(ERROR_MESH);
+		}
+
+		const type = name.split(".").pop() || "";
+		if (type == "json") {
+			let file = await this.fetchFile(`/meshes/${name}`);
+			let data = JSON.parse(file || "[]") as number[]; // should be list of vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz)
+			let mesh = new Float32Array(data);
+			this.meshes.set(name, mesh);
+			return mesh;
+
+		} else if (type == "obj") {
+			let file = await this.fetchFile(`/meshes/${name}`);
+			let mesh = this.parseObj(name, file);
+			this.meshes.set(name, mesh);
+			return mesh;
+
 		} else {
-			try {
-				const type = name.split(".").pop() || "";
-				if (type == "json") {
-					let file = await this.fetchFile(`/meshes/${name}`);
-					let data = JSON.parse(file || "[]") as number[]; // should be list of vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz)
-					let mesh = new Float32Array(data);
-					this.meshes.set(name, mesh);
-					return mesh;
-
-				} else if (type == "obj") {
-					let file = await this.fetchFile(`/meshes/${name}`);
-					let mesh = this.parseObj(file);
-					this.meshes.set(name, mesh);
-					return mesh;
-
-				} else {
-					throw new Error(`unknown mesh filetype: ${name}`);
-				}
-
-			} catch (e) {
-				console.error(e);
-				return new Float32Array();
-			}
+			console.warn(`unknown mesh type: ${name}`);
+			return this.loadMesh(ERROR_MESH);
 		}
 	}
 
 	/** generate collider based on .obj or .json mesh from public/meshes/ */
 	async loadCollider(name: MeshPath): Promise<Vec3[][]> {
-		let cached = this.colliders.get(name);
-		if (cached) {
-			return cached;
-		} else {
-			let mesh = await this.loadMesh(name);
-			let collider = this.parseCollider(mesh);
-			this.colliders.set(name, collider);
+		if (this.colliders.has(name)) {
+			return this.colliders.get(name)!;
+		}
+
+		if (!await this.fileExists(`/meshes/${name}`)) {
+			console.warn(`collider mesh does not exist: ${name}`);
+			let mesh = await this.loadMesh(ERROR_COLLIDER);
+			let collider = this.parseCollider(ERROR_COLLIDER, mesh);
 			return collider;
 		}
+		
+		let mesh = await this.loadMesh(name);
+		let collider = this.parseCollider(name, mesh);
+		this.colliders.set(name, collider);
+		return collider;
 	}
 
 	/** returns new bbox based on .obj or .json mesh, only populates min/max */
 	async loadBbox(name: MeshPath): Promise<Bbox> {
-		let cached = this.bboxes.get(name);
-		if (cached) {
-			return cached;
-		} else {
-			let mesh = await this.loadMesh(name);
-			let bbox = this.parseBbox(mesh);
-			this.bboxes.set(name, bbox);
+		if (this.bboxes.has(name)) {
+			return this.bboxes.get(name)!;
+		}
+
+		if (!await this.fileExists(`/meshes/${name}`)) {
+			console.warn(`bbox mesh does not exist: ${name}`);
+			let mesh = await this.loadMesh(ERROR_COLLIDER);
+			let bbox = this.parseBbox(ERROR_COLLIDER, mesh);
 			return bbox;
 		}
+
+		let mesh = await this.loadMesh(name);
+		let bbox = this.parseBbox(name, mesh);
+		this.bboxes.set(name, bbox);
+		return bbox;
 	}
 
 	/** load .png, .jpg or .json texture from public/textures/ */
 	async loadTexture(name: TexturePath): Promise<ImageData> {
-		let cached = this.textures.get(name);
-		if (cached) {
-			return cached;
-		} else {
+		if (this.textures.has(name)) {
+			return this.textures.get(name)!;
+		}
+
+		if (!await this.fileExists(`/textures/${name}`)) {
+			console.warn(`texture does not exist: ${name}`);
+			return this.loadTexture(ERROR_TEXTURE);
+		}
+		
+		const type = name.split(".").pop() || "";
+		if (type == "json") {
+			let file = await this.fetchFile(`/textures/${name}`);
+			let data = JSON.parse(file || "[]") as number[][][]; // should be [r, g, b, a][m][n] as 0..=255
+			if (data[0]?.[0]?.[0] === undefined) {
+				console.warn(`invalid texture data: ${name}`);
+				return this.loadTexture(ERROR_TEXTURE);
+			}
+
+			const width = data[0].length;
+			let imageData = new ImageData(new Uint8ClampedArray(data.flat(2)), width);
+			this.textures.set(name, imageData);
+			return imageData;
+
+		} else if (["png", "jpg"].includes(type)) {
 			try {
-				const type = name.split(".").pop() || "";
-				if (type == "json") {
-					let file = await this.fetchFile(`/textures/${name}`);
-					let data = JSON.parse(file || "[]") as number[][][]; // should be [r, g, b, a][m][n] as 0..=255
-					if (data[0]?.[0]?.[0] === undefined) {
-						throw new Error(`invalid image data: ${name}`);
-					}
+				let file = await this.fetchFileBase64(`/textures/${name}`);
+				let image = new Image();
+				image.src = file;
+				await image.decode();
 
-					const width = data[0].length;
-					let imageData = new ImageData(new Uint8ClampedArray(data.flat(2)), width);
-					this.textures.set(name, imageData);
-					return imageData;
-
-				} else if (["png", "jpg"].includes(type)) {
-					let file = await this.fetchFileBase64(`/textures/${name}`);
-					let image = new Image();
-					image.src = file;
-					await image.decode();
-
-					const [width, height] = [image.naturalWidth, image.naturalHeight];
-					let canvas = new OffscreenCanvas(width, height);
-					let context = canvas.getContext("2d")!;
-					context.drawImage(image, 0, 0);
-					let imageData = context.getImageData(0, 0, width, height);
-					this.textures.set(name, imageData);
-					return imageData;
-
-				} else {
-					throw new Error(`unknown image filetype: ${name}`);
-				}
+				const [width, height] = [image.naturalWidth, image.naturalHeight];
+				let canvas = new OffscreenCanvas(width, height);
+				let context = canvas.getContext("2d")!;
+				context.drawImage(image, 0, 0);
+				let imageData = context.getImageData(0, 0, width, height);
+				this.textures.set(name, imageData);
+				return imageData;
 
 			} catch (e) {
-				console.error(e);
-				return new ImageData(1, 1);
+				console.warn(`invalid texture data: ${name}`);
+				return this.loadTexture(ERROR_TEXTURE);
 			}
+
+		} else {
+			console.warn(`unknown texture type: ${name}`);
+			return this.loadTexture(ERROR_TEXTURE);
 		}
 	}
 
 	/** returns path of first map_Kd entry relative to public/, for basic diffuse map selection */
 	async loadMtl(name: MtlPath): Promise<TexturePath> {
-		let cached = this.mtls.get(name);
-		if (cached) {
-			return cached;
-		} else {
-			let path = `/meshes/${name}`;
-			if (!await this.fileExists(path)) {
-				console.warn(`mtl file does not exist: ${path}`);
-				this.mtls.set(name, "error.png");
-				return "error.png";
-			}
-			let file = await this.fetchFile(path);
-			let texture = this.parseMtl(file);
-			this.mtls.set(name, texture);
-			return texture;
+		if (this.mtls.has(name)) {
+			return this.mtls.get(name)!;
 		}
+
+		if (!await this.fileExists(`/meshes/${name}`)) {
+			console.warn(`mtl does not exist: ${name}`);
+			return ERROR_TEXTURE;
+		}
+
+		let file = await this.fetchFile(`/meshes/${name}`);
+		let texture = this.parseMtl(name, file);
+		this.mtls.set(name, texture);
+		return texture;
 	}
 
 	private async fileExists(path: string): Promise<boolean> {
@@ -194,7 +218,7 @@ export class Assets {
 	}
 
 	/** parses .obj file as string, returns flat f32 array of triangulates vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz) */
-	private parseObj(file: string): Float32Array {
+	private parseObj(name: MeshPath, file: string): Float32Array {
 		let v: number[][] = []; // vertex pos xyz
 		let vc: number[][] = []; // vertex color rgba
 		let vn: number[][] = []; // vertex normal xyz
@@ -241,7 +265,7 @@ export class Assets {
 						f.push([face[0], face[i-1], face[i]]);
 					}
 				} else {
-					console.warn("invalid mesh face");
+					console.warn(`invalid mesh face: ${name}, ${face}`);
 				}
 			}
 		}
@@ -277,9 +301,9 @@ export class Assets {
 	}
 
 	/** returns 2d list of vertex positions from full mesh array */
-	private parseCollider(mesh: Float32Array): Vec3[][] {
+	private parseCollider(name: MeshPath, mesh: Float32Array): Vec3[][] {
 		let collider: Vec3[][] = [];
-		let s = 15;
+		let s = MESH_STRIDE;
 		for (let i=0; i<mesh.length; i+=s*3) {
 			let v0 = new Vec3(mesh[i], mesh[i+1], mesh[i+2]);
 			let v1 = new Vec3(mesh[i+s], mesh[i+s+1], mesh[i+s+2]);
@@ -290,11 +314,11 @@ export class Assets {
 	}
 
 	/** returns min/max of vertex positions */
-	private parseBbox(mesh: Float32Array): Bbox {
+	private parseBbox(name: MeshPath, mesh: Float32Array): Bbox {
 		let min = new Vec3(Infinity, Infinity, Infinity);
 		let max = new Vec3(-Infinity, -Infinity, -Infinity);
 
-		for (let i=0; i<mesh.length; i+=12) {
+		for (let i=0; i<mesh.length; i+=MESH_STRIDE) {
 			let v = new Vec3(mesh[i], mesh[i+1], mesh[i+2]);
 			min.x = Math.min(min.x, v.x);
 			min.y = Math.min(min.y, v.y);
@@ -308,25 +332,25 @@ export class Assets {
 	}
 
 	/** returns path of first map_Kd entry relative to public/textures/, for basic diffuse map selection */
-	private parseMtl(file: string): TexturePath {
+	private parseMtl(name: MtlPath, file: string): TexturePath {
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
 			if (words[0] == "map_Kd") {
 				let abs = words[1];
 				if (!abs.includes("textures/")) {
-					console.warn(`texture path in mtl does not include "textures/": ${abs}`);
-					return "error.png";
+					console.warn(`texture path in mtl does not include "textures/": ${name}, ${abs}`);
+					return ERROR_TEXTURE;
 				}
 				if (!(abs.endsWith(".png") || abs.endsWith(".jpg"))) {
-					console.warn(`texture path in mtl does not end in .png or .jpg: ${abs}`);
-					return "error.png";
+					console.warn(`texture path in mtl does not end in .png or .jpg: ${name}, ${abs}`);
+					return ERROR_TEXTURE;
 				}
 				let rel = abs.split("textures/").slice(1).join("");
 				return rel as TexturePath;
 			}
 		}
-		console.warn(`did not find map_Kd in mtl: ${file}`);
-		return "error.png";
+		console.warn(`did not find map_Kd in mtl: ${name}`);
+		return ERROR_TEXTURE;
 	}
 
 	/** resolve #import in shaders relative to its path */
