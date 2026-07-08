@@ -6,7 +6,7 @@ import type { Player } from "../player";
 import { Camera } from "../camera";
 
 export class DebugShadowScene extends Scene {
-	name = "dbg_shdw";
+	name = "dbg_shadow";
 	spawnPos = new Vec3(0, 0, 5);
 	shadowSource? = new Camera();
 	

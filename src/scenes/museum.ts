@@ -63,9 +63,9 @@ export class MuseumScene extends Scene {
 		
 		let [o2, t] = this.createPortals([
 			["pier", "field"], 
-			["brutal", "dbg_inst"], 
-			["dbg_dthr", "dbg_outl"], 
-			["dbg_trns", "dbg_echo"]
+			["brutal", "dbg_object"], 
+			["dbg_dither", "dbg_outline"], 
+			["dbg_transparency", "dbg_echo"]
 		]);
 		this.roomObjects[r].push(...o2);
 		this.roomTriggers[r].push(...t);

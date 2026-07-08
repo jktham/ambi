@@ -5,8 +5,8 @@ import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import { clamp, rad } from "../utils";
 
-export class DebugProjectileScene extends Scene {
-	name = "dbg_prjc";
+export class DebugRotationScene extends Scene {
+	name = "dbg_rotation";
 	spawnPos = new Vec3(0, 0, 5);
 
 	phong = new PhongUniforms();

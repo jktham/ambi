@@ -5,8 +5,8 @@ import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import { rad } from "../utils";
 
-export class DebugNormalMapScene extends Scene {
-	name = "dbg_nrml";
+export class DebugNormalmapScene extends Scene {
+	name = "dbg_normalmap";
 	spawnPos = new Vec3(0, 0, 5);
 
 	phong = (() => {

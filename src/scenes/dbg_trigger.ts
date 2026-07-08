@@ -7,7 +7,7 @@ import { Trigger } from "../trigger";
 import { Bbox } from "../bbox";
 
 export class DebugTriggerScene extends Scene {
-	name = "dbg_trgr";
+	name = "dbg_trigger";
 	spawnPos = new Vec3(0, 0, 5);
 
 	phong = new PhongUniforms();

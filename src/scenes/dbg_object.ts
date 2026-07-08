@@ -6,8 +6,8 @@ import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 
-export class DebugInstancingScene extends Scene {
-	name = "dbg_inst";
+export class DebugObjectScene extends Scene {
+	name = "dbg_object";
 
 	phong = new PhongUniforms();
 	

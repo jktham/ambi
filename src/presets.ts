@@ -3,18 +3,18 @@ import { PierScene } from "./scenes/pier";
 import { BrutalScene } from "./scenes/brutal";
 import { MuseumScene } from "./scenes/museum";
 import { FieldScene } from "./scenes/field";
-import { DebugInstancingScene } from "./scenes/dbg_inst";
-import { DebugDitherScene } from "./scenes/dbg_dthr";
-import { DebugOutlineScene } from "./scenes/dbg_outl";
-import { DebugTransparencyScene } from "./scenes/dbg_trns";
+import { DebugObjectScene } from "./scenes/dbg_object";
+import { DebugDitherScene } from "./scenes/dbg_dither";
+import { DebugOutlineScene } from "./scenes/dbg_outline";
+import { DebugTransparencyScene } from "./scenes/dbg_transparency";
 import { DebugEchoScene } from "./scenes/dbg_echo";
 import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
-import { DebugPixelsScene } from "./scenes/dbg_pxls";
-import { DebugTriggerScene } from "./scenes/dbg_trgr";
-import { DebugShadowScene } from "./scenes/dbg_shdw";
-import { DebugNormalMapScene } from "./scenes/dbg_nrml";
+import { DebugPixelScene } from "./scenes/dbg_pixel";
+import { DebugTriggerScene } from "./scenes/dbg_trigger";
+import { DebugShadowScene } from "./scenes/dbg_shadow";
+import { DebugNormalmapScene } from "./scenes/dbg_normalmap";
 import type { FragShaderPath, TexturePath } from "./assets";
-import { DebugProjectileScene } from "./scenes/dbg_prjc";
+import { DebugRotationScene } from "./scenes/dbg_rotation";
 
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
@@ -22,16 +22,16 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["pier", PierScene],
 	["brutal", BrutalScene],
 	["field", FieldScene],
-	["dbg_inst", DebugInstancingScene],
-	["dbg_dthr", DebugDitherScene],
-	["dbg_outl", DebugOutlineScene],
-	["dbg_trns", DebugTransparencyScene],
+	["dbg_object", DebugObjectScene],
+	["dbg_dither", DebugDitherScene],
+	["dbg_outline", DebugOutlineScene],
+	["dbg_transparency", DebugTransparencyScene],
 	["dbg_echo", DebugEchoScene],
-	["dbg_pxls", DebugPixelsScene],
-	["dbg_trgr", DebugTriggerScene],
-	["dbg_prjc", DebugProjectileScene],
-	["dbg_shdw", DebugShadowScene],
-	["dbg_nrml", DebugNormalMapScene],
+	["dbg_pixel", DebugPixelScene],
+	["dbg_trigger", DebugTriggerScene],
+	["dbg_rotation", DebugRotationScene],
+	["dbg_shadow", DebugShadowScene],
+	["dbg_normalmap", DebugNormalmapScene],
 ]);
 
 // <path, [uniforms constructor, textures]>

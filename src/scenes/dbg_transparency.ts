@@ -1,93 +1,87 @@
 import { Scene } from "../scene";
 import { Entity } from "../entity";
-import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
-import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
+import { PhongUniforms } from "../uniforms";
+import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
-import type { FragShaderPath } from "../assets";
 
-export class DebugOutlineScene extends Scene {
-	name = "dbg_outl";
+export class DebugTransparencyScene extends Scene {
+	name = "dbg_transparency";
 	spawnPos = new Vec3(0, 0, 5);
 
-	postShader: FragShaderPath = "post/outline.frag.wgsl";
-	resolution = new Vec2(1920, 1080);
-
 	phong = new PhongUniforms();
-
-	constructor() {
-		super();
-		
-		let u = new PostOutlineUniforms();
-		u.scale[0] = 2;
-		u.scale[1] = 1;
-		u.scale[2] = 2;
-		u.scale[3] = 8;
-		u.mode[0] = 1;
-		u.mode[1] = 1;
-		u.color[1] = new Vec4(1, 0, 0, 1);
-		u.color[2] = new Vec4(0, 1, 0, 1);
-		u.color[3] = new Vec4(0, 0, 1, 1);
-		this.postUniforms = u;
-	}
 	
 	init() {
 		let obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
-		obj.textures = ["test.png"];
-		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
-		obj.mask = 1;
+		obj.textures = ["test_trans.png"];
+		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
-		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
-		obj.mask = 2;
+		obj.color = new Vec4(0.8, 0.8, 0.8, 0.2);
+		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
-		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
-		obj.mask = 3;
+		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
+		obj.cull = -1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		obj = new Entity();
-		obj.tags = ["rotate"];
-		obj.model = Mat4.trs(new Vec3(0, 3, 0), new Vec3(), 1);
-		obj.mesh = "monke.obj";
+		obj.model = Mat4.trs(new Vec3(-0.5, 3, 0), new Vec3(), 1);
+		obj.mesh = "sphere.obj";
 		obj.textures = ["test.png"];
-		obj.color = new Vec4(0.5, 0.5, 0.5, 0.0);
-		obj.mask = 4;
+		obj.color = new Vec4(1.0, 0.0, 0.0, 0.3);
+		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
+		obj.zsort = true;
+		this.entities.push(obj);
+
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(0.5, 3, 0), new Vec3(), 1);
+		obj.mesh = "sphere.obj";
+		obj.textures = ["test.png"];
+		obj.color = new Vec4(0.0, 0.0, 1.0, 0.3);
+		obj.cull = 1.0;
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = this.phong;
+		obj.zsort = true;
 		this.entities.push(obj);
 
 		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
-		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
-		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = this.phong;
+		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
+		obj.fragShader = "world/skybox.frag.wgsl";
+		obj.z = 1000.0;
 		this.entities.push(obj);
 
 		obj = new Entity();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
-		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
+		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
+		obj.z = 900.0;
 		this.entities.push(obj);
 	}
 
@@ -95,11 +89,6 @@ export class DebugOutlineScene extends Scene {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		this.phong.light_pos = lightPos;
 		for (let obj of this.entities) {
-			obj.changed = true;
-		}
-		
-		for (let obj of this.getEntities("rotate")) {
-			obj.model = Mat4.rotateIntrinsic(new Vec3(0, 1, 0).mul(deltaTime)).mul(obj.model);
 			obj.changed = true;
 		}
 

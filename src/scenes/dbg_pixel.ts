@@ -3,8 +3,8 @@ import { Entity } from "../entity";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import type { CameraMode } from "../player";
 
-export class DebugPixelsScene extends Scene {
-	name = "dbg_pxls";
+export class DebugPixelScene extends Scene {
+	name = "dbg_pixel";
 	cameraMode: CameraMode = "static";
 
 	resolution = new Vec2(96, 54);
