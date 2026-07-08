@@ -3,6 +3,7 @@ import { Bbox } from "./bbox";
 import { Camera } from "./camera";
 import type { Entity } from "./entity";
 import type { Action } from "./input";
+import { clamp } from "./utils";
 import { Vec2, Vec3, Mat4 } from "./vec";
 
 export const cameraModes = ["walk", "fly", "static"] as const;
@@ -20,13 +21,13 @@ export class Player {
 	camera: Camera = new Camera();
 
 	speed: number = 4.0;
-	sensitivity: number = 1.0;
+	sensitivity: number = 1.0 / 400.0 * Math.PI;
 	mode: CameraMode = "fly";
 	height: number = 0.0; // camera to floor distance, TODO: player collider
 
 	velocity: Vec3 = new Vec3();
 	position: Vec3 = new Vec3();
-	rotation: Vec2 = new Vec2(); // pitch, yaw
+	rotation: Vec3 = new Vec3(); // pitch, yaw, roll
 	front: Vec3 = new Vec3();
 	right: Vec3 = new Vec3();
 	up: Vec3 = new Vec3();
@@ -92,18 +93,19 @@ export class Player {
 			return;
 		}
 
-		this.rotation.x += cursorChange.x * this.sensitivity / 400.0 * Math.PI;
-		this.rotation.y += cursorChange.y * this.sensitivity / 400.0 * Math.PI;
-		this.rotation.y = Math.min(Math.max(this.rotation.y, -Math.PI/2 + 0.01), Math.PI/2 - 0.01);
+		this.rotation.x += -cursorChange.y * this.sensitivity;
+		this.rotation.y += -cursorChange.x * this.sensitivity;
+		this.rotation.x = clamp(this.rotation.x, -Math.PI/2 + 0.01, Math.PI/2 - 0.01);
 
-		this.front = Mat4.rotate(new Vec3(this.rotation.y, this.rotation.x, 0)).inverse().transform(new Vec3(0, 0, -1)).normalize();
-		this.right = this.front.cross(new Vec3(0, 1, 0)).normalize();
-		this.up = this.right.cross(this.front).normalize();
+		let rot = Mat4.rotateHeading(this.rotation);
+		this.front = rot.transform(new Vec3(0, 0, -1)).normalize();
+		this.right = rot.transform(new Vec3(1, 0, 0)).normalize();
+		this.up = rot.transform(new Vec3(0, 1, 0)).normalize();
 	}
 
 	/** update player camera transforms, keep in sync with player pos */
 	updateCamera() {
-		this.camera.model = Mat4.translate(this.position.add(new Vec3(0.0, this.height, 0.0))).mul(Mat4.rotatePitchYawRoll(this.rotation.y, this.rotation.x, 0));
+		this.camera.model = Mat4.translate(this.position.add(new Vec3(0.0, this.height, 0.0))).mul(Mat4.rotateHeading(this.rotation));
 		this.camera.updateMatrices();
 	}
 	

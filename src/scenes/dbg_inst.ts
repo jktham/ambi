@@ -55,7 +55,7 @@ export class DebugInstancingScene extends Scene {
 		let range = 100;
 		(obj.vertUniforms as InstancedUniforms)._instanceCount = count;
 		for (let i=0; i<count; i++) {
-			let model = Mat4.translate(new Vec3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2)).mul(Mat4.rotate(new Vec3(Math.random()*2*Math.PI, Math.random()*2*Math.PI, Math.random()*2*Math.PI)));
+			let model = Mat4.translate(new Vec3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2)).mul(Mat4.rotateIntrinsic(new Vec3(Math.random()*2*Math.PI, Math.random()*2*Math.PI, Math.random()*2*Math.PI)));
 			(obj.vertUniforms as InstancedUniforms).models.push(model);
 			(obj.vertUniforms as InstancedUniforms).normals.push(model.inverse().transpose());
 		}
@@ -79,7 +79,7 @@ export class DebugInstancingScene extends Scene {
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
-		this.entities[0].model = this.entities[0].model.mul(Mat4.rotate(new Vec3(0, 0, deltaTime)));
+		this.entities[0].model = this.entities[0].model.mul(Mat4.rotateIntrinsic(new Vec3(0, 0, deltaTime)));
 		this.entities[0].changed = true;
 		this.entities[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
 		this.entities[1].changed = true;
@@ -87,7 +87,7 @@ export class DebugInstancingScene extends Scene {
 		let monke = this.getEntity("monke_instanced")!;
 		let monkeUniforms = monke.vertUniforms as InstancedUniforms;
 		for (let i=0; i<monkeUniforms._instanceCount; i++) {
-			let model = monkeUniforms.models[i].mul(Mat4.rotate(new Vec3(deltaTime, deltaTime, deltaTime)));
+			let model = monkeUniforms.models[i].mul(Mat4.rotateIntrinsic(new Vec3(deltaTime, deltaTime, deltaTime)));
 			monkeUniforms.models[i] = model;
 			monkeUniforms.normals[i] = model.inverse().transpose();
 		}

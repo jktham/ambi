@@ -2,7 +2,7 @@ import type { Player, CameraMode } from "../player";
 import { Scene } from "../scene";
 import { Entity } from "../entity";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
-import { rnd } from "../utils";
+import { rad, rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import type { FragShaderPath } from "../assets";
 
@@ -10,7 +10,7 @@ export class FieldScene extends Scene {
 	name = "field";
 	resolution = new Vec2(320, 180);
 	spawnPos = new Vec3(0, 1.8, 0);
-	spawnRot = new Vec2(-Math.PI / 2.0, 0);
+	spawnRot = new Vec3(0, rad(90), 0);
 	cameraMode = "walk" as CameraMode;
 
 	postShader: FragShaderPath = "post/psx_fog.frag.wgsl";
@@ -93,7 +93,7 @@ export class FieldScene extends Scene {
 
 	update(time: number, deltaTime: number, player: Player) {
 		for (let i=0; i<this.GRASS_COUNT; i++) {
-			let sway = Mat4.rotate(new Vec3(0, 0, Math.sin(this.grassSwaySpeeds[i] * time + this.grassSwayOffsets[i]) * this.grassSwayScales[i]));
+			let sway = Mat4.rotateIntrinsic(new Vec3(0, 0, Math.sin(this.grassSwaySpeeds[i] * time + this.grassSwayOffsets[i]) * this.grassSwayScales[i]));
 			this.grassModels[i] = this.grassOrigins[i].mul(sway);
 		}
 

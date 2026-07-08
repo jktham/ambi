@@ -35,7 +35,7 @@ export class DebugEchoScene extends Scene {
 		let inst = obj.vertUniforms as InstancedUniforms;
 		inst._instanceCount = count;
 		for (let i=0; i<count; i++) {
-			let model = Mat4.translate(new Vec3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2)).mul(Mat4.rotate(new Vec3(Math.random()*2*Math.PI, Math.random()*2*Math.PI, Math.random()*2*Math.PI)));
+			let model = Mat4.translate(new Vec3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2)).mul(Mat4.rotateIntrinsic(new Vec3(Math.random()*2*Math.PI, Math.random()*2*Math.PI, Math.random()*2*Math.PI)));
 			inst.models.push(model);
 			inst.normals.push(model.inverse().transpose());
 		}

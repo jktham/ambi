@@ -10,7 +10,7 @@ export class Scene {
 	name: string = "none";
 	resolution: Vec2 = new Vec2(960, 540);
 	spawnPos: Vec3 = new Vec3();
-	spawnRot: Vec2 = new Vec2();
+	spawnRot: Vec3 = new Vec3(); // pitch, yaw, roll
 	/** "fly" is 6dof and ignores colliders, \
 	 *  "walk" is locked in plane, \
 	 *  "static" ignores movement input */

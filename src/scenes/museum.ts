@@ -557,7 +557,7 @@ export class MuseumScene extends Scene {
 
 		let rotateObjects = this.getEntities("rotate");
 		for (let obj of rotateObjects) {
-			obj.model = obj.model.mul(Mat4.rotate(new Vec3(0, 0.5 * deltaTime, 0)));
+			obj.model = obj.model.mul(Mat4.rotateIntrinsic(new Vec3(0, 0.5 * deltaTime, 0)));
 			obj.changed = true;
 		}
 
@@ -565,7 +565,7 @@ export class MuseumScene extends Scene {
 		for (let obj of rotateYObjects) {
 			let translation = obj.model.origin();
 			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
-			let globalYRot = Mat4.rotate(new Vec3(0, 0.5 * deltaTime, 0));
+			let globalYRot = Mat4.rotateIntrinsic(new Vec3(0, 0.5 * deltaTime, 0));
 			obj.model = Mat4.translate(translation).mul(globalYRot).mul(modelWithoutTranslation);
 			obj.changed = true;
 		}
@@ -574,7 +574,7 @@ export class MuseumScene extends Scene {
 		for (let obj of rotateMinusYObjects) {
 			let translation = obj.model.origin();
 			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
-			let globalYRot = Mat4.rotate(new Vec3(0, -0.25 * deltaTime, 0));
+			let globalYRot = Mat4.rotateIntrinsic(new Vec3(0, -0.25 * deltaTime, 0));
 			obj.model = Mat4.translate(translation).mul(globalYRot).mul(modelWithoutTranslation);
 			obj.changed = true;
 		}

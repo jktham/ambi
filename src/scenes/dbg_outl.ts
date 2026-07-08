@@ -99,7 +99,7 @@ export class DebugOutlineScene extends Scene {
 		}
 		
 		for (let obj of this.getEntities("rotate")) {
-			obj.model = Mat4.rotate(new Vec3(0, 1, 0).mul(deltaTime)).mul(obj.model);
+			obj.model = Mat4.rotateIntrinsic(new Vec3(0, 1, 0).mul(deltaTime)).mul(obj.model);
 			obj.changed = true;
 		}
 
