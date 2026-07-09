@@ -1,3 +1,5 @@
+import { lerp } from "./utils";
+
 export class Vec2 {
 	data: number[];
 	size: number = 2;
@@ -69,6 +71,10 @@ export class Vec2 {
 
 	static splat(v: number): Vec2 {
 		return new Vec2(v, v);
+	}
+
+	static lerp(a: Vec2, b: Vec2, t: number): Vec2 {
+		return new Vec2(lerp(a.x, b.x, t), lerp(a.y, b.y, t));
 	}
 }
 
@@ -154,6 +160,10 @@ export class Vec3 {
 	static splat(v: number): Vec3 {
 		return new Vec3(v, v, v);
 	}
+
+	static lerp(a: Vec3, b: Vec3, t: number): Vec3 {
+		return new Vec3(lerp(a.x, b.x, t), lerp(a.y, b.y, t), lerp(a.z, b.z, t));
+	}
 }
 
 export class Vec4 {
@@ -231,6 +241,10 @@ export class Vec4 {
 
 	static splat(v: number): Vec4 {
 		return new Vec4(v, v, v, v);
+	}
+
+	static lerp(a: Vec4, b: Vec4, t: number): Vec4 {
+		return new Vec4(lerp(a.x, b.x, t), lerp(a.y, b.y, t), lerp(a.z, b.z, t), lerp(a.w, b.w, t));
 	}
 }
 

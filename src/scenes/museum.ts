@@ -30,6 +30,8 @@ export class MuseumScene extends Scene {
 
 	phong = new PhongUniforms();
 
+	playerPosSmooth = new Vec3();
+
 	constructor() {
 		super();
 		
@@ -81,8 +83,8 @@ export class MuseumScene extends Scene {
 
 		for (let i=0; i<7; i++) {
 			let obj = new Entity();
-			obj.tags = [`lod${i}`, "rotate"];
-			obj.model = Mat4.trs(new Vec3(0, 3.5, 0), new Vec3(0, 0, 0), 3);
+			obj.tags = [`lod${i}`, "lookatplayersmooth"];
+			obj.model = Mat4.trs(new Vec3(0, 5, 0), new Vec3(0, 0, 0), 3);
 			obj.mesh = `museum/monke_lod${i}.obj`;
 			obj.textures[0] = "white.png";
 			obj.mask = 0;
@@ -490,11 +492,15 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(...o);
 
 		obj = new Entity();
-		obj.tags = ["lookatplayer"]
-		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(), 1.0);
+		obj.tags = ["lookatplayer", "scalewithplayer"]
+		obj.model = Mat4.trs(new Vec3(0, 1.95, 0), new Vec3(), 1.0);
 		obj.mesh = "error.obj";
 		obj.textures = ["error.png"];
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
+		obj.fragShader = "world/pulse.frag.wgsl";
+		obj.fragConfig.x = 2.0; // speed
+		obj.fragConfig.y = 0.5; // min
+		obj.fragConfig.z = 1.0; // max
 		this.roomObjects[r].push(obj);
 
 
@@ -528,24 +534,28 @@ export class MuseumScene extends Scene {
 	update(time: number, deltaTime: number, player: Player) {
 		if (player.position.z < -22) {
 			player.position.z += 44;
+			this.playerPosSmooth = player.position;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(1);
 			this.applyRoomOffsets();
 		}
 		if (player.position.x > 22) {
 			player.position.x -= 44;
+			this.playerPosSmooth = player.position;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(2);
 			this.applyRoomOffsets();
 		}
 		if (player.position.z > 22) {
 			player.position.z -= 44;
+			this.playerPosSmooth = player.position;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(3);
 			this.applyRoomOffsets();
 		}
 		if (player.position.x < -22) {
 			player.position.x += 44;
+			this.playerPosSmooth = player.position;
 			this.applyRoomOffsets(-1);
 			this.shuffleRooms(4);
 			this.applyRoomOffsets();
@@ -569,14 +579,12 @@ export class MuseumScene extends Scene {
 			}
 		}
 
-		let rotateObjects = this.getEntities("rotate");
-		for (let obj of rotateObjects) {
+		for (let obj of this.getEntities("rotate")) {
 			obj.model = obj.model.mul(Mat4.rotateIntrinsic(new Vec3(0, 0.5 * deltaTime, 0)));
 			obj.changed = true;
 		}
 
-		let rotateYObjects = this.getEntities("rotateY");
-		for (let obj of rotateYObjects) {
+		for (let obj of this.getEntities("rotateY")) {
 			let translation = obj.model.origin();
 			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
 			let globalYRot = Mat4.rotateIntrinsic(new Vec3(0, 0.5 * deltaTime, 0));
@@ -584,8 +592,7 @@ export class MuseumScene extends Scene {
 			obj.changed = true;
 		}
 
-		let rotateMinusYObjects = this.getEntities("rotate-Y");
-		for (let obj of rotateMinusYObjects) {
+		for (let obj of this.getEntities("rotate-Y")) {
 			let translation = obj.model.origin();
 			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
 			let globalYRot = Mat4.rotateIntrinsic(new Vec3(0, -0.25 * deltaTime, 0));
@@ -593,15 +600,13 @@ export class MuseumScene extends Scene {
 			obj.changed = true;
 		}
 
-		let explodeObjects = this.getEntities("explode");
-		for (let obj of explodeObjects) {
+		for (let obj of this.getEntities("explode")) {
 			let dist = obj.model.origin().mul(new Vec3(1, 0.5, 1)).dist(player.position.mul(new Vec3(1, 0.5, 1)));
 			obj.vertConfig.x = clamp((dist - 5.0) / 2.0, 0.0, 10.0);
 			obj.changed = true;
 		}
 
-		let spheresObjects = this.getEntities("spheres");
-		for (let obj of spheresObjects) {
+		for (let obj of this.getEntities("spheres")) {
 			let uniforms = obj.fragUniforms as RayspheresUniforms;
 			for (let i=0; i<uniforms.sphere_count; i++) {
 				uniforms.sphere_pos[i].y += rndseed(i, 0.3, 1.2) * deltaTime;
@@ -613,18 +618,30 @@ export class MuseumScene extends Scene {
 			obj.changed = true;
 		}
 
-		let pulseObjects = this.getEntities("pulse");
-		for (let obj of pulseObjects) {
+		for (let obj of this.getEntities("pulse")) {
 			let pulse = 1.0 + Math.sin(time) * 0.05;
 			let origin = obj.model.origin();
 			obj.model = Mat4.trs(origin, new Vec3(0, 0, 0), 7 * pulse);
 			obj.changed = true;
 		}
 
-		let lookatObjects = this.getEntities("lookatplayer");
-		for (let obj of lookatObjects) {
-			let t = obj.model.origin();
-			obj.model = Mat4.translate(t).mul(Mat4.rotateLookAt(t.negate(), player.position.negate())); // negate so +z towards player
+		for (let obj of this.getEntities("lookatplayer")) {
+			let [t, _r, s] = obj.model.decompose();
+			obj.model = Mat4.translate(t).mul(Mat4.rotateLookAt(t.negate(), player.position.negate()).mul(Mat4.scale(s))); // negate so +z towards player
+			obj.changed = true;
+		}
+
+		for (let obj of this.getEntities("scalewithplayer")) {
+			let [t, r, _s] = obj.model.decompose();
+			let dist = player.position.dist(t);
+			obj.model = Mat4.trs(t, r, dist * 0.1);
+			obj.changed = true;
+		}
+
+		this.playerPosSmooth = Vec3.lerp(this.playerPosSmooth, player.position, 0.05);
+		for (let obj of this.getEntities("lookatplayersmooth")) {
+			let [t, _r, s] = obj.model.decompose();
+			obj.model = Mat4.translate(t).mul(Mat4.rotateLookAt(t.negate(), this.playerPosSmooth.negate()).mul(Mat4.scale(s))); // negate so +z towards player
 			obj.changed = true;
 		}
 	}
