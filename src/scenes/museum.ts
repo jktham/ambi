@@ -624,7 +624,7 @@ export class MuseumScene extends Scene {
 		let lookatObjects = this.getEntities("lookatplayer");
 		for (let obj of lookatObjects) {
 			let t = obj.model.origin();
-			obj.model = Mat4.translate(t).mul(Mat4.lookAt(new Vec3(), player.position));
+			obj.model = Mat4.translate(t).mul(Mat4.rotateTarget(t, player.position));
 			obj.changed = true;
 		}
 	}

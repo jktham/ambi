@@ -81,7 +81,7 @@ export class DebugShadowScene extends Scene {
 			obj.changed = true;
 		}
 
-		this.shadowSource!.model = Mat4.translate(lightPos).mul(Mat4.lookAt(lightPos, new Vec3(0, 0, 0)));
+		this.shadowSource!.model = Mat4.translate(lightPos).mul(Mat4.rotateTarget(lightPos, new Vec3(0, 0, 0)));
 
 	}
 }

@@ -285,17 +285,13 @@ export class Mat4 {
 		}
 	}
 
+	/** returns transformed (x, y, z, 1) vector */
 	transform(op: Vec3): Vec3 {
 		return new Vec3(
 			this.data[0] * op.x + this.data[1] * op.y + this.data[2] * op.z + this.data[3] * 1,
 			this.data[4] * op.x + this.data[5] * op.y + this.data[6] * op.z + this.data[7] * 1,
 			this.data[8] * op.x + this.data[9] * op.y + this.data[10] * op.z + this.data[11] * 1,
 		);
-	}
-
-	/** transformed zero vector */
-	origin(): Vec3 {
-		return this.transform(new Vec3(0, 0, 0));
 	}
 
 	inverse(): Mat4 {
@@ -338,14 +334,26 @@ export class Mat4 {
 		]);
 	}
 
-	/** decompose matrix into translation, intrinsic (XYZ) rotation (xyz rad), scale (without sign) */
+	/** transformed zero vector */
+	origin(): Vec3 {
+		return this.transform(new Vec3(0, 0, 0));
+	}
+
+	/** basis vectors of linear transform component */
+	basis(): [Vec3, Vec3, Vec3] {
+		let m = this.data;
+		let x = new Vec3(m[0], m[4], m[8]);
+		let y = new Vec3(m[1], m[5], m[9]);
+		let z = new Vec3(m[2], m[6], m[10]);
+		return [x, y, z];
+	}
+
+	/** decompose matrix into translation, intrinsic (XYZ) rotation (xyz rad), scale (unsigned) */
 	decompose(): [Vec3, Vec3, Vec3] {
 		let m = this.data;
 		let translation = new Vec3(m[3], m[7], m[11]);
 
-		let x = new Vec3(m[0], m[4], m[8]);
-		let y = new Vec3(m[1], m[5], m[9]);
-		let z = new Vec3(m[2], m[6], m[10]);
+		let [x, y, z] = this.basis();
 		let scale = new Vec3(
 			x.length(),
 			y.length(),
@@ -449,6 +457,16 @@ export class Mat4 {
 		return Y.mul(X.mul(Z)); // yaw-pitch-roll https://en.wikipedia.org/wiki/Davenport_chained_rotations#Tait%E2%80%93Bryan_chained_rotations
 	}
 
+	/** create rotation matrix looking at target from eye, up defaults to +Y */
+	static rotateTarget(eye: Vec3, target: Vec3, up_prime: Vec3 = new Vec3(0, 1, 0)): Mat4 {
+		let front = target.sub(eye).normalize().negate();
+		let right = front.cross(up_prime).normalize();
+		let up = right.cross(front).normalize();
+
+		// right handed, no translation
+		return Mat4.changeOfBasis(right, up, front);
+	}
+
 	/** create transformation matrix from translation, intrinsic (XYZ) rotation (xyz rad) and scale */
 	static trs(translation: Vec3 = new Vec3(), rotation: Vec3 = new Vec3(), scale: number | Vec3 = 1): Mat4 {
 		let T = Mat4.translate(translation);
@@ -457,16 +475,12 @@ export class Mat4 {
 		return T.mul(R.mul(S)); // TRS
 	}
 
-	/** create rotation matrix looking at target from eye, up defaults to +Y. does not include a translation! */
-	static lookAt(eye: Vec3, target: Vec3, up: Vec3 = new Vec3(0, 1, 0)): Mat4 {
-		let front = target.sub(eye).normalize().negate();
-		let right = front.cross(up).normalize();
-
-		// right handed, no translation
+	/** create linear transformation matrix from xyz basis vectors */
+	static changeOfBasis(x: Vec3, y: Vec3, z: Vec3): Mat4 {
 		return new Mat4([
-			right.x, up.x, front.x, 0, 
-			right.y, up.y, front.y, 0, 
-			right.z, up.z, front.z, 0, 
+			x.x, y.x, z.x, 0,
+			x.y, y.y, z.y, 0,
+			x.z, y.z, z.z, 0,
 			0, 0, 0, 1
 		]);
 	}
