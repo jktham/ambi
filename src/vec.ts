@@ -457,11 +457,11 @@ export class Mat4 {
 		return Y.mul(X.mul(Z)); // yaw-pitch-roll https://en.wikipedia.org/wiki/Davenport_chained_rotations#Tait%E2%80%93Bryan_chained_rotations
 	}
 
-	/** create rotation matrix looking at target from eye, up defaults to +Y */
-	static rotateTarget(eye: Vec3, target: Vec3, up_prime: Vec3 = new Vec3(0, 1, 0)): Mat4 {
+	/** create rotation matrix looking at target from eye (-z towards target), up_dir defaults to +y */
+	static rotateLookAt(eye: Vec3, target: Vec3, up_dir: Vec3 = new Vec3(0, 1, 0)): Mat4 {
 		let front = target.sub(eye).normalize().negate();
-		let right = front.cross(up_prime).normalize();
-		let up = right.cross(front).normalize();
+		let right = up_dir.cross(front).normalize();
+		let up = front.cross(right).normalize();
 
 		// right handed, no translation
 		return Mat4.changeOfBasis(right, up, front);

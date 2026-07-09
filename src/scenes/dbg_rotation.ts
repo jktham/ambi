@@ -14,28 +14,35 @@ export class DebugRotationScene extends Scene {
 	init() {
 		let obj = new Entity();
 		obj.tags = ["static"];
-		obj.model = Mat4.trs(new Vec3(-4, 0, 0), new Vec3(), 1.0);
+		obj.model = Mat4.trs(new Vec3(-6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
 		this.entities.push(obj);
 
 		obj = new Entity();
 		obj.tags = ["intrinsic"];
-		obj.model = Mat4.trs(new Vec3(-1.5, 0, 0), new Vec3(), 1.0);
+		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
 		this.entities.push(obj);
 
 		obj = new Entity();
 		obj.tags = ["extrinsic"];
-		obj.model = Mat4.trs(new Vec3(1.5, 0, 0), new Vec3(), 1.0);
+		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
 		this.entities.push(obj);
 
 		obj = new Entity();
 		obj.tags = ["heading"];
-		obj.model = Mat4.trs(new Vec3(4, 0, 0), new Vec3(), 1.0);
+		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1.0);
+		obj.mesh = "gimbal.obj";
+		obj.textures = ["white.png"];
+		this.entities.push(obj);
+
+		obj = new Entity();
+		obj.tags = ["lookat"];
+		obj.model = Mat4.trs(new Vec3(6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
 		this.entities.push(obj);
@@ -84,6 +91,9 @@ export class DebugRotationScene extends Scene {
 
 		let heading = this.getEntity("heading")!;
 		heading.model = Mat4.translate(heading.model.origin()).mul(Mat4.rotateHeading(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
+
+		let lookat = this.getEntity("lookat")!;
+		lookat.model = Mat4.translate(lookat.model.origin()).mul(Mat4.rotateLookAt(lookat.model.origin(), player.position));
 
 		// test decompose identity
 		for (let obj of this.entities) {

@@ -7,7 +7,7 @@ import { Camera } from "../camera";
 
 export class DebugShadowScene extends Scene {
 	name = "dbg_shadow";
-	spawnPos = new Vec3(0, 0, 5);
+	spawnPos = new Vec3(0, -2, 6);
 	shadowSource? = new Camera();
 	
 	phong = new PhongShadowUniforms();
@@ -81,7 +81,7 @@ export class DebugShadowScene extends Scene {
 			obj.changed = true;
 		}
 
-		this.shadowSource!.model = Mat4.translate(lightPos).mul(Mat4.rotateTarget(lightPos, new Vec3(0, 0, 0)));
+		this.shadowSource!.model = Mat4.translate(lightPos).mul(Mat4.rotateLookAt(lightPos, new Vec3(0, 0, 0)));
 
 	}
 }
