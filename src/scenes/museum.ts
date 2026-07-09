@@ -13,7 +13,7 @@ const MASK_OUTLINE_NONE = 13;
 const MASK_OUTLINE_EXT_ONLY = 14;
 const MASK_OUTLINE_WHITE = 15;
 
-const N_ROOMS = 8;
+const N_ROOMS = 9;
 const FIRST_ROOM = 0;
 
 export class MuseumScene extends Scene {
@@ -484,6 +484,20 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 
+		// room 8: error
+		r = 8;
+		o = this.createRoomBase();
+		this.roomObjects[r].push(...o);
+
+		obj = new Entity();
+		obj.tags = ["lookatplayer"]
+		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(), 1.0);
+		obj.mesh = "error.obj";
+		obj.textures = ["error.png"];
+		obj.mask = MASK_OUTLINE_EXT_ONLY;
+		this.roomObjects[r].push(obj);
+
+
 		// concat
 		this.applyRoomOffsets();
 		this.entities.push(...this.roomObjects.flat());
@@ -606,6 +620,13 @@ export class MuseumScene extends Scene {
 			obj.model = Mat4.trs(origin, new Vec3(0, 0, 0), 7 * pulse);
 			obj.changed = true;
 		}
+
+		let lookatObjects = this.getEntities("lookatplayer");
+		for (let obj of lookatObjects) {
+			let t = obj.model.origin();
+			obj.model = Mat4.translate(t).mul(Mat4.lookAt(new Vec3(), player.position));
+			obj.changed = true;
+		}
 	}
 
 	interact(time: number, player: Player) {
@@ -628,14 +649,16 @@ export class MuseumScene extends Scene {
 			let offset = slot != -1 ? offsets[slot] : voidOffset;
 			
 			for (let obj of this.roomObjects[r]) {
-				obj.model = Mat4.translate(offset).mul(obj.model);
+				let [translation, rotation, scale] = obj.model.decompose();
+				obj.model = Mat4.trs(translation.add(offset), rotation, scale);
 				obj.collidable = this.roomSlots[0] == r; // only collidable if in current room
 				obj.z %= 100000.0;
 				obj.z += this.roomSlots[0] == r ? 100000.0 : 0.0; // draw current room first, breaks on negative z!
 				obj.changed = true;
 			}
 			for (let t of this.roomTriggers[r]) {
-				t.bbox.model = Mat4.translate(offset).mul(t.bbox.model);
+				let [translation, rotation, scale] = t.bbox.model.decompose();
+				t.bbox.model = Mat4.trs(translation.add(offset), rotation, scale);
 				t.enabled = this.roomSlots[0] == r;
 			}
 		}

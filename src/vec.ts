@@ -459,14 +459,14 @@ export class Mat4 {
 
 	/** create rotation matrix looking at target from eye, up defaults to +Y. does not include a translation! */
 	static lookAt(eye: Vec3, target: Vec3, up: Vec3 = new Vec3(0, 1, 0)): Mat4 {
-		let front = target.sub(eye).normalize();
-		let right = front.cross(up);
+		let front = target.sub(eye).normalize().negate();
+		let right = front.cross(up).normalize();
 
 		// right handed, no translation
 		return new Mat4([
-			right.x, up.x, -front.x, 0, 
-			right.y, up.y, -front.y, 0, 
-			right.z, up.z, -front.z, 0, 
+			right.x, up.x, front.x, 0, 
+			right.y, up.y, front.y, 0, 
+			right.z, up.z, front.z, 0, 
 			0, 0, 0, 1
 		]);
 	}
