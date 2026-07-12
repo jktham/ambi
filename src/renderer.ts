@@ -5,6 +5,7 @@ import type { Scene } from "./scene";
 import type { Entity, eid } from "./entity";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
 import { Mat4, Vec2 } from "./vec";
+import type { Gui } from "./gui";
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
@@ -179,9 +180,9 @@ export class Renderer {
 
     // ---- create and destroy asset-dependent resources ---- 
 
-    async loadScene(scene: Scene) {
+    async loadScene(scene: Scene, gui: Gui) {
         this.setResolution(scene.resolution);
-        await this.preloadAssets(scene);
+        await this.preloadAssets(scene, gui);
         await this.initWorld(scene);
         await this.initPost(scene);
     }
@@ -226,7 +227,7 @@ export class Renderer {
         (this.postFrameBufferBindGroup as any) = undefined;
     }
 
-    private async preloadAssets(scene: Scene) {
+    private async preloadAssets(scene: Scene, gui: Gui) {
         let shaders = new Set<ShaderPath>();
         let meshes = new Set<MeshPath>();
         let textures = new Set<TexturePath>();
@@ -246,12 +247,22 @@ export class Renderer {
         shaders.add("post/quad.vert.wgsl");
         shaders.add(this.postShaderOverride ?? scene.postShader);
 
+        const wrapInfo = async (loader: (path: any) => Promise<any>, path: string) => {
+            await loader.call(this.assets, path); // bind assets as this
+            gui.updateInfo(`loaded ${path}`);
+        }
+
         let promises: Promise<any>[] = [];
-        promises.push(...[...shaders].map((s) => this.assets.loadShader(s)));
-        promises.push(...[...meshes].map((m) => this.assets.loadMesh(m)));
-        promises.push(...[...textures].map((t) => this.assets.loadTexture(t)));
-        promises.push(...[...mtls].map((m) => this.assets.loadMtl(m)));
-        await Promise.all(promises);
+        promises.push(...[...shaders].map((p) => wrapInfo(this.assets.loadShader, p)));
+        promises.push(...[...meshes].map((p) => wrapInfo(this.assets.loadMesh, p)));
+        promises.push(...[...textures].map((p) => wrapInfo(this.assets.loadTexture, p)));
+        promises.push(...[...mtls].map((p) => wrapInfo(this.assets.loadMtl, p)));
+        let res = await Promise.allSettled(promises);
+
+        let err = res.find(p => p.status == "rejected");
+        if (err) {
+            gui.updateInfo(err.reason);
+        }
     }
 
     private async initWorld(scene: Scene) {

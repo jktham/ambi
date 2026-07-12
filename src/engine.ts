@@ -68,7 +68,7 @@ export class Engine {
 		this.gui.updateResolution(this.scene.resolution);
 
 		this.scene.init();
-		await this.renderer.loadScene(this.scene);
+		await this.renderer.loadScene(this.scene, this.gui);
 		await this.player.loadColliders(this.assets, this.scene.entities);
 
 		this.loop();

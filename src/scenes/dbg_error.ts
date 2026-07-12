@@ -54,13 +54,13 @@ export class DebugErrorScene extends Scene {
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
-		// obj = new Entity();
-		// obj.model = Mat4.trs(new Vec3(9, 0, 0), new Vec3(), 1);
-		// obj.mesh = "cube.obj";
-		// obj.textures = ["test.png"];
-		// obj.fragShader = "world/abc.frag.wgsl"; // does not exist, cant recover
-		// obj.fragUniforms = this.phong;
-		// this.entities.push(obj);
+		obj = new Entity();
+		obj.model = Mat4.trs(new Vec3(9, 0, 0), new Vec3(), 1);
+		obj.mesh = "cube.obj";
+		obj.textures = ["test.png"];
+		obj.fragShader = "world/abc.frag.glsl" as any; // invalid type, does not exist
+		obj.fragUniforms = this.phong;
+		this.entities.push(obj);
 
 
 		obj = new Entity();
