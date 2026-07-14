@@ -1,7 +1,7 @@
 import type { Assets } from "./assets";
 import { Bbox } from "./bbox";
 import { Camera } from "./camera";
-import type { Entity } from "./entity";
+import type { Object } from "./object";
 import type { Action } from "./input";
 import { clamp } from "./utils";
 import { Vec2, Vec3, Mat4 } from "./vec";
@@ -32,7 +32,7 @@ export class Player {
 	right: Vec3 = new Vec3();
 	up: Vec3 = new Vec3();
 
-	private entities: Entity[] = [];
+	private entities: Object[] = [];
 	private colliders: Map<string, Vec3[][]> = new Map();
 
 	/** update position based on action input */
@@ -110,7 +110,7 @@ export class Player {
 	}
 	
 	/** load collision data (concrete vertices) from entity assets */
-	async loadColliders(assets: Assets, entities: Entity[]) {
+	async loadColliders(assets: Assets, entities: Object[]) {
 		this.entities = entities;
 		for (let object of this.entities) {
 			if (object.collider && !this.colliders.has(object.collider)) {

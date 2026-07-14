@@ -23,15 +23,18 @@ export type MeshPath = `${string}.${MeshTypes}`;
 const textureTypes = ["png", "jpg", "json"] as const;
 type TextureTypes = typeof textureTypes[number];
 
-/** path relative to public/textures/ */
-export type TexturePath = `${string}.${TextureTypes}`;
+/** special labels that are replaced before asset load */
+export type TextureLabel = `@${"diffuse" | "normal"}`;
 
-/** supported mtl filetypes */
-const mtlTypes = ["mtl"] as const;
-type MtlTypes = typeof mtlTypes[number];
+/** path relative to public/textures/ or material texture label */
+export type TexturePath = `${string}.${TextureTypes}` | TextureLabel;
+
+/** supported material filetypes */
+const materialTypes = ["mtl"] as const;
+type MaterialTypes = typeof materialTypes[number];
 
 /** path relative to public/meshes/ */
-export type MtlPath = `${string}.${MtlTypes}`;
+export type MaterialPath = `${string}.${MaterialTypes}`;
 
 // floats per vertex
 export const MESH_STRIDE = 15;
@@ -43,7 +46,7 @@ export class Assets {
 	private textures: Map<TexturePath, ImageData> = new Map();
 	private colliders: Map<MeshPath, Vec3[][]> = new Map();
 	private bboxes: Map<MeshPath, Bbox> = new Map();
-	private mtls: Map<MtlPath, TexturePath> = new Map();
+	private materials: Map<MaterialPath, Map<TextureLabel, TexturePath>> = new Map();
 
 
 	/** load .wgsl shader from public/shaders/ */
@@ -147,6 +150,10 @@ export class Assets {
 			return this.textures.get(path)!;
 		}
 
+		if (path.startsWith("@")) {
+			throw new Error(`unresolved texture label: ${path}`);
+		}
+
 		const type = (path.split(".").pop() || "") as TextureTypes;
 		if (!textureTypes.includes(type)) {
 			throw new Error(`unknown texture type: ${path}`);
@@ -192,14 +199,14 @@ export class Assets {
 		}
 	}
 
-	/** returns path of first map_Kd entry relative to public/, for basic diffuse map selection */
-	async loadMtl(path: MtlPath): Promise<TexturePath> {
-		if (this.mtls.has(path)) {
-			return this.mtls.get(path)!;
+	/** returns map of texture labels to texture paths defined in .mtl */
+	async loadMaterial(path: MaterialPath): Promise<Map<TextureLabel, TexturePath>> {
+		if (this.materials.has(path)) {
+			return this.materials.get(path)!;
 		}
 
-		const type = (path.split(".").pop() || "") as MtlTypes;
-		if (!mtlTypes.includes(type)) {
+		const type = (path.split(".").pop() || "") as MaterialTypes;
+		if (!materialTypes.includes(type)) {
 			throw new Error(`unknown mtl type: ${path}`);
 		}
 
@@ -208,9 +215,9 @@ export class Assets {
 		}
 
 		let file = await this.fetchFile(`/meshes/${path}`);
-		let texture = this.parseMtl(path, file);
-		this.mtls.set(path, texture);
-		return texture;
+		let material = this.parseMaterial(path, file);
+		this.materials.set(path, material);
+		return material;
 	}
 
 	private async fileExists(path: string): Promise<boolean> {
@@ -361,26 +368,35 @@ export class Assets {
 		return new Bbox([min, max]);
 	}
 
-	/** returns path of first map_Kd entry relative to public/textures/, for basic diffuse map selection */
-	private parseMtl(path: MtlPath, file: string): TexturePath {
+	/** parse .mtl and return map of found texture labels to texture paths */
+	private parseMaterial(path: MaterialPath, file: string): Map<TextureLabel, TexturePath> {
+		let maps = new Map<TextureLabel, TexturePath>();
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
-			if (words[0] == "map_Kd") {
-				let abs = words[1];
-				if (!abs.includes("textures/")) {
-					console.warn(`texture path in mtl does not include "textures/": ${path}, ${abs}`);
-					return "" as TexturePath;
+			switch (words[0].toLowerCase()) {
+				case "map_kd": {
+					let abs = words[1];
+					if (!abs.includes("textures/")) {
+						console.warn(`diffuse map texture path in mtl does not include "textures/": ${path}, ${abs}`);
+						continue;
+					}
+					let rel = abs.split("textures/").slice(1).join("");
+					maps.set("@diffuse", rel as TexturePath);
+					break;
 				}
-				if (!(abs.endsWith(".png") || abs.endsWith(".jpg"))) {
-					console.warn(`texture path in mtl does not end in .png or .jpg: ${path}, ${abs}`);
-					return "" as TexturePath;
+				case "map_bump": {
+					let abs = words[3];
+					if (!abs.includes("textures/")) {
+						console.warn(`normal map texture path in mtl does not include "textures/": ${path}, ${abs}`);
+						continue;
+					}
+					let rel = abs.split("textures/").slice(1).join("");
+					maps.set("@normal", rel as TexturePath);
+					break;
 				}
-				let rel = abs.split("textures/").slice(1).join("");
-				return rel as TexturePath;
 			}
 		}
-		console.warn(`did not find map_Kd in mtl: ${path}`);
-		return "" as TexturePath; // todo
+		return maps;
 	}
 
 	/** resolve #import in shaders relative to its path */
@@ -403,6 +419,6 @@ export class Assets {
 		this.meshes.clear();
 		this.textures.clear();
 		this.colliders.clear();
-		this.mtls.clear();
+		this.materials.clear();
 	}
 }

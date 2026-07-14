@@ -1,7 +1,7 @@
 import { Bbox } from "../bbox";
 import type { CameraMode } from "../player";
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { MeshPath, FragShaderPath } from "../assets";
@@ -15,8 +15,8 @@ export class BrutalScene extends Scene {
 	init() {
 		let phong = new PhongUniforms();
 		phong.light_pos = new Vec3(100, 300, 200);
-		phong.light_color = new Vec4(1.0, 0.2, 0.2, 1);
-		phong.specular_factor = 0.0;
+		phong.light_color = new Vec3(1.0, 0.2, 0.2);
+		phong.specular = Vec3.splat(0.0);
 
 		const size = 21;
 		const scale = 20.0;
@@ -33,7 +33,7 @@ export class BrutalScene extends Scene {
 				let tile = cells[i][j].candidates[0];
 				if (!tile) continue;
 
-				let colliderObj = new Entity();
+				let colliderObj = new Object();
 				colliderObj.visible = false;
 				colliderObj.model = Mat4.trs(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
 				colliderObj.collider = tile.mesh;
@@ -50,7 +50,7 @@ export class BrutalScene extends Scene {
 			u.normals = models.map(m => m.inverse().transpose());
 			u._instanceCount = models.length;
 
-			let tileObj = new Entity();
+			let tileObj = new Object();
 			tileObj.mesh = mesh;
 			tileObj.textures = ["concrete.jpg"];
 			tileObj.fragShader = "world/phong.frag.wgsl";
@@ -60,7 +60,7 @@ export class BrutalScene extends Scene {
 			this.entities.push(tileObj);
 		}
 
-		let sun = new Entity();
+		let sun = new Object();
 		sun.model = Mat4.trs(phong.light_pos, new Vec3(), 20.0);
 		sun.mesh = "sphere.obj";
 		sun.textures = ["white.png"];

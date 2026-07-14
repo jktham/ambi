@@ -1,6 +1,6 @@
 import type { Player, CameraMode } from "../player";
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import type { FragShaderPath } from "../assets";
@@ -25,7 +25,7 @@ export class PierScene extends Scene {
 	}
 
 	init() {
-		let pier = new Entity();
+		let pier = new Object();
 		pier.mesh = "pier/pier.obj";
 		pier.collider = "pier/collider.obj";
 		pier.textures = ["wood.jpg"];
@@ -33,21 +33,21 @@ export class PierScene extends Scene {
 		pier.vertShader = "world/psx.vert.wgsl";
 		this.entities.push(pier);
 
-		let water = new Entity();
+		let water = new Object();
 		water.mesh = "pier/water.obj";
 		water.textures = ["snow.jpg"];
 		water.fragShader = "world/psx.frag.wgsl";
 		water.vertShader = "world/psx.vert.wgsl";
 		this.entities.push(water);
 
-		let ground = new Entity();
+		let ground = new Object();
 		ground.mesh = "pier/ground.obj";
 		ground.textures = ["ground.jpg"];
 		ground.fragShader = "world/psx.frag.wgsl";
 		ground.vertShader = "world/psx.vert.wgsl";
 		this.entities.push(ground);
 
-		let sky = new Entity();
+		let sky = new Object();
 		sky.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
 		sky.mesh = "cube.obj";
 		sky.textures = ["test.png"];
@@ -55,7 +55,7 @@ export class PierScene extends Scene {
 		sky.color = new Vec4(0.1, 0.1, 0.1, 1.0);
 		this.entities.push(sky);
 
-		let snow = new Entity();
+		let snow = new Object();
 		snow.tags = ["snow"];
 		snow.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		snow.mesh = "pier/snow.obj";
@@ -79,7 +79,7 @@ export class PierScene extends Scene {
 		snow.vertUniforms = snowUniforms;
 		this.entities.push(snow);
 
-		let lantern = new Entity();
+		let lantern = new Object();
 		lantern.mesh = "pier/lantern.obj";
 		lantern.textures = ["cracked.jpg"];
 		lantern.color = new Vec4(1.0, 0.9, 0.0, 1.0);
@@ -88,7 +88,7 @@ export class PierScene extends Scene {
 		lantern.vertShader = "world/psx.vert.wgsl";
 		this.entities.push(lantern);
 
-		let lantern_holder = new Entity();
+		let lantern_holder = new Object();
 		lantern_holder.mesh = "pier/lantern_holder.obj";
 		lantern_holder.textures = ["metal.jpg"];
 		lantern_holder.color = new Vec4(0.2, 0.2, 0.2, 1.0);
@@ -98,7 +98,7 @@ export class PierScene extends Scene {
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
-		let snow = this.getEntity("snow")!;
+		let snow = this.getObject("snow")!;
 		let snowUniforms = snow.vertUniforms as InstancedUniforms;
 		for (let i=0; i<snowUniforms._instanceCount; i++) {
 			let model = snowUniforms.models[i];

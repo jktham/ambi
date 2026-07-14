@@ -9,7 +9,7 @@ import { scenes } from "./presets";
 import type { Vec2 } from "./vec";
 import { Profiler } from "./profiler";
 import { Player } from "./player";
-import type { Entity } from "./entity";
+import type { Object } from "./object";
 
 export class Engine {
 	assets: Assets;
@@ -145,7 +145,7 @@ export class Engine {
 		this.scene.shadowSource?.updateMatrices();
 
         // z-sort objects
-		let dist = (obj: Entity) => obj.model.origin().dist(this.player.camera.model.origin())
+		let dist = (obj: Object) => obj.model.origin().dist(this.player.camera.model.origin())
         this.scene.entities.filter(obj => obj.zsort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
             let z_frac = (i+1) / (arr.length+1); // (0, 1)
             obj.z = Math.floor(obj.z) + z_frac;

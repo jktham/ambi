@@ -1,5 +1,5 @@
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
@@ -12,35 +12,35 @@ export class DebugRotationScene extends Scene {
 	phong = new PhongUniforms();
 	
 	init() {
-		let obj = new Entity();
+		let obj = new Object();
 		obj.tags = ["static"];
 		obj.model = Mat4.trs(new Vec3(-6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["intrinsic"];
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["extrinsic"];
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["heading"];
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["lookat"];
 		obj.model = Mat4.trs(new Vec3(6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
@@ -48,7 +48,7 @@ export class DebugRotationScene extends Scene {
 		this.entities.push(obj);
 
 		// skybox
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 100);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
@@ -58,7 +58,7 @@ export class DebugRotationScene extends Scene {
 		this.entities.push(obj);
 
 		// floor
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
@@ -76,23 +76,23 @@ export class DebugRotationScene extends Scene {
 			obj.changed = true;
 		}
 
-		let projectiles = this.getEntities("projectile");
+		let projectiles = this.getObjects("projectile");
 		for (let obj of projectiles) {
 			obj.model = obj.model.mul(Mat4.translate(new Vec3(0, 0, -1).mul(30.0 * deltaTime)));
 			let d = clamp(obj.lifetime!, 0.0, 1.0);
 			obj.color = Vec4.splat(d);
 		}
 
-		let intrinsic = this.getEntity("intrinsic")!;
+		let intrinsic = this.getObject("intrinsic")!;
 		intrinsic.model = Mat4.translate(intrinsic.model.origin()).mul(Mat4.rotateIntrinsic(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
 
-		let extrinsic = this.getEntity("extrinsic")!;
+		let extrinsic = this.getObject("extrinsic")!;
 		extrinsic.model = Mat4.translate(extrinsic.model.origin()).mul(Mat4.rotateExtrinsic(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
 
-		let heading = this.getEntity("heading")!;
+		let heading = this.getObject("heading")!;
 		heading.model = Mat4.translate(heading.model.origin()).mul(Mat4.rotateHeading(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
 
-		let lookat = this.getEntity("lookat")!;
+		let lookat = this.getObject("lookat")!;
 		lookat.model = Mat4.translate(lookat.model.origin()).mul(Mat4.rotateLookAt(lookat.model.origin(), player.position));
 
 		// test decompose identity
@@ -103,7 +103,7 @@ export class DebugRotationScene extends Scene {
 	}
 
 	interact(time: number, player: Player) {
-		let obj = new Entity();
+		let obj = new Object();
 		obj.tags = ["projectile"];
 		obj.lifetime = 3.0;
 		obj.model = player.camera.model.mul(Mat4.trs(new Vec3(0, 0, -2), new Vec3(), 0.5));

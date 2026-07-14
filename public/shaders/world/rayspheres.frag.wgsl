@@ -7,12 +7,12 @@ struct Sphere {
 }
 
 struct RaysphereUniforms {
-	ambient_factor: f32,
-	diffuse_factor: f32,
-	specular_factor: f32,
-	specular_exponent: f32,
+	ambient: vec3f,
+	diffuse: vec3f,
+	specular: vec3f,
+	shininess: f32,
 	light_pos: vec3f,
-	light_color: vec4f,
+	light_color: vec3f,
 	sphere_count: f32,
 	relative_pos: f32,
 	background_color: vec4f,
@@ -80,16 +80,20 @@ fn main(in: FragmentIn) -> FragmentOut {
 		}
 	}
 	if (t > near && t < far) {
-		color = u_rayspheres.spheres[j].color * vec4f(u_rayspheres.light_color.rgb * phong_factor(
+		let phong = phong_factors(
 			camera_pos + ray_dir * t,
 			normalize((camera_pos + ray_dir * t) - (u_object.model * vec4f(u_rayspheres.spheres[j].pos.xyz, 1.0)).xyz),
 			u_global.view_pos,
-			u_rayspheres.ambient_factor,
-			u_rayspheres.diffuse_factor,
-			u_rayspheres.specular_factor,
-			u_rayspheres.specular_exponent,
 			u_rayspheres.light_pos,
-		), 1.0);
+		);
+		let diff = phong.x;
+		let spec = phong.y;
+
+		let ambient = u_rayspheres.ambient;
+		let diffuse = diff * u_rayspheres.diffuse;
+		let specular = pow(spec, u_rayspheres.shininess) * u_rayspheres.specular;
+
+		color = u_rayspheres.spheres[j].color * vec4f(ambient + (diffuse + specular) * u_rayspheres.light_color, 1.0);
 	} else {
 		t = far;
 	}

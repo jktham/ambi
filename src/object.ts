@@ -1,13 +1,13 @@
-import type { FragShaderPath, MeshPath, MtlPath, TexturePath, VertShaderPath } from "./assets";
+import type { FragShaderPath, MeshPath, MaterialPath, TexturePath, VertShaderPath } from "./assets";
 import type { Bbox } from "./bbox";
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec4 } from "./vec";
 
-export type eid = number;
+export type oid = number;
 
-export class Entity {
+export class Object {
     /** unique u32 id */
-    id: eid;
+    id: oid;
     /** list of non-unique tags, used for querying */
     tags: string[] = [];
     /** set false to skip draw call */
@@ -15,21 +15,21 @@ export class Entity {
     /** set false to skip collision detection */
     collidable: boolean = true;
     /** set false to skip draw call in shadow pass */
-    castShadow: boolean = true;
+    shadows: boolean = true;
     /** set true if object has changed since last frame, otherwise skip uniform updates */
     changed: boolean = true;
 
+    /** mesh color multiplier, with transparency */
+    color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
     /** path to .obj or .json mesh file in public/meshes/, actual data later loaded by renderer from assets */
     mesh: MeshPath = "triangle.json";
-    /** paths to .png or .jpg texture files in public/textures/, maps to textures in shader bindgroup 1, bindings 1..=n */
+    /** paths to .png or .jpg texture files in public/textures/ or material label, assigned to textures in shader bindgroup 1, bindings 1..=n */
     textures: TexturePath[] = ["test.png"];
-    /** color multiplier used by built in shaders */
-    color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
     /** object to world transform */
     model: Mat4 = new Mat4();
-    /** custom value written to mask framebuffer, for postprocessing pass, [0, 255] */
+    /** custom value written to mask framebuffer, for postprocessing pass, u8 [0, 255] */
     mask: number = 0;
-    /** 0.0 = no culling, 1.0 = backface culling, -1.0 = frontface culling */
+    /** 0 = no culling, 1 = backface culling, -1 = frontface culling */
     cull: number = 0.0;
     /** scaling factor for texture coordinates */
     uv_scale: number = 1.0;
@@ -44,8 +44,8 @@ export class Entity {
     collider?: MeshPath = undefined;
     /** bounding box used to skip fine collision if present */
     bbox?: Bbox = undefined;
-    /** path to .mtl file public/meshes/, overrides first texture with diffuse path if specified */
-    mtl?: MtlPath = undefined;
+    /** path to .mtl file in public/meshes/, overrides @ labeled textures at asset load */
+    material?: MaterialPath = undefined;
 
     /** path to .vert.wgsl file in public/shaders/ */
     vertShader: VertShaderPath = "world/base.vert.wgsl";

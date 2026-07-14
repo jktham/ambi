@@ -1,6 +1,6 @@
 import type { Player, CameraMode } from "../player";
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { rad, rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
@@ -35,7 +35,7 @@ export class FieldScene extends Scene {
 
 	init() {
 		for (let chunkOffset of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)]) {
-			let ground = new Entity();;
+			let ground = new Object();;
 			ground.mesh = "field/ground.obj";
 			ground.textures = ["ground.jpg"];
 			ground.fragShader = "world/psx.frag.wgsl";
@@ -48,7 +48,7 @@ export class FieldScene extends Scene {
 			this.entities.push(ground);
 		}
 
-		let sky = new Entity();
+		let sky = new Object();
 		sky.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
 		sky.mesh = "cube.obj";
 		sky.textures = ["test.png"];
@@ -70,7 +70,7 @@ export class FieldScene extends Scene {
 		}
 
 		for (let chunkOffset of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)]) {
-			let grass = new Entity();
+			let grass = new Object();
 			grass.tags = ["grass"];
 			grass.model = Mat4.translate(new Vec3(chunkOffset.x * this.CHUNK_SIZE/2, 0, chunkOffset.y * this.CHUNK_SIZE/2));
 			grass.color = new Vec4(0.6, 0.6, 0.6, 1.0);
@@ -97,7 +97,7 @@ export class FieldScene extends Scene {
 			this.grassModels[i] = this.grassOrigins[i].mul(sway);
 		}
 
-		let grass = this.getEntities("grass")!;
+		let grass = this.getObjects("grass")!;
 		for (let g of grass) {
 			let grassUniforms = g.vertUniforms as InstancedUniforms;
 			for (let i=0; i<this.GRASS_COUNT; i++) {

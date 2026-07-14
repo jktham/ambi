@@ -1,5 +1,5 @@
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { InstancedUniforms, PhongUniforms, PostEchoUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
@@ -16,14 +16,14 @@ export class DebugEchoScene extends Scene {
 		let phong = new PhongUniforms();
 		phong.light_pos = new Vec3(0, 10, 0);
 
-		let obj = new Entity();
+		let obj = new Object();
 		obj.mesh = "quad.obj";
 		obj.model = Mat4.trs(new Vec3(), new Vec3(), 20);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.mesh = "monke.obj";
 		obj.vertShader = "world/instanced.vert.wgsl";
 		obj.vertUniforms = new InstancedUniforms();
@@ -41,7 +41,7 @@ export class DebugEchoScene extends Scene {
 		}
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["pulse_source"];
 		obj.mesh = "sphere.obj";
 		obj.textures = ["white.png"];
@@ -51,7 +51,7 @@ export class DebugEchoScene extends Scene {
 
 	lastPulseTime = 0;
 	update(time: number, deltaTime: number, player: Player) {
-		let src = this.getEntity("pulse_source")!;
+		let src = this.getObject("pulse_source")!;
 		src.model = Mat4.trs(new Vec3(Math.cos(time)*10, 2, Math.sin(time)*10), new Vec3(), 1);
 		src.changed = true;
 		if (time - this.lastPulseTime > 1.6) {

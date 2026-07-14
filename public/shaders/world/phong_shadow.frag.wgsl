@@ -2,12 +2,12 @@
 #import "../lib/lighting.wgsl"
 
 struct PhongShadedUniforms {
-	ambient_factor: f32,
-	diffuse_factor: f32,
-	specular_factor: f32,
-	specular_exponent: f32,
+	ambient: vec3f,
+	diffuse: vec3f,
+	specular: vec3f,
+	shininess: f32,
 	light_pos: vec3f,
-	light_color: vec4f,
+	light_color: vec3f,
 	shadow_bias: f32,
 }
 
@@ -50,7 +50,17 @@ fn main(in: FragmentIn) -> FragmentOut {
 		shade = false;
 	}
 
-	data.color = in.color * vec4f(u_phong.light_color.rgb * phong_factor(in.pos, in.normal, u_global.view_pos, u_phong.ambient_factor, select(u_phong.diffuse_factor, 0.0, shade), select(u_phong.specular_factor, 0.0, shade), u_phong.specular_exponent, u_phong.light_pos), 1.0) * textureSample(t_color, t_sampler, in.uv);
+
+	let factors = phong_factors(in.pos, in.normal, u_global.view_pos, u_phong.light_pos);
+	let diff = factors.x;
+	let spec = factors.y;
+
+	let ambient = u_phong.ambient;
+	let diffuse = diff * u_phong.diffuse;
+	let specular = pow(spec, u_phong.shininess) * u_phong.specular;
+
+	let light_color = select(u_rayspheres.light_color, vec3f(0.0, 0.0, 0.0), shade);
+	data.color = in.color * vec4f(ambient + (diffuse + specular) * light_color, 1.0) * textureSample(t_color, t_sampler, in.uv);
 
 	decideDiscard(data.color, data.pos, data.normal, u_global.view_pos, u_object.cull);
 	return encodeFbData(data);

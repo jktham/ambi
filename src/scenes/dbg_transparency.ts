@@ -1,5 +1,5 @@
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
@@ -11,7 +11,7 @@ export class DebugTransparencyScene extends Scene {
 	phong = new PhongUniforms();
 	
 	init() {
-		let obj = new Entity();
+		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test_trans.png"];
@@ -21,7 +21,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.zsort = true;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -32,7 +32,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.zsort = true;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -43,7 +43,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.zsort = true;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-0.5, 3, 0), new Vec3(), 1);
 		obj.mesh = "sphere.obj";
 		obj.textures = ["test.png"];
@@ -54,7 +54,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.zsort = true;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0.5, 3, 0), new Vec3(), 1);
 		obj.mesh = "sphere.obj";
 		obj.textures = ["test.png"];
@@ -65,7 +65,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.zsort = true;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
@@ -74,7 +74,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.z = 1000.0;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];

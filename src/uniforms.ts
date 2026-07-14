@@ -83,24 +83,24 @@ export class ObjectUniforms extends Uniforms {
 export class PhongUniforms extends Uniforms {
 	_name = "PhongUniforms";
 
-	ambient_factor = 0.1;
-	diffuse_factor = 0.6;
-	specular_factor = 0.3;
-	specular_exponent = 32.0;
+	ambient = Vec3.splat(0.1);
+	diffuse = Vec3.splat(0.6);
+	specular = Vec3.splat(0.3);
+	shininess = 32.0;
 	light_pos = new Vec3();
-	light_color = new Vec4(1.0, 1.0, 1.0, 1.0);
+	light_color = new Vec3(1.0, 1.0, 1.0);
 
 	_size(): number {
-		return 12;
+		return 20;
 	}
 
 	_update(): Float32Array {
-		this._data[0] = this.ambient_factor;
-		this._data[1] = this.diffuse_factor;
-		this._data[2] = this.specular_factor;
-		this._data[3] = this.specular_exponent;
-		this._data.subarray(4, 4+3).set(this.light_pos.data);
-		this._data.subarray(8, 8+4).set(this.light_color.data);
+		this._data.subarray(0, 0+3).set(this.ambient.data);
+		this._data.subarray(4, 4+3).set(this.diffuse.data);
+		this._data.subarray(8, 8+3).set(this.specular.data);
+		this._data[11] = this.shininess;
+		this._data.subarray(12, 12+3).set(this.light_pos.data);
+		this._data.subarray(16, 16+3).set(this.light_color.data);
 		return this._data;
 	}
 }
@@ -109,26 +109,26 @@ export class PhongShadowUniforms extends Uniforms {
 	_name = "PhongShadowUniforms";
 	_useShadowMap = true;
 
-	ambient_factor = 0.1;
-	diffuse_factor = 0.6;
-	specular_factor = 0.3;
-	specular_exponent = 32.0;
+	ambient = Vec3.splat(0.1);
+	diffuse = Vec3.splat(0.6);
+	specular = Vec3.splat(0.3);
+	shininess = 32.0;
 	light_pos = new Vec3();
-	light_color = new Vec4(1.0, 1.0, 1.0, 1.0);
+	light_color = new Vec3(1.0, 1.0, 1.0);
 	shadow_bias = 0.00001;
 
 	_size(): number {
-		return 16;
+		return 20;
 	}
 
 	_update(): Float32Array {
-		this._data[0] = this.ambient_factor;
-		this._data[1] = this.diffuse_factor;
-		this._data[2] = this.specular_factor;
-		this._data[3] = this.specular_exponent;
-		this._data.subarray(4, 4+3).set(this.light_pos.data);
-		this._data.subarray(8, 8+4).set(this.light_color.data);
-		this._data[12] = this.shadow_bias;
+		this._data.subarray(0, 0+3).set(this.ambient.data);
+		this._data.subarray(4, 4+3).set(this.diffuse.data);
+		this._data.subarray(8, 8+3).set(this.specular.data);
+		this._data[11] = this.shininess;
+		this._data.subarray(12, 12+3).set(this.light_pos.data);
+		this._data.subarray(16, 16+3).set(this.light_color.data);
+		this._data[19] = this.shadow_bias;
 		return this._data;
 	}
 }
@@ -162,12 +162,12 @@ export class RayspheresUniforms extends Uniforms {
 	_name = "RayspheresUniforms";
 	_useStorageBuffer = true;
 	
-	ambient_factor = 0.1;
-	diffuse_factor = 0.6;
-	specular_factor = 0.3;
-	specular_exponent = 32.0;
+	ambient = Vec3.splat(0.1);
+	diffuse = Vec3.splat(0.6);
+	specular = Vec3.splat(0.3);
+	shininess = 32.0;
 	light_pos = new Vec3();
-	light_color = new Vec4(1.0, 1.0, 1.0, 1.0);
+	light_color = new Vec3(1.0, 1.0, 1.0);
 	
 	sphere_count = 0;
 	relative_pos = 1; // 1: sphere pos relative to model, 0: sphere pos absolute
@@ -176,25 +176,25 @@ export class RayspheresUniforms extends Uniforms {
 	sphere_color: Vec4[] = [];
 
 	_size(): number {
-		return 20 + 8*this.sphere_count;
+		return 28 + 8*this.sphere_count;
 	}
 
 	_update(): Float32Array {
 		if (this._data.length != this._size()) {
 			this._data = new Float32Array(this._size());
 		}
-		this._data[0] = this.ambient_factor;
-		this._data[1] = this.diffuse_factor;
-		this._data[2] = this.specular_factor;
-		this._data[3] = this.specular_exponent;
-		this._data.subarray(4, 4+3).set(this.light_pos.data);
-		this._data.subarray(8, 8+4).set(this.light_color.data);
-		this._data[12] = this.sphere_count;
-		this._data[13] = this.relative_pos;
-		this._data.subarray(16, 16+4).set(this.background_color.data);
+		this._data.subarray(0, 0+3).set(this.ambient.data);
+		this._data.subarray(4, 4+3).set(this.diffuse.data);
+		this._data.subarray(8, 8+3).set(this.specular.data);
+		this._data[11] = this.shininess;
+		this._data.subarray(12, 12+3).set(this.light_pos.data);
+		this._data.subarray(16, 16+3).set(this.light_color.data);
+		this._data[19] = this.sphere_count;
+		this._data[20] = this.relative_pos;
+		this._data.subarray(24, 24+4).set(this.background_color.data);
 		for (let i=0; i<this.sphere_count; i++) {
-			this._data.subarray(20 + i*8, 20 + (i+1)*8).set(this.sphere_pos[i].data);
-			this._data.subarray(20 + 4 + i*8, 20 + 4 + (i+1)*8).set(this.sphere_color[i].data);
+			this._data.subarray(28 + i*8, 28 + (i+1)*8).set(this.sphere_pos[i].data);
+			this._data.subarray(28 + 4 + i*8, 28 + 4 + (i+1)*8).set(this.sphere_color[i].data);
 		}
 		return this._data;
 	}

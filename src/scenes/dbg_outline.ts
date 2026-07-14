@@ -1,5 +1,5 @@
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
@@ -31,7 +31,7 @@ export class DebugOutlineScene extends Scene {
 	}
 	
 	init() {
-		let obj = new Entity();
+		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -41,7 +41,7 @@ export class DebugOutlineScene extends Scene {
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -51,7 +51,7 @@ export class DebugOutlineScene extends Scene {
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -61,7 +61,7 @@ export class DebugOutlineScene extends Scene {
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["rotate"];
 		obj.model = Mat4.trs(new Vec3(0, 3, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
@@ -72,7 +72,7 @@ export class DebugOutlineScene extends Scene {
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
@@ -81,7 +81,7 @@ export class DebugOutlineScene extends Scene {
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
@@ -98,7 +98,7 @@ export class DebugOutlineScene extends Scene {
 			obj.changed = true;
 		}
 		
-		for (let obj of this.getEntities("rotate")) {
+		for (let obj of this.getObjects("rotate")) {
 			obj.model = Mat4.rotateIntrinsic(new Vec3(0, 1, 0).mul(deltaTime)).mul(obj.model);
 			obj.changed = true;
 		}

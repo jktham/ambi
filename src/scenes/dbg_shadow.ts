@@ -1,5 +1,5 @@
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { PhongShadowUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
@@ -23,7 +23,7 @@ export class DebugShadowScene extends Scene {
 	}
 
 	init() {
-		let obj = new Entity();
+		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-4, -2, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test_trans2.png"];
@@ -33,7 +33,7 @@ export class DebugShadowScene extends Scene {
 		obj.zsort = true;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -4, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
@@ -43,7 +43,7 @@ export class DebugShadowScene extends Scene {
 		obj.zsort = true;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(4, -2, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -53,17 +53,17 @@ export class DebugShadowScene extends Scene {
 		obj.zsort = true;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/skybox.frag.wgsl";
 		obj.z = 1000.0;
-		obj.castShadow = false;
+		obj.shadows = false;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];

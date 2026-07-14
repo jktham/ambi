@@ -1,6 +1,6 @@
 import { Bbox } from "../bbox";
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
@@ -12,20 +12,20 @@ export class DebugObjectScene extends Scene {
 	phong = new PhongUniforms();
 	
 	init() {
-		let obj = new Entity();
+		let obj = new Object();
 		obj.model = Mat4.translate(new Vec3(0, 1, -1.5));
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.translate(new Vec3(-1, 0, -2));
 		obj.color = new Vec4(1.0, 0.0, 0.0, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.translate(new Vec3(1, 0, -2));
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
@@ -42,7 +42,7 @@ export class DebugObjectScene extends Scene {
 		this.entities.push(obj);
 
 
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["monke_instanced"];
 		obj.mesh = "monke.obj";
 		obj.vertShader = "world/instanced.vert.wgsl";
@@ -61,7 +61,7 @@ export class DebugObjectScene extends Scene {
 		}
 		this.entities.push(obj);
 
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 10);
 		obj.mesh = "quad.json";
 		obj.textures = ["house.jpg"];
@@ -84,7 +84,7 @@ export class DebugObjectScene extends Scene {
 		this.entities[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
 		this.entities[1].changed = true;
 
-		let monke = this.getEntity("monke_instanced")!;
+		let monke = this.getObject("monke_instanced")!;
 		let monkeUniforms = monke.vertUniforms as InstancedUniforms;
 		for (let i=0; i<monkeUniforms._instanceCount; i++) {
 			let model = monkeUniforms.models[i].mul(Mat4.rotateIntrinsic(new Vec3(deltaTime, deltaTime, deltaTime)));
@@ -99,8 +99,8 @@ export class DebugObjectScene extends Scene {
 			obj.changed = true;
 		}
 
-		if (time > 3 && this.getEntities("added_after_init").length == 0) {
-			let obj = new Entity();
+		if (time > 3 && this.getObjects("added_after_init").length == 0) {
+			let obj = new Object();
 			obj.tags = ["added_after_init"];
 			obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 1);
 			obj.mesh = "monke.obj";

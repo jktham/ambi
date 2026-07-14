@@ -1,5 +1,5 @@
 import type { Player, CameraMode } from "./player";
-import type { Entity } from "./entity";
+import type { Object } from "./object";
 import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
 import { Vec2, Vec3, Vec4 } from "./vec";
@@ -25,7 +25,7 @@ export class Scene {
 	/** casts shadows from this camera, if not set skips shadow render pass */
 	shadowSource?: Camera;
 
-	entities: Entity[] = [];
+	entities: Object[] = [];
 	triggers: Trigger[] = [];
 
 	/** called before scene load, no assets available yet */
@@ -44,13 +44,13 @@ export class Scene {
 	}
 
 	/** get first object with tag */
-	getEntity(tag: string): Entity | undefined {
+	getObject(tag: string): Object | undefined {
 		let found = this.entities.find((obj) => obj.tags.includes(tag));
 		return found;
 	}
 
 	/** get all objects with tag */
-	getEntities(tag: string): Entity[] {
+	getObjects(tag: string): Object[] {
 		let found = this.entities.filter((obj) => obj.tags.includes(tag));
 		return found;
 	}

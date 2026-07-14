@@ -1,8 +1,8 @@
 import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
-import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type MeshPath, type MtlPath, type ShaderPath, type TexturePath, type VertShaderPath } from "./assets";
+import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type MeshPath, type MaterialPath, type ShaderPath, type TexturePath, type VertShaderPath, type TextureLabel } from "./assets";
 import type { Scene } from "./scene";
-import type { Entity, eid } from "./entity";
+import type { Object, oid } from "./object";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
 import { Mat4, Vec2 } from "./vec";
 import type { Gui } from "./gui";
@@ -25,13 +25,13 @@ export class Renderer {
     private vertexBuffers: Map<MeshPath, GPUBuffer> = new Map(); // mesh asset buffer
     private textureBuffers: Map<TexturePath, GPUTexture> = new Map(); // texture asset buffer
 
-    private objectPipelines: Map<eid, GPURenderPipeline> = new Map();
+    private objectPipelines: Map<oid, GPURenderPipeline> = new Map();
     private globalUniformBuffer!: GPUBuffer;
-    private objectBaseUniformBuffers: Map<eid, GPUBuffer> = new Map();
-    private objectVertUniformBuffers: Map<eid, GPUBuffer> = new Map();
-    private objectFragUniformBuffers: Map<eid, GPUBuffer> = new Map();
-    private objectUniformBindGroups: Map<eid, GPUBindGroup> = new Map();
-    private objectTextureBindGroups: Map<eid, GPUBindGroup> = new Map();
+    private objectBaseUniformBuffers: Map<oid, GPUBuffer> = new Map();
+    private objectVertUniformBuffers: Map<oid, GPUBuffer> = new Map();
+    private objectFragUniformBuffers: Map<oid, GPUBuffer> = new Map();
+    private objectUniformBindGroups: Map<oid, GPUBindGroup> = new Map();
+    private objectTextureBindGroups: Map<oid, GPUBindGroup> = new Map();
 
     private postPipeline!: GPURenderPipeline;
     private postBaseUniformBuffer!: GPUBuffer;
@@ -231,15 +231,15 @@ export class Renderer {
         let shaders = new Set<ShaderPath>();
         let meshes = new Set<MeshPath>();
         let textures = new Set<TexturePath>();
-        let mtls = new Set<MtlPath>();
+        let mtls = new Set<MaterialPath>();
         for (let object of scene.entities) {
             shaders.add(object.vertShader);
             shaders.add(object.fragShader);
             meshes.add(object.mesh);
-            object.textures.map(t => textures.add(t));
+            object.textures.filter(t => !t.startsWith("@")).map(t => textures.add(t));
             if (object.collider) meshes.add(object.collider);
             if (object.bbox?.mesh) meshes.add(object.bbox.mesh);
-            if (object.mtl) mtls.add(object.mtl);
+            if (object.material) mtls.add(object.material);
         }
         for (let trigger of scene.triggers) {
             if (trigger.bbox?.mesh) meshes.add(trigger.bbox.mesh);
@@ -248,7 +248,7 @@ export class Renderer {
         shaders.add(this.postShaderOverride ?? scene.postShader);
 
         const wrapInfo = async (loader: (path: any) => Promise<any>, path: string) => {
-            await loader.call(this.assets, path); // bind assets as this
+                await loader.call(this.assets, path); // bind assets as this
             gui.updateInfo(`loaded ${path}`);
         }
 
@@ -291,7 +291,7 @@ export class Renderer {
         }
     }
 
-    private async initObject(object: Entity) {
+    private async initObject(object: Object) {
         // pipeline
         if (!this.objectPipelines.has(object.id)) { // turns out we have to make one per object due to layout auto bindgroup constraints
             const pipeline = await this.createObjectPipeline(object.vertShader, object.fragShader);
@@ -321,13 +321,21 @@ export class Renderer {
             this.objectUniformBindGroups.set(object.id, uniformBindGroup);
         }
 
-        // override first texture if mtl specified
-        if (object.mtl) {
-            let mtlTexture = await this.assets.loadMtl(object.mtl);
-            object.textures[0] = mtlTexture;
+        // resolve material textures
+        if (object.material) {
+            let mtl_textures = await this.assets.loadMaterial(object.material);
+            for (let i=0; i<object.textures.length; i++) {
+                if (object.textures[i].startsWith("@")) {
+                    let label = object.textures[i] as TextureLabel;
+                    if (!mtl_textures.has(label)) {
+                        throw new Error(`label ${label} not defined in material`);
+                    }
+                    object.textures[i] = mtl_textures.get(label)!;
+                }
+            }
         }
 
-        // textures
+        // load textures
         for (let texture of object.textures) {
             if (!this.textureBuffers.has(texture)) {
                 const textureBuffer = await this.createTextureBuffer(texture);
@@ -739,7 +747,7 @@ export class Renderer {
         const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
         const pass = encoder.beginRenderPass(this.worldRenderPassDescriptor);
         for (let object of scene.entities) {
-            if (!object.visible || !object.castShadow) {
+            if (!object.visible || !object.shadows) {
                 continue;
             }
             const pipeline = this.objectPipelines.get(object.id);

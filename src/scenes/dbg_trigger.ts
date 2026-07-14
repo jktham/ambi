@@ -1,5 +1,5 @@
 import { Scene } from "../scene";
-import { Entity } from "../entity";
+import { Object } from "../object";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
@@ -14,7 +14,7 @@ export class DebugTriggerScene extends Scene {
 	
 	init() {
 		// simple cube, manual bbox
-		let obj = new Entity();
+		let obj = new Object();
 		obj.tags = ["1"];
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
@@ -28,19 +28,19 @@ export class DebugTriggerScene extends Scene {
 		let trg = new Trigger();
 		trg.bbox = new Bbox([new Vec3(-3, 0, 0).sub(new Vec3(1, 1, 1)), new Vec3(-3, 0, 0).add(new Vec3(1, 1, 1))]);
 		trg.onEnter = () => {
-			let target = this.getEntity("1")!;
+			let target = this.getObject("1")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
 			target.changed = true;
 		}
 		trg.onLeave = () => {
-			let target = this.getEntity("1")!;
+			let target = this.getObject("1")!;
 			target.color = new Vec4(0.8, 0.2, 0.2, 0.5);
 			target.changed = true;
 		}
 		this.triggers.push(trg);
 
 		// mesh, mesh bbox
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["2"];
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
@@ -56,19 +56,19 @@ export class DebugTriggerScene extends Scene {
 		trg.bbox.model = obj.model;
 		trg.bbox.mesh = obj.mesh;
 		trg.onEnter = () => {
-			let target = this.getEntity("2")!;
+			let target = this.getObject("2")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
 			target.changed = true;
 		}
 		trg.onLeave = () => {
-			let target = this.getEntity("2")!;
+			let target = this.getObject("2")!;
 			target.color = new Vec4(0.8, 0.2, 0.2, 0.5);
 			target.changed = true;
 		}
 		this.triggers.push(trg);
 
 		// transformed cube, mesh bbox
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["3"];
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(Math.PI / 4.0, Math.PI / 4.0, Math.PI / 4.0), 0.6);
 		obj.mesh = "cube.obj";
@@ -84,19 +84,19 @@ export class DebugTriggerScene extends Scene {
 		trg.bbox.model = obj.model;
 		trg.bbox.mesh = obj.mesh;
 		trg.onEnter = () => {
-			let target = this.getEntity("3")!;
+			let target = this.getObject("3")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
 			target.changed = true;
 		}
 		trg.onLeave = () => {
-			let target = this.getEntity("3")!;
+			let target = this.getObject("3")!;
 			target.color = new Vec4(0.8, 0.2, 0.2, 0.5);
 			target.changed = true;
 		}
 		this.triggers.push(trg);
 
 		// moving
-		obj = new Entity();
+		obj = new Object();
 		obj.tags = ["4"];
 		obj.model = Mat4.trs(new Vec3(0, 0, -5), new Vec3(), 1);
 		obj.mesh = "cube.obj";
@@ -112,19 +112,19 @@ export class DebugTriggerScene extends Scene {
 		trg.bbox.model = obj.model;
 		trg.bbox.mesh = obj.mesh;
 		trg.onEnter = () => {
-			let target = this.getEntity("4")!;
+			let target = this.getObject("4")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
 			target.changed = true;
 		}
 		trg.onLeave = () => {
-			let target = this.getEntity("4")!;
+			let target = this.getObject("4")!;
 			target.color = new Vec4(0.8, 0.2, 0.2, 0.5);
 			target.changed = true;
 		}
 		this.triggers.push(trg);
 
 		// skybox
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
@@ -134,7 +134,7 @@ export class DebugTriggerScene extends Scene {
 		this.entities.push(obj);
 
 		// floor
-		obj = new Entity();
+		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
@@ -153,7 +153,7 @@ export class DebugTriggerScene extends Scene {
 		}
 
 		// move 4
-		let obj4 = this.getEntity("4")!;
+		let obj4 = this.getObject("4")!;
 		let origin = Mat4.trs(new Vec3(0, 0, -5), new Vec3(0, 0, Math.PI / 4.0), 1);
 		let offset = Mat4.translate(new Vec3(1, 0, 0).mul(Math.sin(time)*5.0));
 		obj4.model.data = offset.mul(origin).data; // dont change reference, so bbox model gets updated as well

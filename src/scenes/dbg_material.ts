@@ -3,10 +3,9 @@ import { Object } from "../object";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
-import { rad } from "../utils";
 
-export class DebugNormalmapScene extends Scene {
-	name = "dbg_normalmap";
+export class DebugMaterialScene extends Scene {
+	name = "dbg_material";
 	spawnPos = new Vec3(0, 0, 5);
 
 	phong = (() => {
@@ -17,25 +16,27 @@ export class DebugNormalmapScene extends Scene {
 	
 	init() {
 		let obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(rad(-90), 0, rad(-90)), 1);
-		obj.mesh = "cube.obj";
-		obj.textures = ["brick_diffuse.jpg"];
+		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
+		obj.mesh = "test_mat.obj";
+		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(rad(-90), 0, rad(-90)), 1);
-		obj.mesh = "cube.obj";
+		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
+		obj.mesh = "test_mat.obj";
 		obj.textures = ["brick_diffuse.jpg", "brick_normal.jpg"];
+		obj.material = "test_mat.mtl";
 		obj.fragShader = "world/phong_normal.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
-		obj.mesh = "monke.obj";
-		obj.textures = ["brick_diffuse.jpg", "brick_normal.jpg"];
+		obj.mesh = "test_mat.obj";
+		obj.textures = ["@diffuse", "@normal"];
+		obj.material = "test_mat.mtl";
 		obj.fragShader = "world/phong_normal.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.entities.push(obj);
