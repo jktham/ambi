@@ -26,8 +26,14 @@ fn phong_factors(pos: vec3f, normal: vec3f, view_pos: vec3f, light_pos: vec3f) -
 	let view_dir = normalize(view_pos - pos);
 	let reflect_dir = reflect(-light_dir, norm);
 
+	var spec_enabled = 1.0;
+	let reflect_angle = dot(reflect_dir, norm);
+	if (reflect_angle < 0) { // reflection on backface
+		spec_enabled = 0.0;
+	}
+
 	let diff = max(dot(norm, light_dir), 0.0);
-	let spec = max(dot(view_dir, reflect_dir), 0.0);
+	let spec = max(dot(view_dir, reflect_dir), 0.0) * spec_enabled;
 
 	return vec2f(diff, spec);
 }

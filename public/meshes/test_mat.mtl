@@ -3,11 +3,11 @@
 
 newmtl Material
 Ka 1.000000 1.000000 1.000000
-Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
 map_Kd /home/jonas/stuff/ambi/public/textures/brick_diffuse.jpg
+map_Ks /home/jonas/stuff/ambi/public/textures/brick_specular.jpg
 map_Ns /home/jonas/stuff/ambi/public/textures/brick_roughness.jpg
 map_Bump -bm 1.000000 /home/jonas/stuff/ambi/public/textures/brick_normal.jpg

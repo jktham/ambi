@@ -12,7 +12,7 @@ import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxUnif
 import { DebugPixelScene } from "./scenes/dbg_pixel";
 import { DebugTriggerScene } from "./scenes/dbg_trigger";
 import { DebugShadowScene } from "./scenes/dbg_shadow";
-import { DebugNormalmapScene } from "./scenes/dbg_normalmap";
+import { DebugMaterialScene } from "./scenes/dbg_material";
 import type { FragShaderPath, TexturePath } from "./assets";
 import { DebugRotationScene } from "./scenes/dbg_rotation";
 import { DebugErrorScene } from "./scenes/dbg_error";
@@ -33,7 +33,7 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["dbg_trigger", DebugTriggerScene],
 	["dbg_rotation", DebugRotationScene],
 	["dbg_shadow", DebugShadowScene],
-	["dbg_normalmap", DebugNormalmapScene],
+	["dbg_material", DebugMaterialScene],
 	["dbg_error", DebugErrorScene],
 	["dbg_lighting", DebugLightingScene],
 ]);

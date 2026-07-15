@@ -24,7 +24,7 @@ const textureTypes = ["png", "jpg", "json"] as const;
 type TextureTypes = typeof textureTypes[number];
 
 /** special labels that are replaced before asset load */
-export type TextureLabel = `@${"diffuse" | "normal"}`;
+export type TextureLabel = `@${"diffuse" | "normal" | "roughness" | "specular"}`;
 
 /** path relative to public/textures/ or material texture label */
 export type TexturePath = `${string}.${TextureTypes}` | TextureLabel;
@@ -392,6 +392,26 @@ export class Assets {
 					}
 					let rel = abs.split("textures/").slice(1).join("");
 					maps.set("@normal", rel as TexturePath);
+					break;
+				}
+				case "map_ns": {
+					let abs = words[1];
+					if (!abs.includes("textures/")) {
+						console.warn(`roughness map texture path in mtl does not include "textures/": ${path}, ${abs}`);
+						continue;
+					}
+					let rel = abs.split("textures/").slice(1).join("");
+					maps.set("@roughness", rel as TexturePath);
+					break;
+				}
+				case "map_ks": {
+					let abs = words[1];
+					if (!abs.includes("textures/")) {
+						console.warn(`specular map texture path in mtl does not include "textures/": ${path}, ${abs}`);
+						continue;
+					}
+					let rel = abs.split("textures/").slice(1).join("");
+					maps.set("@specular", rel as TexturePath);
 					break;
 				}
 			}
