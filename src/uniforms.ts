@@ -80,55 +80,56 @@ export class ObjectUniforms extends Uniforms {
 	}
 }
 
+type PhongMaterial = {
+	ambient: Vec3,
+	diffuse: Vec3,
+	specular: Vec3,
+	shininess: number,
+};
+
+type PointLight = {
+	pos: Vec3,
+	diffuse: Vec3,
+	specular: Vec3,
+	falloff_constant: number, // falloff = 1.0 / (c + l*d + e*d^2), c should be >= 1 to avoid singularities
+	falloff_linear: number,
+	falloff_exponential: number,
+};
+
 export class PhongUniforms extends Uniforms {
 	_name = "PhongUniforms";
 
-	ambient = Vec3.splat(0.1);
-	diffuse = Vec3.splat(0.6);
-	specular = Vec3.splat(0.3);
-	shininess = 32.0;
-	light_pos = new Vec3();
-	light_color = new Vec3(1.0, 1.0, 1.0);
+	material: PhongMaterial = {
+		ambient: Vec3.splat(0.1),
+		diffuse: Vec3.splat(0.6),
+		specular: Vec3.splat(0.3),
+		shininess: 32.0,
+	};
+
+	light: PointLight = {
+		pos: new Vec3(),
+		diffuse: Vec3.splat(1.0),
+		specular: Vec3.splat(1.0),
+		falloff_constant: 1.0,
+		falloff_linear: 0.0,
+		falloff_exponential: 0.0,
+	};
 
 	_size(): number {
-		return 20;
+		return 28;
 	}
 
 	_update(): Float32Array {
-		this._data.subarray(0, 0+3).set(this.ambient.data);
-		this._data.subarray(4, 4+3).set(this.diffuse.data);
-		this._data.subarray(8, 8+3).set(this.specular.data);
-		this._data[11] = this.shininess;
-		this._data.subarray(12, 12+3).set(this.light_pos.data);
-		this._data.subarray(16, 16+3).set(this.light_color.data);
-		return this._data;
-	}
-}
-
-export class PhongShadowUniforms extends Uniforms {
-	_name = "PhongShadowUniforms";
-	_useShadowMap = true;
-
-	ambient = Vec3.splat(0.1);
-	diffuse = Vec3.splat(0.6);
-	specular = Vec3.splat(0.3);
-	shininess = 32.0;
-	light_pos = new Vec3();
-	light_color = new Vec3(1.0, 1.0, 1.0);
-	shadow_bias = 0.00001;
-
-	_size(): number {
-		return 20;
-	}
-
-	_update(): Float32Array {
-		this._data.subarray(0, 0+3).set(this.ambient.data);
-		this._data.subarray(4, 4+3).set(this.diffuse.data);
-		this._data.subarray(8, 8+3).set(this.specular.data);
-		this._data[11] = this.shininess;
-		this._data.subarray(12, 12+3).set(this.light_pos.data);
-		this._data.subarray(16, 16+3).set(this.light_color.data);
-		this._data[19] = this.shadow_bias;
+		this._data.subarray(0, 0+3).set(this.material.ambient.data);
+		this._data.subarray(4, 4+3).set(this.material.diffuse.data);
+		this._data.subarray(8, 8+3).set(this.material.specular.data);
+		this._data[11] = this.material.shininess;
+		this._data.subarray(12, 12+3).set(this.light.pos.data);
+		this._data.subarray(16, 16+3).set(this.light.diffuse.data);
+		this._data.subarray(20, 20+3).set(this.light.specular.data);
+		this._data[23] = this.light.falloff_constant;
+		this._data[24] = this.light.falloff_linear;
+		this._data[25] = this.light.falloff_exponential;
 		return this._data;
 	}
 }
@@ -158,43 +159,61 @@ export class InstancedUniforms extends Uniforms {
 	}
 }
 
+type RaySphere = {
+	/** w is radius */
+	pos: Vec4,
+	color: Vec4,
+};
+
 export class RayspheresUniforms extends Uniforms {
 	_name = "RayspheresUniforms";
 	_useStorageBuffer = true;
 	
-	ambient = Vec3.splat(0.1);
-	diffuse = Vec3.splat(0.6);
-	specular = Vec3.splat(0.3);
-	shininess = 32.0;
-	light_pos = new Vec3();
-	light_color = new Vec3(1.0, 1.0, 1.0);
+	material: PhongMaterial = {
+		ambient: Vec3.splat(0.1),
+		diffuse: Vec3.splat(0.6),
+		specular: Vec3.splat(0.3),
+		shininess: 32.0,
+	};
+
+	light: PointLight = {
+		pos: new Vec3(),
+		diffuse: Vec3.splat(1.0),
+		specular: Vec3.splat(1.0),
+		falloff_constant: 1.0,
+		falloff_linear: 0.0,
+		falloff_exponential: 0.0,
+	};
 	
 	sphere_count = 0;
 	relative_pos = 1; // 1: sphere pos relative to model, 0: sphere pos absolute
 	background_color = new Vec4(0.0, 0.0, 0.0, 0.0);
-	sphere_pos: Vec4[] = []; // xyz = center, w = radius
-	sphere_color: Vec4[] = [];
+	spheres: RaySphere[] = [];
 
 	_size(): number {
-		return 28 + 8*this.sphere_count;
+		return 36 + 8*this.sphere_count;
 	}
 
 	_update(): Float32Array {
 		if (this._data.length != this._size()) {
 			this._data = new Float32Array(this._size());
 		}
-		this._data.subarray(0, 0+3).set(this.ambient.data);
-		this._data.subarray(4, 4+3).set(this.diffuse.data);
-		this._data.subarray(8, 8+3).set(this.specular.data);
-		this._data[11] = this.shininess;
-		this._data.subarray(12, 12+3).set(this.light_pos.data);
-		this._data.subarray(16, 16+3).set(this.light_color.data);
-		this._data[19] = this.sphere_count;
-		this._data[20] = this.relative_pos;
-		this._data.subarray(24, 24+4).set(this.background_color.data);
+		this._data.subarray(0, 0+3).set(this.material.ambient.data);
+		this._data.subarray(4, 4+3).set(this.material.diffuse.data);
+		this._data.subarray(8, 8+3).set(this.material.specular.data);
+		this._data[11] = this.material.shininess;
+		this._data.subarray(12, 12+3).set(this.light.pos.data);
+		this._data.subarray(16, 16+3).set(this.light.diffuse.data);
+		this._data.subarray(20, 20+3).set(this.light.specular.data);
+		this._data[23] = this.light.falloff_constant;
+		this._data[24] = this.light.falloff_linear;
+		this._data[25] = this.light.falloff_exponential;
+		this._data[28] = this.sphere_count;
+		this._data[29] = this.relative_pos;
+		this._data.subarray(32, 32+4).set(this.background_color.data);
 		for (let i=0; i<this.sphere_count; i++) {
-			this._data.subarray(28 + i*8, 28 + (i+1)*8).set(this.sphere_pos[i].data);
-			this._data.subarray(28 + 4 + i*8, 28 + 4 + (i+1)*8).set(this.sphere_color[i].data);
+			this._data.subarray(36 + i*8, 36 + (i+1)*8).set(this.spheres[i].pos.data);
+			this._data.subarray(36 + 4 + i*8, 36 + 4 + (i+1)*8).set(this.spheres[i].color.data);
 		}
 		return this._data;
 	}

@@ -242,7 +242,7 @@ export class Renderer {
             object.textures.filter(t => !t.startsWith("@")).map(t => textures.add(t));
             if (object.collider) meshes.add(object.collider);
             if (object.bbox?.mesh) meshes.add(object.bbox.mesh);
-            if (object.material) mtls.add(object.material);
+            if (object.mtl) mtls.add(object.mtl);
         }
         for (let trigger of scene.triggers) {
             if (trigger.bbox?.mesh) meshes.add(trigger.bbox.mesh);
@@ -327,8 +327,8 @@ export class Renderer {
         }
 
         // resolve material textures
-        if (object.material) {
-            let mtl_textures = await this.assets.loadMaterial(object.material);
+        if (object.mtl) {
+            let mtl_textures = await this.assets.loadMaterial(object.mtl);
             for (let i=0; i<object.textures.length; i++) {
                 if (object.textures[i].startsWith("@")) {
                     let label = object.textures[i] as TextureLabel;

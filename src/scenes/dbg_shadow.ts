@@ -1,16 +1,17 @@
 import { Scene } from "../scene";
 import { Object } from "../object";
-import { PhongShadowUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import { Camera } from "../camera";
+import { PhongUniforms } from "../uniforms";
 
 export class DebugShadowScene extends Scene {
 	name = "dbg_shadow";
 	spawnPos = new Vec3(0, -2, 6);
 	shadowSource? = new Camera();
 	
-	phong = new PhongShadowUniforms();
+	phong = new PhongUniforms();
+	shadow_bias = 0.000005;
 
 	constructor() {
 		super();
@@ -19,7 +20,7 @@ export class DebugShadowScene extends Scene {
 		this.shadowSource!.near = 0.01;
 		this.shadowSource!.far = 100.0;
 
-		this.phong.shadow_bias = 0.000005;
+		this.phong._useShadowMap = true;
 	}
 
 	init() {
@@ -30,6 +31,7 @@ export class DebugShadowScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
+		obj.fragConfig.x = this.shadow_bias;
 		obj.zsort = true;
 		this.entities.push(obj);
 
@@ -40,6 +42,7 @@ export class DebugShadowScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
+		obj.fragConfig.x = this.shadow_bias;
 		obj.zsort = true;
 		this.entities.push(obj);
 
@@ -50,6 +53,7 @@ export class DebugShadowScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
+		obj.fragConfig.x = this.shadow_bias;
 		obj.zsort = true;
 		this.entities.push(obj);
 
@@ -70,13 +74,14 @@ export class DebugShadowScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
+		obj.fragConfig.x = this.shadow_bias;
 		obj.z = 900.0;
 		this.entities.push(obj);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 20, 20*Math.sin(time/2));
-		this.phong.light_pos = lightPos;
+		this.phong.light.pos = lightPos;
 		for (let obj of this.entities) {
 			obj.changed = true;
 		}

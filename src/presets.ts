@@ -16,7 +16,7 @@ import { DebugNormalmapScene } from "./scenes/dbg_normalmap";
 import type { FragShaderPath, TexturePath } from "./assets";
 import { DebugRotationScene } from "./scenes/dbg_rotation";
 import { DebugErrorScene } from "./scenes/dbg_error";
-import { DebugMaterialScene } from "./scenes/dbg_material";
+import { DebugLightingScene } from "./scenes/dbg_lighting";
 
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
@@ -35,7 +35,7 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["dbg_shadow", DebugShadowScene],
 	["dbg_normalmap", DebugNormalmapScene],
 	["dbg_error", DebugErrorScene],
-	["dbg_material", DebugMaterialScene],
+	["dbg_lighting", DebugLightingScene],
 ]);
 
 // <path, [uniforms constructor, textures]>

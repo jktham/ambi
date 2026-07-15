@@ -1,19 +1,9 @@
 #import "../lib/data.wgsl"
 #import "../lib/lighting.wgsl"
 
-struct PhongShadedUniforms {
-	ambient: vec3f,
-	diffuse: vec3f,
-	specular: vec3f,
-	shininess: f32,
-	light_pos: vec3f,
-	light_color: vec3f,
-	shadow_bias: f32,
-}
-
 @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
-@group(0) @binding(3) var<uniform> u_phong: PhongShadedUniforms;
+@group(0) @binding(3) var<uniform> u_phong: PhongUniforms;
 
 @group(0) @binding(4) var shadow_map_sampler: sampler;
 @group(0) @binding(5) var shadow_map: texture_depth_2d;
@@ -34,7 +24,8 @@ fn main(in: FragmentIn) -> FragmentOut {
 	data.mask = u32(u_object.mask);
 
 	// slope based bias
-	let bias = max(u_phong.shadow_bias * (1.0 - dot(in.normal, normalize(u_phong.light_pos - in.pos))), u_phong.shadow_bias / 10.0);
+	let shadow_bias = u_object.frag_config.x;
+	let bias = max(shadow_bias * (1.0 - dot(in.normal, normalize(u_phong.light.pos - in.pos))), shadow_bias / 10.0);
 
 	var shade = false;
 	if (shadowspace_depth + bias < shadowmap_depth) {
@@ -50,17 +41,9 @@ fn main(in: FragmentIn) -> FragmentOut {
 		shade = false;
 	}
 
+	let lighting = phong_color(in.pos, in.normal, u_global.view_pos, u_phong.material, u_phong.light);
 
-	let factors = phong_factors(in.pos, in.normal, u_global.view_pos, u_phong.light_pos);
-	let diff = factors.x;
-	let spec = factors.y;
-
-	let ambient = u_phong.ambient;
-	let diffuse = diff * u_phong.diffuse;
-	let specular = pow(spec, u_phong.shininess) * u_phong.specular;
-
-	let light_color = select(u_rayspheres.light_color, vec3f(0.0, 0.0, 0.0), shade);
-	data.color = in.color * vec4f(ambient + (diffuse + specular) * light_color, 1.0) * textureSample(t_color, t_sampler, in.uv);
+	data.color = in.color * select(vec4f(lighting, 1.0), vec4f(u_phong.material.ambient, 1.0), shade) * textureSample(t_color, t_sampler, in.uv);
 
 	decideDiscard(data.color, data.pos, data.normal, u_global.view_pos, u_object.cull);
 	return encodeFbData(data);

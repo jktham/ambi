@@ -45,7 +45,7 @@ export class Object {
     /** bounding box used to skip fine collision if present */
     bbox?: Bbox = undefined;
     /** path to .mtl file in public/meshes/, overrides @ labeled textures at asset load */
-    material?: MaterialPath = undefined;
+    mtl?: MaterialPath = undefined;
 
     /** path to .vert.wgsl file in public/shaders/ */
     vertShader: VertShaderPath = "world/base.vert.wgsl";

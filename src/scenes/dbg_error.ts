@@ -38,7 +38,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
-		obj.material = "abc.mtl"; // does not exist
+		obj.mtl = "abc.mtl"; // does not exist
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -47,7 +47,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
-		obj.material = "empty.mtl"; // exists, but empty
+		obj.mtl = "empty.mtl"; // exists, but empty
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -93,7 +93,7 @@ export class DebugErrorScene extends Scene {
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 40, 20*Math.sin(time/2));
-		this.phong.light_pos = lightPos;
+		this.phong.light.pos = lightPos;
 		for (let obj of this.entities) {
 			obj.changed = true;
 		}

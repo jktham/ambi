@@ -14,9 +14,10 @@ export class BrutalScene extends Scene {
 
 	init() {
 		let phong = new PhongUniforms();
-		phong.light_pos = new Vec3(100, 300, 200);
-		phong.light_color = new Vec3(1.0, 0.2, 0.2);
-		phong.specular = Vec3.splat(0.0);
+		phong.light.pos = new Vec3(100, 300, 200);
+		phong.light.diffuse = new Vec3(1.0, 0.2, 0.2);
+		phong.light.specular = Vec3.splat(0.0);
+		phong.material.specular = Vec3.splat(0.0);
 
 		const size = 21;
 		const scale = 20.0;
@@ -61,7 +62,7 @@ export class BrutalScene extends Scene {
 		}
 
 		let sun = new Object();
-		sun.model = Mat4.trs(phong.light_pos, new Vec3(), 20.0);
+		sun.model = Mat4.trs(phong.light.pos, new Vec3(), 20.0);
 		sun.mesh = "sphere.obj";
 		sun.textures = ["white.png"];
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);

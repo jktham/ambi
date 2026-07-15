@@ -93,7 +93,7 @@ export class DebugOutlineScene extends Scene {
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
-		this.phong.light_pos = lightPos;
+		this.phong.light.pos = lightPos;
 		for (let obj of this.entities) {
 			obj.changed = true;
 		}

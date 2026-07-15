@@ -42,10 +42,10 @@ export class MuseumScene extends Scene {
 		this.postUniforms.mode[MASK_OUTLINE_EXT_ONLY] = 0;
 		this.postUniforms.color[MASK_OUTLINE_WHITE] = new Vec4(1, 1, 1, 1);
 
-		this.phong.light_pos = new Vec3(400, 1200, 800);
-		this.phong.ambient = Vec3.splat(0.8);
-		this.phong.diffuse = Vec3.splat(0.2);
-		this.phong.specular = Vec3.splat(0.0);
+		this.phong.light.pos = new Vec3(400, 1200, 800);
+		this.phong.material.ambient = Vec3.splat(0.8);
+		this.phong.material.diffuse = Vec3.splat(0.2);
+		this.phong.material.specular = Vec3.splat(0.0);
 
 		// initial room shuffle
 		let rooms = Array(N_ROOMS).fill(0).map((_, i) => i).filter(v => v != FIRST_ROOM);
@@ -133,18 +133,16 @@ export class MuseumScene extends Scene {
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		let rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
-		rayspheresUniforms.sphere_pos = [
-			new Vec4(0, 0, 0, 0.8),
-		];
-		rayspheresUniforms.sphere_color = [
-			new Vec4(1, 1, 1, 1),
-		];
+		rayspheresUniforms.spheres = [{
+				pos: new Vec4(0, 0, 0, 0.8),
+				color: new Vec4(1, 1, 1, 1),
+		}];
 		rayspheresUniforms.background_color = new Vec4(0, 0, 0, 0);
-		rayspheresUniforms.light_pos = this.phong.light_pos;
-		rayspheresUniforms.ambient = this.phong.ambient;
-		rayspheresUniforms.diffuse = this.phong.diffuse;
-		rayspheresUniforms.specular = this.phong.specular;
-		rayspheresUniforms.shininess = this.phong.shininess;
+		rayspheresUniforms.light.pos = this.phong.light.pos;
+		rayspheresUniforms.material.ambient = this.phong.material.ambient;
+		rayspheresUniforms.material.diffuse = this.phong.material.diffuse;
+		rayspheresUniforms.material.specular = this.phong.material.specular;
+		rayspheresUniforms.material.shininess = this.phong.material.shininess;
 		obj.fragUniforms = rayspheresUniforms;
 		this.roomObjects[r].push(obj);
 
@@ -158,18 +156,16 @@ export class MuseumScene extends Scene {
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
-		rayspheresUniforms.sphere_pos = [
-			new Vec4(0, 2, -10, 0.8),
-		];
-		rayspheresUniforms.sphere_color = [
-			new Vec4(1, 0, 0, 1),
-		];
+		rayspheresUniforms.spheres = [{
+				pos: new Vec4(0, 2, -10, 0.8),
+				color: new Vec4(1, 0, 0, 1),
+		}];
 		rayspheresUniforms.background_color = new Vec4(1.0, 0, 0, 0.1);
-		rayspheresUniforms.light_pos = this.phong.light_pos;
-		rayspheresUniforms.ambient = this.phong.ambient;
-		rayspheresUniforms.diffuse = this.phong.diffuse;
-		rayspheresUniforms.specular = this.phong.specular;
-		rayspheresUniforms.shininess = this.phong.shininess;
+		rayspheresUniforms.light.pos = this.phong.light.pos;
+		rayspheresUniforms.material.ambient = this.phong.material.ambient;
+		rayspheresUniforms.material.diffuse = this.phong.material.diffuse;
+		rayspheresUniforms.material.specular = this.phong.material.specular;
+		rayspheresUniforms.material.shininess = this.phong.material.shininess;
 		obj.fragUniforms = rayspheresUniforms;
 		this.roomObjects[r].push(obj);
 
@@ -183,18 +179,16 @@ export class MuseumScene extends Scene {
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
-		rayspheresUniforms.sphere_pos = [
-			new Vec4(0, 2, -10, 0.8),
-		];
-		rayspheresUniforms.sphere_color = [
-			new Vec4(0, 0, 1, 1),
-		];
+		rayspheresUniforms.spheres = [{
+				pos: new Vec4(0, 2, -10, 0.8),
+				color: new Vec4(0, 0, 1, 1),
+		}];
 		rayspheresUniforms.background_color = new Vec4(0, 0, 1.0, 0.1);
-		rayspheresUniforms.light_pos = this.phong.light_pos;
-		rayspheresUniforms.ambient = this.phong.ambient;
-		rayspheresUniforms.diffuse = this.phong.diffuse;
-		rayspheresUniforms.specular = this.phong.specular;
-		rayspheresUniforms.shininess = this.phong.shininess;
+		rayspheresUniforms.light.pos = this.phong.light.pos;
+		rayspheresUniforms.material.ambient = this.phong.material.ambient;
+		rayspheresUniforms.material.diffuse = this.phong.material.diffuse;
+		rayspheresUniforms.material.specular = this.phong.material.specular;
+		rayspheresUniforms.material.shininess = this.phong.material.shininess;
 		obj.fragUniforms = rayspheresUniforms;
 		this.roomObjects[r].push(obj);
 
@@ -208,18 +202,16 @@ export class MuseumScene extends Scene {
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
-		rayspheresUniforms.sphere_pos = [
-			new Vec4(0, 2, -10, 0.8),
-		];
-		rayspheresUniforms.sphere_color = [
-			new Vec4(0, 1, 0, 1),
-		];
+		rayspheresUniforms.spheres = [{
+				pos: new Vec4(0, 2, -10, 0.8),
+				color: new Vec4(0, 1, 0, 1),
+		}];
 		rayspheresUniforms.background_color = new Vec4(0, 1.0, 0, 0.1);
-		rayspheresUniforms.light_pos = this.phong.light_pos;
-		rayspheresUniforms.ambient = this.phong.ambient;
-		rayspheresUniforms.diffuse = this.phong.diffuse;
-		rayspheresUniforms.specular = this.phong.specular;
-		rayspheresUniforms.shininess = this.phong.shininess;
+		rayspheresUniforms.light.pos = this.phong.light.pos;
+		rayspheresUniforms.material.ambient = this.phong.material.ambient;
+		rayspheresUniforms.material.diffuse = this.phong.material.diffuse;
+		rayspheresUniforms.material.specular = this.phong.material.specular;
+		rayspheresUniforms.material.shininess = this.phong.material.shininess;
 		obj.fragUniforms = rayspheresUniforms;
 		this.roomObjects[r].push(obj);
 
@@ -233,18 +225,16 @@ export class MuseumScene extends Scene {
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
-		rayspheresUniforms.sphere_pos = [
-			new Vec4(0, 2, -10, 0.0),
-		];
-		rayspheresUniforms.sphere_color = [
-			new Vec4(0, 0, 0, 0.2),
-		];
+		rayspheresUniforms.spheres = [{
+				pos: new Vec4(0, 2, -10, 0.0),
+				color: new Vec4(0, 0, 0, 0.2),
+		}];
 		rayspheresUniforms.background_color = new Vec4(0, 0, 0, 0.1);
-		rayspheresUniforms.light_pos = this.phong.light_pos;
-		rayspheresUniforms.ambient = this.phong.ambient;
-		rayspheresUniforms.diffuse = this.phong.diffuse;
-		rayspheresUniforms.specular = this.phong.specular;
-		rayspheresUniforms.shininess = this.phong.shininess;
+		rayspheresUniforms.light.pos = this.phong.light.pos;
+		rayspheresUniforms.material.ambient = this.phong.material.ambient;
+		rayspheresUniforms.material.diffuse = this.phong.material.diffuse;
+		rayspheresUniforms.material.specular = this.phong.material.specular;
+		rayspheresUniforms.material.shininess = this.phong.material.shininess;
 		obj.fragUniforms = rayspheresUniforms;
 		this.roomObjects[r].push(obj);
 
@@ -330,14 +320,18 @@ export class MuseumScene extends Scene {
 		obj.fragShader = "world/rayspheres.frag.wgsl";
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 16;
-		rayspheresUniforms.sphere_pos = new Array<Vec4>(rayspheresUniforms.sphere_count).fill(new Vec4()).map(_ => rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, 4, 2, 1.5)));
-		rayspheresUniforms.sphere_color = new Array<Vec4>(rayspheresUniforms.sphere_count).fill(new Vec4()).map(_ => rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1)));
+		rayspheresUniforms.spheres = new Array(rayspheresUniforms.sphere_count).fill(0).map((_, i) => {
+			return {
+				pos: rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, 4, 2, 1.5)),
+				color: rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1)),
+			};
+		});
 		rayspheresUniforms.background_color = new Vec4(0, 0, 0, 1);
-		rayspheresUniforms.light_pos = this.phong.light_pos;
-		rayspheresUniforms.ambient = this.phong.ambient;
-		rayspheresUniforms.diffuse = this.phong.diffuse;
-		rayspheresUniforms.specular = this.phong.specular;
-		rayspheresUniforms.shininess = this.phong.shininess;
+		rayspheresUniforms.light.pos = this.phong.light.pos;
+		rayspheresUniforms.material.ambient = Vec3.splat(0.5);
+		rayspheresUniforms.material.diffuse = Vec3.splat(0.4);
+		rayspheresUniforms.material.specular = Vec3.splat(0.1);
+		rayspheresUniforms.material.shininess = 32.0;
 		obj.fragUniforms = rayspheresUniforms;
 		this.roomObjects[r].push(obj);
 
@@ -609,10 +603,10 @@ export class MuseumScene extends Scene {
 		for (let obj of this.getObjects("spheres")) {
 			let uniforms = obj.fragUniforms as RayspheresUniforms;
 			for (let i=0; i<uniforms.sphere_count; i++) {
-				uniforms.sphere_pos[i].y += rndseed(i, 0.3, 1.2) * deltaTime;
-				if (uniforms.sphere_pos[i].y > 4) {
-					uniforms.sphere_pos[i] = rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, -4, 2, 1.5));
-					uniforms.sphere_color[i] = rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1));
+				uniforms.spheres[i].pos.y += rndseed(i, 0.3, 1.2) * deltaTime;
+				if (uniforms.spheres[i].pos.y > 4) {
+					uniforms.spheres[i].pos = rndvec4(new Vec4(-2, -4, -2, 0.5), new Vec4(2, -4, 2, 1.5));
+					uniforms.spheres[i].color = rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1));
 				}
 			}
 			obj.changed = true;

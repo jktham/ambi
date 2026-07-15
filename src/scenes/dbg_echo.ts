@@ -14,7 +14,7 @@ export class DebugEchoScene extends Scene {
 
 	init() {
 		let phong = new PhongUniforms();
-		phong.light_pos = new Vec3(0, 10, 0);
+		phong.light.pos = new Vec3(0, 10, 0);
 
 		let obj = new Object();
 		obj.mesh = "quad.obj";

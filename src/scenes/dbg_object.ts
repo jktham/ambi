@@ -94,7 +94,7 @@ export class DebugObjectScene extends Scene {
 		monke.changed = true;
 
 		let lightPos = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);
-		this.phong.light_pos = lightPos;
+		this.phong.light.pos = lightPos;
 		for (let obj of this.entities) {
 			obj.changed = true;
 		}
