@@ -182,8 +182,11 @@ export class Renderer {
 
     async loadScene(scene: Scene, gui: Gui) {
         this.setResolution(scene.resolution);
+        console.log("preloading assets");
         await this.preloadAssets(scene, gui);
+        console.log("initializing world");
         await this.initWorld(scene);
+        console.log("initializing post");
         await this.initPost(scene);
     }
 
@@ -247,22 +250,24 @@ export class Renderer {
         shaders.add("post/quad.vert.wgsl");
         shaders.add(this.postShaderOverride ?? scene.postShader);
 
+        let errors: string[] = [];
         const wrapInfo = async (loader: (path: any) => Promise<any>, path: string) => {
+            try {
                 await loader.call(this.assets, path); // bind assets as this
-            gui.updateInfo(`loaded ${path}`);
+                gui.updateInfo(`loaded ${path}`);
+            } catch (e) {
+                console.error(e);
+                errors.push((e as Error).message);
+            }
         }
 
         let promises: Promise<any>[] = [];
         promises.push(...[...shaders].map((p) => wrapInfo(this.assets.loadShader, p)));
         promises.push(...[...meshes].map((p) => wrapInfo(this.assets.loadMesh, p)));
         promises.push(...[...textures].map((p) => wrapInfo(this.assets.loadTexture, p)));
-        promises.push(...[...mtls].map((p) => wrapInfo(this.assets.loadMtl, p)));
-        let res = await Promise.allSettled(promises);
-
-        let err = res.find(p => p.status == "rejected");
-        if (err) {
-            gui.updateInfo(err.reason);
-        }
+        promises.push(...[...mtls].map((p) => wrapInfo(this.assets.loadMaterial, p)));
+        await Promise.allSettled(promises);
+        if (errors.length > 0) gui.updateInfo(`failed: ${errors.join(", ")}`);
     }
 
     private async initWorld(scene: Scene) {
@@ -375,16 +380,16 @@ export class Renderer {
 
     private async createObjectPipeline(vertShader: VertShaderPath, fragShader: FragShaderPath): Promise<GPURenderPipeline> {
         const vertexShader = this.device.createShaderModule({
-            label: "vertex shader: " + vertShader,
+            label: `vertex shader: ${vertShader}`,
             code: await this.assets.loadShader(vertShader),
         });
         const fragmentShader = this.device.createShaderModule({
-            label: "fragment shader: " + fragShader,
+            label: `fragment shader: ${fragShader}`,
             code: await this.assets.loadShader(fragShader),
         });
 
         const pipeline = this.device.createRenderPipeline({
-            label: "world render pipeline",
+            label: `world render pipeline: ${vertShader}/${fragShader}`,
             layout: "auto",
             vertex: {
                 module: vertexShader,
@@ -445,14 +450,14 @@ export class Renderer {
 
         const objectUniformLength = new ObjectUniforms()._size();
         const objectUniformBuffer = this.device.createBuffer({
-            label: "object base uniform buffer",
+            label: `object base uniform buffer: ${vertUniforms._name}/${fragUniforms._name}`,
             size: objectUniformLength * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
 
         const vertUniformLength = vertUniforms._size();
         const vertUniformBuffer = this.device.createBuffer({
-            label: "vert uniform buffer",
+            label: `vert uniform buffer: ${vertUniforms._name}`,
             size: vertUniformLength * 4,
             usage: ((vertUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
@@ -462,7 +467,7 @@ export class Renderer {
 
         const fragUniformLength = fragUniforms._size();
         const fragUniformBuffer = this.device.createBuffer({
-            label: "frag uniform buffer",
+            label: `frag uniform buffer: ${fragUniforms._name}`,
             size: fragUniformLength * 4,
             usage: ((fragUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
@@ -491,7 +496,7 @@ export class Renderer {
         }
 
         const uniformBindGroup = this.device.createBindGroup({
-            label: "uniform bindgroup",
+            label: `uniform bindgroup: ${vertUniforms._name}/${fragUniforms._name}`,
             layout: pipeline.getBindGroupLayout(0),
             entries: uniformBindings,
         });
@@ -503,7 +508,7 @@ export class Renderer {
     private async createVertexBuffer(mesh: MeshPath): Promise<GPUBuffer> {
         const vertexData = await this.assets.loadMesh(mesh);
         const vertexBuffer = this.device.createBuffer({
-            label: "vertex buffer",
+            label: `vertex buffer: ${mesh}`,
             size: vertexData.byteLength,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
         });
@@ -515,7 +520,7 @@ export class Renderer {
     private async createTextureBuffer(texture: TexturePath): Promise<GPUTexture> {
         const textureData = await this.assets.loadTexture(texture);
         const textureBuffer = this.device.createTexture({
-            label: "texture buffer",
+            label: `texture buffer: ${texture}`,
             size: [textureData.width, textureData.height],
             format: "rgba8unorm",
             usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
@@ -539,7 +544,7 @@ export class Renderer {
         });
         let textureEntries = textureBuffers.map((t, i) => { return { binding: i+1, resource: t.createView() }});
         const textureBindGroup = this.device.createBindGroup({
-            label: "texture bindgroup",
+            label: `texture bindgroup: ${textureBuffers.map(b => b.label).join("/")}`,
             layout: pipeline.getBindGroupLayout(1),
             entries: [
                 { binding: 0, resource: sampler },
@@ -552,17 +557,18 @@ export class Renderer {
     // ---- post resources ----
 
     private async createPostPipeline(postShader: FragShaderPath): Promise<GPURenderPipeline> {
+        let vertShader: VertShaderPath = "post/quad.vert.wgsl";
         const postVertexShader = this.device.createShaderModule({
-            label: "post vertex shader",
-            code: await this.assets.loadShader("post/quad.vert.wgsl"),
+            label: `post vertex shader: ${vertShader}`,
+            code: await this.assets.loadShader(vertShader),
         });
         const postFragmentShader = this.device.createShaderModule({
-            label: "post fragment shader",
+            label: `post fragment shader: ${postShader}`,
             code: await this.assets.loadShader(postShader),
         });
 
         const postPipeline = this.device.createRenderPipeline({
-            label: "post pipeline",
+            label: `post pipeline: ${vertShader}/${postShader}`,
             layout: "auto",
             vertex: {
                 module: postVertexShader,
@@ -586,14 +592,14 @@ export class Renderer {
     private async createPostUniformBuffers(postUniforms: Uniforms, postPipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBindGroup]> {
         const postBaseUniformLength = new PostUniforms()._size();
         const postBaseUniformBuffer = this.device.createBuffer({
-            label: "post base uniform buffer",
+            label: `post base uniform buffer`,
             size: postBaseUniformLength * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
         
         const postUniformLength = postUniforms._size();
         const postUniformBuffer = this.device.createBuffer({
-            label: "post uniform buffer",
+            label: `post uniform buffer`,
             size: postUniformLength * 4,
             usage: ((postUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
@@ -608,7 +614,7 @@ export class Renderer {
         }
 
         const postUniformBindGroup = this.device.createBindGroup({
-            label: "post uniform bindgroup",
+            label: `post uniform bindgroup`,
             layout: postPipeline.getBindGroupLayout(0),
             entries: postUniformBindings,
         });
@@ -619,7 +625,7 @@ export class Renderer {
     /** create post fb bindgroup at group 2 */
     private createPostFrameBufferBindGroup(postPipeline: GPURenderPipeline): GPUBindGroup {
         const postFrameBufferBindGroup = this.device.createBindGroup({
-            label: "post framebuffer bindgroup",
+            label: `post framebuffer bindgroup`,
             layout: postPipeline.getBindGroupLayout(2),
             entries: [
                 { binding: 0, resource: this.colorFrameBuffer.createView() },

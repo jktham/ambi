@@ -44,6 +44,7 @@ export class Engine {
 
 	async setScene(name: string) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
+        console.log(`loading scene: ${name}`);
 		this.gui.updateInfo("loading...");
 
 		let scene = scenes.get(name);
@@ -71,6 +72,7 @@ export class Engine {
 		await this.renderer.loadScene(this.scene, this.gui);
 		await this.player.loadColliders(this.assets, this.scene.entities);
 
+        console.log(`done`);
 		this.loop();
 	}
 
