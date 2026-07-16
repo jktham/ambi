@@ -14,7 +14,7 @@ const MASK_OUTLINE_EXT_ONLY = 14;
 const MASK_OUTLINE_WHITE = 15;
 
 const N_ROOMS = 10;
-const FIRST_ROOM = 9;
+const FIRST_ROOM = 0;
 
 export class MuseumScene extends Scene {
 	name = "museum";
@@ -671,6 +671,10 @@ export class MuseumScene extends Scene {
 		for (let r=0; r<N_ROOMS; r++) {
 			let slot = this.roomSlots.findIndex(v => v == r);
 			let offset = slot != -1 ? offsets[slot] : voidOffset;
+
+			for (let obj of this.roomObjects[r]) {
+				obj.visible = slot != -1; // hide unused rooms
+			}
 			
 			for (let obj of this.roomObjects[r]) {
 				let [translation, rotation, scale] = obj.model.decompose();
