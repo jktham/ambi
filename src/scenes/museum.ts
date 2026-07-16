@@ -13,8 +13,8 @@ const MASK_OUTLINE_NONE = 13;
 const MASK_OUTLINE_EXT_ONLY = 14;
 const MASK_OUTLINE_WHITE = 15;
 
-const N_ROOMS = 9;
-const FIRST_ROOM = 0;
+const N_ROOMS = 10;
+const FIRST_ROOM = 9;
 
 export class MuseumScene extends Scene {
 	name = "museum";
@@ -495,6 +495,19 @@ export class MuseumScene extends Scene {
 		obj.fragConfig.x = 2.0; // speed
 		obj.fragConfig.y = 0.5; // min
 		obj.fragConfig.z = 1.0; // max
+		this.roomObjects[r].push(obj);
+
+
+		// room 9: framebuffer
+		r = 9;
+		o = this.createRoomBase();
+		this.roomObjects[r].push(...o);
+
+		obj = new Object();
+		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(), new Vec3(16/9, 1, 16/9));
+		obj.mesh = "cube.obj";
+		obj.textures = ["$framebuffer"];
+		obj.fragShader = "world/base.frag.wgsl";
 		this.roomObjects[r].push(obj);
 
 

@@ -27,7 +27,7 @@ type TextureTypes = typeof textureTypes[number];
 export type TextureMtlLabel = `@${"diffuse" | "normal" | "roughness" | "specular"}`;
 
 /** special labels from renderer that are intercepted before asset load */
-export type TextureBuiltinLabel = `$${"shadowmap"}`;
+export type TextureBuiltinLabel = `$${"shadowmap" | "framebuffer"}`;
 
 /** path relative to public/textures/ or texture label */
 export type TexturePath = `${string}.${TextureTypes}` | TextureMtlLabel | TextureBuiltinLabel;

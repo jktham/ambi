@@ -18,6 +18,7 @@ export class Renderer {
     private colorFrameBuffer!: GPUTexture;
     private posDepthFrameBuffer!: GPUTexture;
     private normalMaskFrameBuffer!: GPUTexture;
+    private prevFrameBuffer!: GPUTexture;
 
     private worldRenderPassDescriptor!: GPURenderPassDescriptor;
     private postRenderPassDescriptor!: GPURenderPassDescriptor;
@@ -92,7 +93,8 @@ export class Renderer {
         this.presentationFormat = navigator.gpu.getPreferredCanvasFormat();
         context.configure({
             device: this.device,
-            format: this.presentationFormat
+            format: this.presentationFormat,
+            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
         });
     }
 
@@ -139,22 +141,16 @@ export class Renderer {
     private createFrameBufferTextures() {
         this.depthTexture = this.device.createTexture({
             label: "depth texture",
-            size: { width: this.canvas.width, height: this.canvas.height },
+            size: [this.canvas.width, this.canvas.height],
             format: 'depth32float',
             usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
-        });
-        this.shadowMapTexture = this.device.createTexture({
-            label: "shadowmap",
-            size: { width: this.canvas.width, height: this.canvas.height },
-            format: 'depth32float',
-            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
         });
 
         this.colorFrameBuffer = this.device.createTexture({
             label: "color framebuffer",
             size: [this.canvas.width, this.canvas.height],
             format: "rgba8unorm",
-            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
         });
         this.posDepthFrameBuffer = this.device.createTexture({
             label: "pos/depth framebuffer",
@@ -168,14 +164,30 @@ export class Renderer {
             format: "rgba8unorm",
             usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
         });
+
+        this.shadowMapTexture = this.device.createTexture({
+            label: "shadowmap",
+            size: [this.canvas.width, this.canvas.height],
+            format: 'depth32float',
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
+        });
+        this.prevFrameBuffer = this.device.createTexture({
+            label: "color framebuffer",
+            size: [this.canvas.width, this.canvas.height],
+            format: "rgba8unorm",
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+        });
     }
 
     private destroyFrameBufferTextures() {
         this.depthTexture.destroy();
-        this.shadowMapTexture.destroy();
         this.colorFrameBuffer.destroy();
         this.posDepthFrameBuffer.destroy();
         this.normalMaskFrameBuffer.destroy();
+
+        // TODO: prevent use of destroyed textures
+        // this.shadowMapTexture.destroy();
+        // this.prevFrameBuffer.destroy();
     }
 
     // ---- create and destroy asset-dependent resources ---- 
@@ -205,12 +217,14 @@ export class Renderer {
 
     private destroyWorldBuffers() {
         this.vertexBuffers.forEach(b => b.destroy());
+        this.textureBuffers.forEach(b => b.destroy());
         this.objectBaseUniformBuffers.forEach(b => b.destroy());
         this.objectVertUniformBuffers.forEach(b => b.destroy());
         this.objectFragUniformBuffers.forEach(b => b.destroy());
 
         this.objectPipelines = new Map();
         this.vertexBuffers = new Map();
+        this.textureBuffers = new Map();
         (this.globalUniformBuffer as any) = undefined;
         this.objectBaseUniformBuffers = new Map();
         this.objectVertUniformBuffers = new Map();
@@ -351,6 +365,13 @@ export class Renderer {
                         case "$shadowmap": {
                             this.textureBuffers.set(texture, this.shadowMapTexture);
                             break;
+                        }
+                        case "$framebuffer": {
+                            this.textureBuffers.set(texture, this.prevFrameBuffer);
+                            break;
+                        }
+                        default: {
+                            throw new Error(`label ${texture} not resolved/valid`);
                         }
                     }
                 }
@@ -535,7 +556,6 @@ export class Renderer {
 
     /** create texture bindgroup at group 1 from set of texture buffers */
     private async createTextureBindGroup(textureBuffers: GPUTexture[], pipeline: GPURenderPipeline): Promise<GPUBindGroup> {
-        console.log(textureBuffers)
         const sampler = this.device.createSampler({
             addressModeU: "repeat", 
             addressModeV: "repeat",
@@ -663,7 +683,7 @@ export class Renderer {
             this.drawShadows(scene, profiler);
 
             // copy depth buffer to shadow map texture
-            const encoder = this.device.createCommandEncoder({ label: "copy depth encoder" });
+            const encoder = this.device.createCommandEncoder({ label: "copy depth" });
             encoder.copyTextureToTexture({texture: this.depthTexture}, {texture: this.shadowMapTexture}, {width: this.depthTexture.width, height: this.depthTexture.height})
             this.device.queue.submit([encoder.finish()]); // todo: prevent destroy while in use
         }
@@ -673,6 +693,13 @@ export class Renderer {
 
         this.updatePostBuffers(scene, camera, time, frame, profiler);
         this.drawPost(profiler);
+
+        if (this.textureBuffers.has("$framebuffer")) { // only copy if we intend to use it
+            // copy color buffer to prev framebuffer texture
+            const encoder = this.device.createCommandEncoder({ label: "copy framebuffer" });
+            encoder.copyTextureToTexture({texture: this.context.getCurrentTexture()}, {texture: this.prevFrameBuffer}, {width: this.context.getCurrentTexture().width, height: this.context.getCurrentTexture().height})
+            this.device.queue.submit([encoder.finish()]);
+        }
     }
 
     private updateWorldGlobalBuffers(scene: Scene, camera: Camera, time: number, frame: number, profiler: Profiler) {
