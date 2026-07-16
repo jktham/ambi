@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
-import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type MeshPath, type MaterialPath, type ShaderPath, type TexturePath, type VertShaderPath, type TextureLabel } from "./assets";
+import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type MeshPath, type MaterialPath, type ShaderPath, type TexturePath, type VertShaderPath, type TextureMtlLabel } from "./assets";
 import type { Scene } from "./scene";
 import type { Object, oid } from "./object";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
@@ -144,7 +144,7 @@ export class Renderer {
             usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
         });
         this.shadowMapTexture = this.device.createTexture({
-            label: "shadow map texture",
+            label: "shadowmap",
             size: { width: this.canvas.width, height: this.canvas.height },
             format: 'depth32float',
             usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
@@ -239,7 +239,7 @@ export class Renderer {
             shaders.add(object.vertShader);
             shaders.add(object.fragShader);
             meshes.add(object.mesh);
-            object.textures.filter(t => !t.startsWith("@")).map(t => textures.add(t));
+            object.textures.filter(t => !(t.startsWith("@") || t.startsWith("$"))).map(t => textures.add(t));
             if (object.collider) meshes.add(object.collider);
             if (object.bbox?.mesh) meshes.add(object.bbox.mesh);
             if (object.mtl) mtls.add(object.mtl);
@@ -331,7 +331,7 @@ export class Renderer {
             let mtl_textures = await this.assets.loadMaterial(object.mtl);
             for (let i=0; i<object.textures.length; i++) {
                 if (object.textures[i].startsWith("@")) {
-                    let label = object.textures[i] as TextureLabel;
+                    let label = object.textures[i] as TextureMtlLabel;
                     if (!mtl_textures.has(label)) {
                         throw new Error(`label ${label} not defined in material`);
                     }
@@ -343,8 +343,17 @@ export class Renderer {
         // load textures
         for (let texture of object.textures) {
             if (!this.textureBuffers.has(texture)) {
-                const textureBuffer = await this.createTextureBuffer(texture);
-                this.textureBuffers.set(texture, textureBuffer);
+                if (!(texture.startsWith("$") || texture.startsWith("@"))) {
+                    const textureBuffer = await this.createTextureBuffer(texture);
+                    this.textureBuffers.set(texture, textureBuffer);
+                } else {
+                    switch (texture) {
+                        case "$shadowmap": {
+                            this.textureBuffers.set(texture, this.shadowMapTexture);
+                            break;
+                        }
+                    }
+                }
             }
         }
         if (!this.objectTextureBindGroups.has(object.id)) {
@@ -485,16 +494,6 @@ export class Renderer {
             uniformBindings.push({ binding: 3, resource: { buffer: fragUniformBuffer }});
         }
 
-        // optional shadow depth texture at (0, 4)
-        if (fragUniforms._useShadowMap) {
-            const sampler = this.device.createSampler({ // non-filtering sampler
-                addressModeU: "clamp-to-edge", 
-                addressModeV: "clamp-to-edge"
-            });
-            uniformBindings.push({ binding: 4, resource: sampler });
-            uniformBindings.push({ binding: 5, resource: this.shadowMapTexture.createView() });
-        }
-
         const uniformBindGroup = this.device.createBindGroup({
             label: `uniform bindgroup: ${vertUniforms._name}/${fragUniforms._name}`,
             layout: pipeline.getBindGroupLayout(0),
@@ -536,18 +535,24 @@ export class Renderer {
 
     /** create texture bindgroup at group 1 from set of texture buffers */
     private async createTextureBindGroup(textureBuffers: GPUTexture[], pipeline: GPURenderPipeline): Promise<GPUBindGroup> {
+        console.log(textureBuffers)
         const sampler = this.device.createSampler({
             addressModeU: "repeat", 
             addressModeV: "repeat",
             magFilter: "nearest", // for crisp low res textures
             minFilter: "linear", // for less aliasing
         });
-        let textureEntries = textureBuffers.map((t, i) => { return { binding: i+1, resource: t.createView() }});
+        const sampler_direct = this.device.createSampler({ // non-filtering sampler
+            addressModeU: "clamp-to-edge", 
+            addressModeV: "clamp-to-edge"
+        });
+        let textureEntries = textureBuffers.map((t, i) => { return { binding: i+2, resource: t.createView() }});
         const textureBindGroup = this.device.createBindGroup({
             label: `texture bindgroup: ${textureBuffers.map(b => b.label).join("/")}`,
             layout: pipeline.getBindGroupLayout(1),
             entries: [
                 { binding: 0, resource: sampler },
+                { binding: 1, resource: sampler_direct },
                 ...textureEntries,
             ],
         });

@@ -4,11 +4,13 @@
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color: texture_2d<f32>;
+@group(1) @binding(1) var t_sampler_direct: sampler;
+@group(1) @binding(2) var t_color: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
 	_ = t_sampler;
+	_ = t_sampler_direct;
 	_ = t_color;
 
 	let px = in.screen.xy - 0.5; // [0, resolution)

@@ -6,13 +6,16 @@
 @group(0) @binding(3) var<uniform> u_phong: PhongUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color: texture_2d<f32>;
-@group(1) @binding(2) var t_normal: texture_2d<f32>;
-@group(1) @binding(3) var t_roughness: texture_2d<f32>;
-@group(1) @binding(4) var t_specular: texture_2d<f32>;
+@group(1) @binding(1) var t_sampler_direct: sampler;
+@group(1) @binding(2) var t_color: texture_2d<f32>;
+@group(1) @binding(3) var t_normal: texture_2d<f32>;
+@group(1) @binding(4) var t_roughness: texture_2d<f32>;
+@group(1) @binding(5) var t_specular: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
+	_ = t_sampler_direct;
+	
 	let tangent = in.tangent;
 	let bitangent = cross(in.normal, in.tangent);
 	let tbn = mat3x3f(tangent, bitangent, in.normal);

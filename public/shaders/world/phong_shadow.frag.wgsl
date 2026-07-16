@@ -5,17 +5,16 @@
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 @group(0) @binding(3) var<uniform> u_phong: PhongUniforms;
 
-@group(0) @binding(4) var shadow_map_sampler: sampler;
-@group(0) @binding(5) var shadow_map: texture_depth_2d;
-
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color: texture_2d<f32>;
+@group(1) @binding(1) var t_sampler_direct: sampler;
+@group(1) @binding(2) var t_color: texture_2d<f32>;
+@group(1) @binding(3) var shadow_map: texture_depth_2d;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
 	let shadowspace_depth = in.shadow_space.z / in.shadow_space.w;
 	let shadow_uv = (in.shadow_space.xyz / in.shadow_space.w) * 0.5 + 0.5;
-	let shadowmap_depth = textureSample(shadow_map, shadow_map_sampler, shadow_uv.xy * vec2f(1.0, -1.0) + vec2f(0.0, 1.0));
+	let shadowmap_depth = textureSample(shadow_map, t_sampler_direct, shadow_uv.xy * vec2f(1.0, -1.0) + vec2f(0.0, 1.0));
 
 	var data: FbData;
 	data.pos = in.pos;

@@ -20,7 +20,8 @@ struct RaysphereUniforms {
 @group(0) @binding(3) var<storage, read> u_rayspheres: RaysphereUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color: texture_2d<f32>;
+@group(1) @binding(1) var t_sampler_direct: sampler;
+@group(1) @binding(2) var t_color: texture_2d<f32>;
 
 struct Ray {
 	origin: vec3f,
@@ -40,6 +41,8 @@ fn intersectSphere(ray: Ray, position: vec4f) -> f32 {
 
 @fragment
 fn main(in: FragmentIn) -> FragmentOut {
+	_ = t_sampler_direct;
+	
 	const PI = 3.141592653589793;
 	const far = 100.0;
 	const near = 0.01;

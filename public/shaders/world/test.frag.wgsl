@@ -4,11 +4,14 @@
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color0: texture_2d<f32>;
-@group(1) @binding(2) var t_color1: texture_2d<f32>;
+@group(1) @binding(1) var t_sampler_direct: sampler;
+@group(1) @binding(2) var t_color0: texture_2d<f32>;
+@group(1) @binding(3) var t_color1: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
+	_ = t_sampler_direct;
+	
 	var data: FbData;
 	if (u_global.frame % 2 == 0) {
 		data.color = in.color * textureSample(t_color0, t_sampler, in.uv);

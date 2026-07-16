@@ -4,6 +4,7 @@
 @group(0) @binding(0) var<uniform> u_post: PostUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
+@group(1) @binding(1) var t_sampler_direct: sampler;
 
 @group(2) @binding(0) var fb_color: texture_storage_2d<rgba8unorm, read>;
 @group(2) @binding(1) var fb_pos_depth: texture_storage_2d<rgba32float, read>;
@@ -12,6 +13,7 @@
 @fragment 
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
+	_ = t_sampler_direct;
 	let pixel = vec2i(in.screen.xy);
 	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 	var color = data.color;

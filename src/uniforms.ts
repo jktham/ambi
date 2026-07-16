@@ -6,7 +6,6 @@ export class Uniforms {
 	_name = "Uniforms";
 	_useStorageBuffer = false; // set GPUBufferUsage.STORAGE flag, for large or dynamic buffers
 	_instanceCount = 0; // draw instanced if > 0
-	_useShadowMap = false; // include shadow depth buffer in bindgroup
 	_data = new Float32Array(this._size()); // sent to shader each frame
 	
 	_size(): number {

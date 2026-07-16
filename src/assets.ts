@@ -23,11 +23,14 @@ export type MeshPath = `${string}.${MeshTypes}`;
 const textureTypes = ["png", "jpg", "json"] as const;
 type TextureTypes = typeof textureTypes[number];
 
-/** special labels that are replaced before asset load */
-export type TextureLabel = `@${"diffuse" | "normal" | "roughness" | "specular"}`;
+/** special labels from mtl that are replaced before asset load */
+export type TextureMtlLabel = `@${"diffuse" | "normal" | "roughness" | "specular"}`;
 
-/** path relative to public/textures/ or material texture label */
-export type TexturePath = `${string}.${TextureTypes}` | TextureLabel;
+/** special labels from renderer that are intercepted before asset load */
+export type TextureBuiltinLabel = `$${"shadowmap"}`;
+
+/** path relative to public/textures/ or texture label */
+export type TexturePath = `${string}.${TextureTypes}` | TextureMtlLabel | TextureBuiltinLabel;
 
 /** supported material filetypes */
 const materialTypes = ["mtl"] as const;
@@ -46,7 +49,7 @@ export class Assets {
 	private textures: Map<TexturePath, ImageData> = new Map();
 	private colliders: Map<MeshPath, Vec3[][]> = new Map();
 	private bboxes: Map<MeshPath, Bbox> = new Map();
-	private materials: Map<MaterialPath, Map<TextureLabel, TexturePath>> = new Map();
+	private materials: Map<MaterialPath, Map<TextureMtlLabel, TexturePath>> = new Map();
 
 
 	/** load .wgsl shader from public/shaders/ */
@@ -154,6 +157,10 @@ export class Assets {
 			throw new Error(`unresolved texture label: ${path}`);
 		}
 
+		if (path.startsWith("$")) {
+			throw new Error(`tried to load builtin label: ${path}`);
+		}
+
 		const type = (path.split(".").pop() || "") as TextureTypes;
 		if (!textureTypes.includes(type)) {
 			throw new Error(`unknown texture type: ${path}`);
@@ -200,7 +207,7 @@ export class Assets {
 	}
 
 	/** returns map of texture labels to texture paths defined in .mtl */
-	async loadMaterial(path: MaterialPath): Promise<Map<TextureLabel, TexturePath>> {
+	async loadMaterial(path: MaterialPath): Promise<Map<TextureMtlLabel, TexturePath>> {
 		if (this.materials.has(path)) {
 			return this.materials.get(path)!;
 		}
@@ -369,8 +376,8 @@ export class Assets {
 	}
 
 	/** parse .mtl and return map of found texture labels to texture paths */
-	private parseMaterial(path: MaterialPath, file: string): Map<TextureLabel, TexturePath> {
-		let maps = new Map<TextureLabel, TexturePath>();
+	private parseMaterial(path: MaterialPath, file: string): Map<TextureMtlLabel, TexturePath> {
+		let maps = new Map<TextureMtlLabel, TexturePath>();
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
 			switch (words[0].toLowerCase()) {

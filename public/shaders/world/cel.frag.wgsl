@@ -15,10 +15,13 @@ struct PhongUniforms {
 @group(0) @binding(3) var<uniform> u_phong: PhongUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color: texture_2d<f32>;
+@group(1) @binding(1) var t_sampler_direct: sampler;
+@group(1) @binding(2) var t_color: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
+	_ = t_sampler_direct;
+	
 	var data: FbData;
 	data.color = in.color * vec4f(u_phong.light_color.rgb * phong_factor(in.pos, in.normal, u_global.view_pos, u_phong.ambient_factor, u_phong.diffuse_factor, u_phong.specular_factor, u_phong.specular_exponent, u_phong.light_pos), 1.0) * textureSample(t_color, t_sampler, in.uv);
 	data.pos = in.pos;

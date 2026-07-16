@@ -19,15 +19,13 @@ export class DebugShadowScene extends Scene {
 		this.shadowSource!.fov = 80.0;
 		this.shadowSource!.near = 0.01;
 		this.shadowSource!.far = 100.0;
-
-		this.phong._useShadowMap = true;
 	}
 
 	init() {
 		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-4, -2, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
-		obj.textures = ["test_trans2.png"];
+		obj.textures = ["test_trans2.png", "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -38,7 +36,7 @@ export class DebugShadowScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -4, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
-		obj.textures = ["test.png"];
+		obj.textures = ["test.png", "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -49,7 +47,7 @@ export class DebugShadowScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(4, -2, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
-		obj.textures = ["test.png"];
+		obj.textures = ["test.png", "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -70,7 +68,7 @@ export class DebugShadowScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
-		obj.textures = ["test.png"];
+		obj.textures = ["test.png", "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;

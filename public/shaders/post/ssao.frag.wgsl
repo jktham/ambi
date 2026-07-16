@@ -12,6 +12,7 @@ struct PostSsaoUniforms {
 @group(0) @binding(1) var<storage, read> u_ssao: PostSsaoUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
+@group(1) @binding(1) var t_sampler_direct: sampler;
 @group(1) @binding(1) var t_noise: texture_2d<f32>;
 
 @group(2) @binding(0) var fb_color: texture_storage_2d<rgba8unorm, read>;
@@ -21,6 +22,7 @@ struct PostSsaoUniforms {
 @fragment 
 fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
+	_ = t_sampler_direct;
 	_ = u_post.time;
 	_ = t_noise;
 	let pixel = vec2i(in.screen.xy);

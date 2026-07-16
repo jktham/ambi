@@ -5,10 +5,13 @@
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color: texture_2d<f32>;
+@group(1) @binding(1) var t_sampler_direct: sampler;
+@group(1) @binding(2) var t_color: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
+	_ = t_sampler_direct;
+	
 	let seed = u_global.frame / 1000.0 % 10.0 + 1.0;
 	var data: FbData;
 	data.color = in.color * textureSample(t_color, t_sampler, in.uv) * vec4f(vec3f(gold_noise(in.screen.xy, seed)), 1.0);

@@ -4,10 +4,13 @@
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color: texture_2d<f32>;
+@group(1) @binding(1) var t_sampler_direct: sampler;
+@group(1) @binding(2) var t_color: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
+	_ = t_sampler_direct;
+	
 	let speed = select(u_object.frag_config.x, 1.0, u_object.frag_config.x == 0.0);
 	let min = select(u_object.frag_config.y, 0.0, u_object.frag_config.y == 0.0);
 	let max = select(u_object.frag_config.z, 1.0, u_object.frag_config.z == 0.0);

@@ -4,10 +4,13 @@
 @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
 @group(1) @binding(0) var t_sampler: sampler;
-@group(1) @binding(1) var t_color: texture_2d<f32>;
+@group(1) @binding(1) var t_sampler_direct: sampler;
+@group(1) @binding(2) var t_color: texture_2d<f32>;
 
 @fragment 
 fn main(in: FragmentIn) -> FragmentOut {
+	_ = t_sampler_direct;
+	
 	let ray: vec3f = in.pos.xyz - u_global.view_pos;
 	let r: f32 = length(ray);
 	let phi: f32 = sign(ray.z) * acos(ray.x / sqrt(ray.x*ray.x + ray.z*ray.z));
