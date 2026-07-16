@@ -34,6 +34,9 @@ export class Renderer {
     private objectUniformBindGroups: Map<oid, GPUBindGroup> = new Map();
     private objectTextureBindGroups: Map<oid, GPUBindGroup> = new Map();
 
+    private objectInitialized: Map<oid, boolean> = new Map();
+    private reloadTextureBindgroups = false;
+
     private postPipeline!: GPURenderPipeline;
     private postBaseUniformBuffer!: GPUBuffer;
     private postFragUniformBuffer!: GPUBuffer;
@@ -177,6 +180,7 @@ export class Renderer {
             format: "rgba8unorm",
             usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
         });
+        this.reloadTextureBindgroups = true;
     }
 
     private destroyFrameBufferTextures() {
@@ -185,9 +189,8 @@ export class Renderer {
         this.posDepthFrameBuffer.destroy();
         this.normalMaskFrameBuffer.destroy();
 
-        // TODO: prevent use of destroyed textures
-        // this.shadowMapTexture.destroy();
-        // this.prevFrameBuffer.destroy();
+        this.shadowMapTexture.destroy();
+        this.prevFrameBuffer.destroy();
     }
 
     // ---- create and destroy asset-dependent resources ---- 
@@ -360,28 +363,31 @@ export class Renderer {
                 if (!(texture.startsWith("$") || texture.startsWith("@"))) {
                     const textureBuffer = await this.createTextureBuffer(texture);
                     this.textureBuffers.set(texture, textureBuffer);
-                } else {
-                    switch (texture) {
-                        case "$shadowmap": {
-                            this.textureBuffers.set(texture, this.shadowMapTexture);
-                            break;
-                        }
-                        case "$framebuffer": {
-                            this.textureBuffers.set(texture, this.prevFrameBuffer);
-                            break;
-                        }
-                        default: {
-                            throw new Error(`label ${texture} not resolved/valid`);
-                        }
-                    }
                 }
             }
         }
-        if (!this.objectTextureBindGroups.has(object.id)) {
-            const textureBuffers = object.textures.map(texture => this.textureBuffers.get(texture)!);
+        if (!this.objectTextureBindGroups.has(object.id) || this.reloadTextureBindgroups) {
+            const textureBuffers = object.textures.map(texture => {
+                switch (texture) {
+                    case "$shadowmap": {
+                        return this.shadowMapTexture;
+                    }
+                    case "$framebuffer": {
+                        return this.prevFrameBuffer;
+                    }
+                    default: {
+                        if (!this.textureBuffers.has(texture)) {
+                            throw new Error(`texture buffer ${texture} loaded`);
+                        }
+                        return this.textureBuffers.get(texture)!;
+                    }
+                }
+            });
             const textureBindGroup = await this.createTextureBindGroup(textureBuffers, pipeline);
             this.objectTextureBindGroups.set(object.id, textureBindGroup);
         }
+
+        this.objectInitialized.set(object.id, true);
     }
 
     private async initPost(scene: Scene) {
@@ -669,7 +675,7 @@ export class Renderer {
             if (!object.visible) {
                 continue;
             }
-            if (!this.objectBaseUniformBuffers.has(object.id)) {
+            if (!(this.objectInitialized.get(object.id) ?? false) || this.reloadTextureBindgroups) {
                 await this.initObject(object);
             }
         }
@@ -682,10 +688,12 @@ export class Renderer {
             this.updateWorldGlobalBuffers(scene, scene.shadowSource, time, frame, profiler);
             this.drawShadows(scene, profiler);
 
-            // copy depth buffer to shadow map texture
-            const encoder = this.device.createCommandEncoder({ label: "copy depth" });
-            encoder.copyTextureToTexture({texture: this.depthTexture}, {texture: this.shadowMapTexture}, {width: this.depthTexture.width, height: this.depthTexture.height})
-            this.device.queue.submit([encoder.finish()]); // todo: prevent destroy while in use
+            if (scene.entities.flatMap(obj => obj.textures).includes("$shadowmap")) { // only copy if we intend to use it
+                // copy depth buffer to shadow map texture
+                const encoder = this.device.createCommandEncoder({ label: "copy depth" });
+                encoder.copyTextureToTexture({texture: this.depthTexture}, {texture: this.shadowMapTexture}, {width: this.depthTexture.width, height: this.depthTexture.height})
+                this.device.queue.submit([encoder.finish()]);
+            }
         }
 
         this.updateWorldGlobalBuffers(scene, camera, time, frame, profiler);
@@ -694,7 +702,7 @@ export class Renderer {
         this.updatePostBuffers(scene, camera, time, frame, profiler);
         this.drawPost(profiler);
 
-        if (this.textureBuffers.has("$framebuffer")) { // only copy if we intend to use it
+        if (scene.entities.flatMap(obj => obj.textures).includes("$framebuffer")) { // only copy if we intend to use it
             // copy color buffer to prev framebuffer texture
             const encoder = this.device.createCommandEncoder({ label: "copy framebuffer" });
             encoder.copyTextureToTexture({texture: this.context.getCurrentTexture()}, {texture: this.prevFrameBuffer}, {width: this.context.getCurrentTexture().width, height: this.context.getCurrentTexture().height})
@@ -747,8 +755,7 @@ export class Renderer {
             const vertUniformBuffer = this.objectVertUniformBuffers.get(object.id);
             const fragUniformBuffer = this.objectFragUniformBuffers.get(object.id);
             if (!objectUniformBuffer || !vertUniformBuffer || !fragUniformBuffer) {
-                console.error(`missing uniform buffers ${object.id}`);
-                continue;
+                throw new Error(`missing uniform buffers ${object.id}`);
             }
 
             this.device.queue.writeBuffer(objectUniformBuffer, 0, objectUniforms._update().buffer);
@@ -793,8 +800,7 @@ export class Renderer {
             const uniformBindGroup = this.objectUniformBindGroups.get(object.id);
             const textureBindGroup = this.objectTextureBindGroups.get(object.id);
             if (!pipeline || !vertexBuffer || !uniformBindGroup || !textureBindGroup) {
-                console.error(`missing object assets ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
-                continue;
+                throw new Error(`missing object assets ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
             }
 
             pass.setPipeline(pipeline);
@@ -821,8 +827,7 @@ export class Renderer {
             const uniformBindGroup = this.objectUniformBindGroups.get(object.id);
             const textureBindGroup = this.objectTextureBindGroups.get(object.id);
             if (!pipeline || !vertexBuffer || !uniformBindGroup || !textureBindGroup) {
-                console.error(`missing object assets ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
-                continue;
+                throw new Error(`missing object assets ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
             }
 
             pass.setPipeline(pipeline);
