@@ -4,7 +4,7 @@ import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
 import { Vec2, Vec3, Vec4 } from "./vec";
 import type { Camera } from "./camera";
-import type { FragShaderPath, TexturePath } from "./assets";
+import type { Assets, FragShaderPath, TexturePath } from "./assets";
 
 export class Scene {
 	name: string = "none";
@@ -27,6 +27,11 @@ export class Scene {
 
 	objects: Object[] = [];
 	triggers: Trigger[] = [];
+
+	/** called before init, generates dynamic assets and places them in asset cache */
+	generateAssets(assets: Assets) {
+
+	}
 
 	/** called before scene load, no assets available yet */
 	init() {

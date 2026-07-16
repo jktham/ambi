@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
-import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type MeshPath, type MaterialPath, type ShaderPath, type TexturePath, type VertShaderPath, type TextureMtlLabel } from "./assets";
+import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type MeshPath, type MaterialPath, type ShaderPath, type TexturePath, type VertShaderPath, type MaterialTextureLabel } from "./assets";
 import type { Scene } from "./scene";
 import type { Object, oid } from "./object";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
@@ -251,27 +251,33 @@ export class Renderer {
         let shaders = new Set<ShaderPath>();
         let meshes = new Set<MeshPath>();
         let textures = new Set<TexturePath>();
+        let colliders = new Set<MeshPath>();
+        let bboxes = new Set<MeshPath>();
         let mtls = new Set<MaterialPath>();
         for (let object of scene.objects) {
             shaders.add(object.vertShader);
             shaders.add(object.fragShader);
             meshes.add(object.mesh);
             object.textures.filter(t => !(t.startsWith("@") || t.startsWith("$"))).map(t => textures.add(t));
-            if (object.collider) meshes.add(object.collider);
-            if (object.bbox?.mesh) meshes.add(object.bbox.mesh);
+            if (object.collider) colliders.add(object.collider);
+            if (object.bbox?.mesh) bboxes.add(object.bbox.mesh);
             if (object.mtl) mtls.add(object.mtl);
         }
         for (let trigger of scene.triggers) {
-            if (trigger.bbox?.mesh) meshes.add(trigger.bbox.mesh);
+            if (trigger.bbox?.mesh) bboxes.add(trigger.bbox.mesh);
         }
         shaders.add("post/quad.vert.wgsl");
         shaders.add(this.postShaderOverride ?? scene.postShader);
 
+        let totalAssets = [...shaders, ...meshes, ...textures, ...colliders, ...bboxes, ...mtls].length;
+
+        let loaded: string[] = [];
         let errors: string[] = [];
         const wrapInfo = async (loader: (path: any) => Promise<any>, path: string) => {
             try {
                 await loader.call(this.assets, path); // bind assets as this
-                gui.updateInfo(`loaded ${path}`);
+                loaded.push(path);
+                gui.updateInfo(`${loaded.length}/${totalAssets} loaded: ${path}`);
             } catch (e) {
                 console.error(e);
                 errors.push((e as Error).message);
@@ -282,9 +288,12 @@ export class Renderer {
         promises.push(...[...shaders].map((p) => wrapInfo(this.assets.loadShader, p)));
         promises.push(...[...meshes].map((p) => wrapInfo(this.assets.loadMesh, p)));
         promises.push(...[...textures].map((p) => wrapInfo(this.assets.loadTexture, p)));
+        promises.push(...[...colliders].map((p) => wrapInfo(this.assets.loadCollider, p)));
+        promises.push(...[...bboxes].map((p) => wrapInfo(this.assets.loadBbox, p)));
         promises.push(...[...mtls].map((p) => wrapInfo(this.assets.loadMaterial, p)));
         await Promise.allSettled(promises);
-        if (errors.length > 0) gui.updateInfo(`failed: ${errors.join(", ")}`);
+
+        if (errors.length > 0) gui.updateInfo(`${errors.length} error${errors.length > 1 ? "s" : ""}: ${errors.join(", ")}`);
     }
 
     private async initWorld(scene: Scene) {
@@ -348,7 +357,7 @@ export class Renderer {
             let mtl_textures = await this.assets.loadMaterial(object.mtl);
             for (let i=0; i<object.textures.length; i++) {
                 if (object.textures[i].startsWith("@")) {
-                    let label = object.textures[i] as TextureMtlLabel;
+                    let label = object.textures[i] as MaterialTextureLabel;
                     if (!mtl_textures.has(label)) {
                         throw new Error(`label ${label} not defined in material`);
                     }
@@ -376,8 +385,14 @@ export class Renderer {
                         return this.prevFrameBuffer;
                     }
                     default: {
+                        if (texture.startsWith("@")) {
+                            throw new Error(`material texture label ${texture} not resolved`);
+                        }
+                        if (texture.startsWith("$")) {
+                            throw new Error(`builtin texture label ${texture} not available`);
+                        }
                         if (!this.textureBuffers.has(texture)) {
-                            throw new Error(`texture buffer ${texture} loaded`);
+                            throw new Error(`texture buffer ${texture} not available`);
                         }
                         return this.textureBuffers.get(texture)!;
                     }

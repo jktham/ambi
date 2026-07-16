@@ -41,14 +41,15 @@ silly engine for cool scenes and per object shader stages c:
     - [x] shadow mapping, reusing world pipeline
     - [ ] shadow mapping, with dedicated depth-only pipeline and decoupled shadowmap resolution
     - [x] asset path type safety
-    - [ ] procedural assets
+    - [x] procedural assets
     - [ ] text mesh generation
     - [ ] renderer overhaul, abstract render passes and standardize bindgroup layouts
     - [ ] declare render passes in scene?
     - [ ] performance optimization
-    - [ ] render to world texture
+    - [x] render to world texture
     - [ ] sound sources, audio playback
-    - [ ] material abstraction, named pbr textures
+    - [x] material abstraction, named pbr textures
+    - [x] fix use after destroy
 
 - scenes
     - [x] museum (wip), general tests and mini scenes
@@ -84,6 +85,7 @@ silly engine for cool scenes and per object shader stages c:
         - [ ] cel shading
         - [x] phong with shadowmap
         - [x] phong with normalmap, tangent space transform
+        - [x] phong with normalmap, roughness, specular
         - [ ] phong with multiple pointlights
         - [ ] phong with pbr
     - post

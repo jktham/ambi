@@ -68,7 +68,9 @@ export class Engine {
 		this.gui.updateCameraMode(this.scene.cameraMode);
 		this.gui.updateResolution(this.scene.resolution);
 
+		this.scene.generateAssets(this.assets);
 		this.scene.init();
+
 		await this.renderer.loadScene(this.scene, this.gui);
 		await this.player.loadColliders(this.assets, this.scene.objects);
 

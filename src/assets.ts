@@ -12,25 +12,28 @@ export type FragShaderPath = `${string}.frag.${ShaderTypes}`;
 /** path relative to public/shaders/ */
 export type ShaderPath = `${string}.${ShaderTypes}`;
 
+/** dynamic assets added to cache by scene.generateAssets, not loaded from a file */
+export type DynamicAssetLabel = `:${string}`;
+
 /** supported mesh filetypes */
 const meshTypes = ["obj", "json"] as const;
 type MeshTypes = typeof meshTypes[number];
 
-/** path relative to public/meshes/ */
-export type MeshPath = `${string}.${MeshTypes}`;
+/** path relative to public/meshes/ or dynamic label */
+export type MeshPath = `${string}.${MeshTypes}` | DynamicAssetLabel;
 
 /** supported texture filetypes */
 const textureTypes = ["png", "jpg", "json"] as const;
 type TextureTypes = typeof textureTypes[number];
 
-/** special labels from mtl that are replaced before asset load */
-export type TextureMtlLabel = `@${"diffuse" | "normal" | "roughness" | "specular"}`;
+/** special labels from mtl that are resolved before asset load */
+export type MaterialTextureLabel = `@${"diffuse" | "normal" | "roughness" | "specular"}`;
 
 /** special labels from renderer that are intercepted before asset load */
-export type TextureBuiltinLabel = `$${"shadowmap" | "framebuffer"}`;
+export type BuiltinTextureLabel = `$${"shadowmap" | "framebuffer"}`;
 
-/** path relative to public/textures/ or texture label */
-export type TexturePath = `${string}.${TextureTypes}` | TextureMtlLabel | TextureBuiltinLabel;
+/** path relative to public/textures/ or material/builtin/dynamic label */
+export type TexturePath = `${string}.${TextureTypes}` | MaterialTextureLabel | BuiltinTextureLabel | DynamicAssetLabel;
 
 /** supported material filetypes */
 const materialTypes = ["mtl"] as const;
@@ -49,8 +52,16 @@ export class Assets {
 	private textures: Map<TexturePath, ImageData> = new Map();
 	private colliders: Map<MeshPath, Vec3[][]> = new Map();
 	private bboxes: Map<MeshPath, Bbox> = new Map();
-	private materials: Map<MaterialPath, Map<TextureMtlLabel, TexturePath>> = new Map();
+	private materials: Map<MaterialPath, Map<MaterialTextureLabel, TexturePath>> = new Map();
 
+
+	addDynamicMesh(label: DynamicAssetLabel, data: Float32Array) {
+		this.meshes.set(label, data);
+	}
+
+	addDynamicTexture(label: DynamicAssetLabel, data: ImageData) {
+		this.textures.set(label, data);
+	}
 
 	/** load .wgsl shader from public/shaders/ */
 	async loadShader(path: ShaderPath): Promise<string> {
@@ -79,6 +90,10 @@ export class Assets {
 			return this.meshes.get(path)!;
 		}
 
+		if (path.startsWith(":")) {
+			throw new Error(`uninitialized dynamic mesh label: ${path}`);
+		}
+
 		const type = (path.split(".").pop() || "") as MeshTypes;
 		if (!meshTypes.includes(type)) {
 			throw new Error(`unknown mesh type: ${path}`);
@@ -105,60 +120,20 @@ export class Assets {
 		}
 	}
 
-	/** generate collider based on .obj or .json mesh from public/meshes/ */
-	async loadCollider(path: MeshPath): Promise<Vec3[][]> {
-		if (this.colliders.has(path)) {
-			return this.colliders.get(path)!;
-		}
-
-		const type = (path.split(".").pop() || "") as MeshTypes;
-		if (!meshTypes.includes(type)) {
-			throw new Error(`unknown collider mesh type: ${path}`);
-		}
-
-		if (!await this.fileExists(`/meshes/${path}`)) {
-			throw new Error(`collider mesh does not exist: ${path}`);
-		}
-		
-		let mesh = await this.loadMesh(path);
-		let collider = this.parseCollider(path, mesh);
-		this.colliders.set(path, collider);
-		return collider;
-	}
-
-	/** returns new bbox based on .obj or .json mesh, only populates min/max */
-	async loadBbox(path: MeshPath): Promise<Bbox> {
-		if (this.bboxes.has(path)) {
-			return this.bboxes.get(path)!;
-		}
-
-		const type = (path.split(".").pop() || "") as MeshTypes;
-		if (!meshTypes.includes(type)) {
-			throw new Error(`unknown bbox mesh type: ${path}`);
-		}
-
-		if (!await this.fileExists(`/meshes/${path}`)) {
-			throw new Error(`bbox mesh does not exist: ${path}`);
-		}
-
-		let mesh = await this.loadMesh(path);
-		let bbox = this.parseBbox(path, mesh);
-		this.bboxes.set(path, bbox);
-		return bbox;
-	}
-
 	/** load .png, .jpg or .json texture from public/textures/ */
 	async loadTexture(path: TexturePath): Promise<ImageData> {
 		if (this.textures.has(path)) {
 			return this.textures.get(path)!;
 		}
 
-		if (path.startsWith("@")) {
-			throw new Error(`unresolved texture label: ${path}`);
+		if (path.startsWith(":")) {
+			throw new Error(`uninitialized dynamic texture label: ${path}`);
 		}
-
+		if (path.startsWith("@")) {
+			throw new Error(`unresolved material texture label: ${path}`);
+		}
 		if (path.startsWith("$")) {
-			throw new Error(`tried to load builtin label: ${path}`);
+			throw new Error(`unintercepted builtin texture label: ${path}`);
 		}
 
 		const type = (path.split(".").pop() || "") as TextureTypes;
@@ -206,8 +181,32 @@ export class Assets {
 		}
 	}
 
+	/** generate collider based on .obj or .json mesh from public/meshes/ */
+	async loadCollider(path: MeshPath): Promise<Vec3[][]> {
+		if (this.colliders.has(path)) {
+			return this.colliders.get(path)!;
+		}
+		
+		let mesh = await this.loadMesh(path);
+		let collider = this.parseCollider(path, mesh);
+		this.colliders.set(path, collider);
+		return collider;
+	}
+
+	/** returns new bbox based on .obj or .json mesh, only populates min/max */
+	async loadBbox(path: MeshPath): Promise<Bbox> {
+		if (this.bboxes.has(path)) {
+			return this.bboxes.get(path)!;
+		}
+
+		let mesh = await this.loadMesh(path);
+		let bbox = this.parseBbox(path, mesh);
+		this.bboxes.set(path, bbox);
+		return bbox;
+	}
+
 	/** returns map of texture labels to texture paths defined in .mtl */
-	async loadMaterial(path: MaterialPath): Promise<Map<TextureMtlLabel, TexturePath>> {
+	async loadMaterial(path: MaterialPath): Promise<Map<MaterialTextureLabel, TexturePath>> {
 		if (this.materials.has(path)) {
 			return this.materials.get(path)!;
 		}
@@ -376,8 +375,8 @@ export class Assets {
 	}
 
 	/** parse .mtl and return map of found texture labels to texture paths */
-	private parseMaterial(path: MaterialPath, file: string): Map<TextureMtlLabel, TexturePath> {
-		let maps = new Map<TextureMtlLabel, TexturePath>();
+	private parseMaterial(path: MaterialPath, file: string): Map<MaterialTextureLabel, TexturePath> {
+		let maps = new Map<MaterialTextureLabel, TexturePath>();
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
 			switch (words[0].toLowerCase()) {

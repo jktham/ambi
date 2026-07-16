@@ -21,11 +21,11 @@ export class Object {
 
     /** mesh color multiplier, with transparency */
     color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);
-    /** path to .obj or .json mesh file in public/meshes/, actual data later loaded by renderer from assets */
+    /** path to .obj or .json mesh file in public/meshes/, or dynamic label. actual data later loaded by renderer from assets */
     mesh: MeshPath = "triangle.json";
-    /** paths to .png or .jpg texture files in public/textures/ or material label, assigned to textures in shader bindgroup 1, bindings 1..=n */
+    /** paths to .png or .jpg texture files in public/textures/ or material label or dynamic label, assigned to textures in shader bindgroup 1, bindings 2.. */
     textures: TexturePath[] = ["test.png"];
-    /** object to world transform */
+    /** worldspace transform */
     model: Mat4 = new Mat4();
     /** custom value written to mask framebuffer, for postprocessing pass, u8 [0, 255] */
     mask: number = 0;

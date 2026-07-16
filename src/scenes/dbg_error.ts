@@ -22,14 +22,22 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-6, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
-		obj.textures = ["abc.png"]; // does not exist
+		obj.textures = ["err_texture.png"]; // does not exist
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
-		obj.mesh = "abc.obj"; // does not exist
+		obj.mesh = "err_mesh.obj"; // does not exist
+		obj.textures = ["test.png"];
+		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragUniforms = this.phong;
+		this.objects.push(obj);
+
+		obj = new Object();
+		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
+		obj.mesh = ":err_dynamic"; // does not exist
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -38,7 +46,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
-		obj.mtl = "abc.mtl"; // does not exist
+		obj.mtl = "err_material.mtl"; // does not exist
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -56,7 +64,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(6, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
-		obj.collider = "abc.obj"; // does not exist
+		obj.collider = "err_collider.obj"; // does not exist
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
@@ -66,7 +74,7 @@ export class DebugErrorScene extends Scene {
 		obj.model = Mat4.trs(new Vec3(9, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
-		obj.fragShader = "world/abc.frag.glsl" as any; // invalid type, does not exist
+		obj.fragShader = "world/err_shader.frag.glsl" as any; // invalid type, does not exist
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
