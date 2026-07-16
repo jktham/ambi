@@ -513,7 +513,7 @@ export class MuseumScene extends Scene {
 
 		// concat
 		this.applyRoomOffsets();
-		this.entities.push(...this.roomObjects.flat());
+		this.objects.push(...this.roomObjects.flat());
 		this.triggers.push(...this.roomTriggers.flat());
 
 		// outer rooms
@@ -535,7 +535,7 @@ export class MuseumScene extends Scene {
 		];
 		uniforms.normals = uniforms.models.map(m => m.inverse().transpose());
 		obj.vertUniforms = uniforms;
-		this.entities.push(obj);
+		this.objects.push(obj);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {

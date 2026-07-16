@@ -19,7 +19,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
@@ -30,7 +30,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
@@ -41,7 +41,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-0.5, 3, 0), new Vec3(), 1);
@@ -52,7 +52,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0.5, 3, 0), new Vec3(), 1);
@@ -63,7 +63,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
@@ -72,7 +72,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/skybox.frag.wgsl";
 		obj.z = 1000.0;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
@@ -82,13 +82,13 @@ export class DebugTransparencyScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
-		this.entities.push(obj);
+		this.objects.push(obj);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		this.phong.light.pos = lightPos;
-		for (let obj of this.entities) {
+		for (let obj of this.objects) {
 			obj.changed = true;
 		}
 

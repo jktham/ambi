@@ -31,7 +31,7 @@ export class DebugShadowScene extends Scene {
 		obj.fragUniforms = this.phong;
 		obj.fragConfig.x = this.shadow_bias;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -4, 0), new Vec3(), 1);
@@ -42,7 +42,7 @@ export class DebugShadowScene extends Scene {
 		obj.fragUniforms = this.phong;
 		obj.fragConfig.x = this.shadow_bias;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(4, -2, 0), new Vec3(), 1);
@@ -53,7 +53,7 @@ export class DebugShadowScene extends Scene {
 		obj.fragUniforms = this.phong;
 		obj.fragConfig.x = this.shadow_bias;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
@@ -63,7 +63,7 @@ export class DebugShadowScene extends Scene {
 		obj.fragShader = "world/skybox.frag.wgsl";
 		obj.z = 1000.0;
 		obj.shadows = false;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
@@ -74,13 +74,13 @@ export class DebugShadowScene extends Scene {
 		obj.fragUniforms = this.phong;
 		obj.fragConfig.x = this.shadow_bias;
 		obj.z = 900.0;
-		this.entities.push(obj);
+		this.objects.push(obj);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 20, 20*Math.sin(time/2));
 		this.phong.light.pos = lightPos;
-		for (let obj of this.entities) {
+		for (let obj of this.objects) {
 			obj.changed = true;
 		}
 

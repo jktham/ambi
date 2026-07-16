@@ -70,7 +70,7 @@ export class Engine {
 
 		this.scene.init();
 		await this.renderer.loadScene(this.scene, this.gui);
-		await this.player.loadColliders(this.assets, this.scene.entities);
+		await this.player.loadColliders(this.assets, this.scene.objects);
 
         console.log(`done`);
 		this.loop();
@@ -135,10 +135,10 @@ export class Engine {
 			this.input.activeActions.delete("interact"); // only trigger once per press
 		}
 
-		for (let obj of this.scene.entities.filter(obj => obj.lifetime !== undefined)) {
+		for (let obj of this.scene.objects.filter(obj => obj.lifetime !== undefined)) {
 			obj.lifetime! -= deltaTime;
 		}
-		this.scene.entities.splice(0, this.scene.entities.length,...this.scene.entities.filter(obj => obj.lifetime === undefined || obj.lifetime > 0.0))
+		this.scene.objects.splice(0, this.scene.objects.length,...this.scene.objects.filter(obj => obj.lifetime === undefined || obj.lifetime > 0.0))
 
 		this.profiler.stop("  updateScene");
 
@@ -148,14 +148,14 @@ export class Engine {
 
         // z-sort objects
 		let dist = (obj: Object) => obj.model.origin().dist(this.player.camera.model.origin())
-        this.scene.entities.filter(obj => obj.zsort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
+        this.scene.objects.filter(obj => obj.zsort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
             let z_frac = (i+1) / (arr.length+1); // (0, 1)
             obj.z = Math.floor(obj.z) + z_frac;
 		})
-        this.scene.entities.sort((a, b) => b.z - a.z);
+        this.scene.objects.sort((a, b) => b.z - a.z);
 
 		// update gui
-		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.entities.length}/${this.scene.entities.filter(o => o.visible).length}/${this.scene.entities.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
+		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.objects.length}/${this.scene.objects.filter(o => o.visible).length}/${this.scene.objects.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
 		
 		this.profiler.stop("update");
 		if (frame % 120 == 0) this.profiler.print();

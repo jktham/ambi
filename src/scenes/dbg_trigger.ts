@@ -23,7 +23,7 @@ export class DebugTriggerScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		let trg = new Trigger();
 		trg.bbox = new Bbox([new Vec3(-3, 0, 0).sub(new Vec3(1, 1, 1)), new Vec3(-3, 0, 0).add(new Vec3(1, 1, 1))]);
@@ -49,7 +49,7 @@ export class DebugTriggerScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		trg = new Trigger();
 		trg.bbox = new Bbox();
@@ -77,7 +77,7 @@ export class DebugTriggerScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		trg = new Trigger();
 		trg.bbox = new Bbox();
@@ -105,7 +105,7 @@ export class DebugTriggerScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.zsort = true;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		trg = new Trigger();
 		trg.bbox = new Bbox();
@@ -131,7 +131,7 @@ export class DebugTriggerScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/skybox.frag.wgsl";
 		obj.z = 1000.0;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		// floor
 		obj = new Object();
@@ -142,13 +142,13 @@ export class DebugTriggerScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
-		this.entities.push(obj);
+		this.objects.push(obj);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		this.phong.light.pos = lightPos;
-		for (let obj of this.entities) {
+		for (let obj of this.objects) {
 			obj.changed = true;
 		}
 

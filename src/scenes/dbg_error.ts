@@ -17,7 +17,7 @@ export class DebugErrorScene extends Scene {
 		obj.textures = ["@normal"]; // unresolved
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-6, 0, 0), new Vec3(), 1);
@@ -25,7 +25,7 @@ export class DebugErrorScene extends Scene {
 		obj.textures = ["abc.png"]; // does not exist
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
@@ -33,7 +33,7 @@ export class DebugErrorScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
@@ -42,7 +42,7 @@ export class DebugErrorScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
@@ -51,7 +51,7 @@ export class DebugErrorScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(6, 0, 0), new Vec3(), 1);
@@ -60,7 +60,7 @@ export class DebugErrorScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(9, 0, 0), new Vec3(), 1);
@@ -68,7 +68,7 @@ export class DebugErrorScene extends Scene {
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/abc.frag.glsl" as any; // invalid type, does not exist
 		obj.fragUniforms = this.phong;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 
 		obj = new Object();
@@ -78,7 +78,7 @@ export class DebugErrorScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/skybox.frag.wgsl";
 		obj.z = 1000.0;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
@@ -88,13 +88,13 @@ export class DebugErrorScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
-		this.entities.push(obj);
+		this.objects.push(obj);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 40, 20*Math.sin(time/2));
 		this.phong.light.pos = lightPos;
-		for (let obj of this.entities) {
+		for (let obj of this.objects) {
 			obj.changed = true;
 		}
 

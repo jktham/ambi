@@ -21,7 +21,7 @@ export class DebugEchoScene extends Scene {
 		obj.model = Mat4.trs(new Vec3(), new Vec3(), 20);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = phong;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.mesh = "monke.obj";
@@ -39,14 +39,14 @@ export class DebugEchoScene extends Scene {
 			inst.models.push(model);
 			inst.normals.push(model.inverse().transpose());
 		}
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["pulse_source"];
 		obj.mesh = "sphere.obj";
 		obj.textures = ["white.png"];
 		obj.model = Mat4.trs(new Vec3(0, 10, 0), new Vec3(), 1);
-		this.entities.push(obj);
+		this.objects.push(obj);
 	}
 
 	lastPulseTime = 0;

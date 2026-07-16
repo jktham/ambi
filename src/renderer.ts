@@ -252,7 +252,7 @@ export class Renderer {
         let meshes = new Set<MeshPath>();
         let textures = new Set<TexturePath>();
         let mtls = new Set<MaterialPath>();
-        for (let object of scene.entities) {
+        for (let object of scene.objects) {
             shaders.add(object.vertShader);
             shaders.add(object.fragShader);
             meshes.add(object.mesh);
@@ -298,7 +298,7 @@ export class Renderer {
         });
         this.globalUniformBuffer = globalUniformBuffer;
 
-        for (let object of scene.entities) {
+        for (let object of scene.objects) {
             if (!object.visible) {
                 continue;
             }
@@ -671,7 +671,7 @@ export class Renderer {
 
     async drawScene(scene: Scene, camera: Camera, time: number, frame: number, profiler: Profiler) {
         // initialize new objects
-        for (let object of scene.entities) {
+        for (let object of scene.objects) {
             if (!object.visible) {
                 continue;
             }
@@ -688,7 +688,7 @@ export class Renderer {
             this.updateWorldGlobalBuffers(scene, scene.shadowSource, time, frame, profiler);
             this.drawShadows(scene, profiler);
 
-            if (scene.entities.flatMap(obj => obj.textures).includes("$shadowmap")) { // only copy if we intend to use it
+            if (scene.objects.flatMap(obj => obj.textures).includes("$shadowmap")) { // only copy if we intend to use it
                 // copy depth buffer to shadow map texture
                 const encoder = this.device.createCommandEncoder({ label: "copy depth" });
                 encoder.copyTextureToTexture({texture: this.depthTexture}, {texture: this.shadowMapTexture}, {width: this.depthTexture.width, height: this.depthTexture.height})
@@ -702,7 +702,7 @@ export class Renderer {
         this.updatePostBuffers(scene, camera, time, frame, profiler);
         this.drawPost(profiler);
 
-        if (scene.entities.flatMap(obj => obj.textures).includes("$framebuffer")) { // only copy if we intend to use it
+        if (scene.objects.flatMap(obj => obj.textures).includes("$framebuffer")) { // only copy if we intend to use it
             // copy color buffer to prev framebuffer texture
             const encoder = this.device.createCommandEncoder({ label: "copy framebuffer" });
             encoder.copyTextureToTexture({texture: this.context.getCurrentTexture()}, {texture: this.prevFrameBuffer}, {width: this.context.getCurrentTexture().width, height: this.context.getCurrentTexture().height})
@@ -734,7 +734,7 @@ export class Renderer {
         profiler.start("  bufferWorldObject");
 
         // object uniforms, only update if changed
-        for (let object of scene.entities) {
+        for (let object of scene.objects) {
             if (!object.visible || !object.changed) {
                 continue;
             }
@@ -791,7 +791,7 @@ export class Renderer {
         profiler.start("  drawShadows");
         const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
         const pass = encoder.beginRenderPass(this.worldRenderPassDescriptor);
-        for (let object of scene.entities) {
+        for (let object of scene.objects) {
             if (!object.visible || !object.shadows) {
                 continue;
             }
@@ -818,7 +818,7 @@ export class Renderer {
         profiler.start("  drawWorld");
         const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
         const pass = encoder.beginRenderPass(this.worldRenderPassDescriptor);
-        for (let object of scene.entities) {
+        for (let object of scene.objects) {
             if (!object.visible) {
                 continue;
             }

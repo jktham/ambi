@@ -17,35 +17,35 @@ export class DebugRotationScene extends Scene {
 		obj.model = Mat4.trs(new Vec3(-6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["intrinsic"];
 		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["extrinsic"];
 		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["heading"];
 		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["lookat"];
 		obj.model = Mat4.trs(new Vec3(6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		// skybox
 		obj = new Object();
@@ -55,7 +55,7 @@ export class DebugRotationScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/skybox.frag.wgsl";
 		obj.z = 1000.0;
-		this.entities.push(obj);
+		this.objects.push(obj);
 
 		// floor
 		obj = new Object();
@@ -66,13 +66,13 @@ export class DebugRotationScene extends Scene {
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
-		this.entities.push(obj);
+		this.objects.push(obj);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		this.phong.light.pos = lightPos;
-		for (let obj of this.entities) {
+		for (let obj of this.objects) {
 			obj.changed = true;
 		}
 
@@ -96,7 +96,7 @@ export class DebugRotationScene extends Scene {
 		lookat.model = Mat4.translate(lookat.model.origin()).mul(Mat4.rotateLookAt(lookat.model.origin(), player.position));
 
 		// test decompose identity
-		for (let obj of this.entities) {
+		for (let obj of this.objects) {
 			obj.model = Mat4.trs(...obj.model.decompose());
 		}
 
@@ -109,7 +109,7 @@ export class DebugRotationScene extends Scene {
 		obj.model = player.camera.model.mul(Mat4.trs(new Vec3(0, 0, -2), new Vec3(), 0.5));
 		obj.mesh = "gimbal.obj";
 		obj.textures = ["white.png"];
-		this.entities.push(obj);
+		this.objects.push(obj);
 		
 	}
 }

@@ -45,7 +45,7 @@ export class FieldScene extends Scene {
 				new Vec3(0, 0, 0), 
 				this.CHUNK_SIZE
 			);
-			this.entities.push(ground);
+			this.objects.push(ground);
 		}
 
 		let sky = new Object();
@@ -54,7 +54,7 @@ export class FieldScene extends Scene {
 		sky.textures = ["test.png"];
 		sky.fragShader = "world/skybox.frag.wgsl";
 		sky.color = new Vec4(0.1, 0.1, 0.1, 1.0);
-		this.entities.push(sky);
+		this.objects.push(sky);
 
 		for (let i=0; i<this.GRASS_COUNT; i++) {
 			let origin = Mat4.trs(
@@ -87,7 +87,7 @@ export class FieldScene extends Scene {
 				grassUniforms.normals.push(this.grassModels[i].inverse().transpose());
 			}
 			grass.vertUniforms = grassUniforms;
-			this.entities.push(grass);
+			this.objects.push(grass);
 		}
 	}
 

@@ -31,21 +31,21 @@ export class PierScene extends Scene {
 		pier.textures = ["wood.jpg"];
 		pier.fragShader = "world/psx.frag.wgsl";
 		pier.vertShader = "world/psx.vert.wgsl";
-		this.entities.push(pier);
+		this.objects.push(pier);
 
 		let water = new Object();
 		water.mesh = "pier/water.obj";
 		water.textures = ["snow.jpg"];
 		water.fragShader = "world/psx.frag.wgsl";
 		water.vertShader = "world/psx.vert.wgsl";
-		this.entities.push(water);
+		this.objects.push(water);
 
 		let ground = new Object();
 		ground.mesh = "pier/ground.obj";
 		ground.textures = ["ground.jpg"];
 		ground.fragShader = "world/psx.frag.wgsl";
 		ground.vertShader = "world/psx.vert.wgsl";
-		this.entities.push(ground);
+		this.objects.push(ground);
 
 		let sky = new Object();
 		sky.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
@@ -53,7 +53,7 @@ export class PierScene extends Scene {
 		sky.textures = ["test.png"];
 		sky.fragShader = "world/skybox.frag.wgsl";
 		sky.color = new Vec4(0.1, 0.1, 0.1, 1.0);
-		this.entities.push(sky);
+		this.objects.push(sky);
 
 		let snow = new Object();
 		snow.tags = ["snow"];
@@ -77,7 +77,7 @@ export class PierScene extends Scene {
 			snowUniforms.normals.push(model.inverse().transpose());
 		}
 		snow.vertUniforms = snowUniforms;
-		this.entities.push(snow);
+		this.objects.push(snow);
 
 		let lantern = new Object();
 		lantern.mesh = "pier/lantern.obj";
@@ -86,7 +86,7 @@ export class PierScene extends Scene {
 		lantern.mask = 255;
 		lantern.fragShader = "world/psx.frag.wgsl";
 		lantern.vertShader = "world/psx.vert.wgsl";
-		this.entities.push(lantern);
+		this.objects.push(lantern);
 
 		let lantern_holder = new Object();
 		lantern_holder.mesh = "pier/lantern_holder.obj";
@@ -94,7 +94,7 @@ export class PierScene extends Scene {
 		lantern_holder.color = new Vec4(0.2, 0.2, 0.2, 1.0);
 		lantern_holder.fragShader = "world/psx.frag.wgsl";
 		lantern_holder.vertShader = "world/psx.vert.wgsl";
-		this.entities.push(lantern_holder);
+		this.objects.push(lantern_holder);
 	}
 
 	update(time: number, deltaTime: number, player: Player) {

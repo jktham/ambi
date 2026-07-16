@@ -25,7 +25,7 @@ export class Scene {
 	/** casts shadows from this camera, if not set skips shadow render pass */
 	shadowSource?: Camera;
 
-	entities: Object[] = [];
+	objects: Object[] = [];
 	triggers: Trigger[] = [];
 
 	/** called before scene load, no assets available yet */
@@ -45,13 +45,13 @@ export class Scene {
 
 	/** get first object with tag */
 	getObject(tag: string): Object | undefined {
-		let found = this.entities.find((obj) => obj.tags.includes(tag));
+		let found = this.objects.find((obj) => obj.tags.includes(tag));
 		return found;
 	}
 
 	/** get all objects with tag */
 	getObjects(tag: string): Object[] {
-		let found = this.entities.filter((obj) => obj.tags.includes(tag));
+		let found = this.objects.filter((obj) => obj.tags.includes(tag));
 		return found;
 	}
 }
