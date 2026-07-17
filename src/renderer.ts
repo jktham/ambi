@@ -582,10 +582,14 @@ export class Renderer {
             addressModeV: "repeat",
             magFilter: "nearest", // for crisp low res textures
             minFilter: "linear", // for less aliasing
+            mipmapFilter: "linear",
         });
         const sampler_direct = this.device.createSampler({ // non-filtering sampler
             addressModeU: "clamp-to-edge", 
-            addressModeV: "clamp-to-edge"
+            addressModeV: "clamp-to-edge",
+            magFilter: "nearest",
+            minFilter: "nearest",
+            mipmapFilter: "nearest",
         });
         let textureEntries = textureBuffers.map((t, i) => { return { binding: i+2, resource: t.createView() }});
         const textureBindGroup = this.device.createBindGroup({

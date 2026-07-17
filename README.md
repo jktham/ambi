@@ -50,7 +50,7 @@ silly engine for cool scenes and per object shader stages c:
     - [ ] sound sources, audio playback
     - [x] material abstraction, named pbr textures
     - [x] fix use after destroy
-
+    - [ ] multiple cameras, render to world texture  
 - scenes
     - [x] museum (wip), general tests and mini scenes
     - [x] psx pier, affine texture mapping
@@ -88,6 +88,7 @@ silly engine for cool scenes and per object shader stages c:
         - [x] phong with normalmap, roughness, specular
         - [ ] phong with multiple pointlights
         - [ ] phong with pbr
+        - [ ] portals, draw camera texture with uv offset
     - post
         - [x] framebuffers
         - [x] psx fog, dither matrix, glow
@@ -101,4 +102,6 @@ silly engine for cool scenes and per object shader stages c:
         - [ ] palette mapping
         - [ ] warp
         - [ ] screenspace reflections
+        - [ ] chromatic aberration
+        - [ ] crt
 
