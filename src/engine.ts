@@ -27,14 +27,13 @@ export class Engine {
 
 	constructor(canvas: HTMLCanvasElement) {
 		this.assets = new Assets();
-		this.renderer = new Renderer(canvas, this.assets);
-
+		this.profiler = new Profiler();
 		this.input = new Input(canvas);
 		this.player = new Player();
 		this.scene = new Scene();
+		this.renderer = new Renderer(canvas, this.assets, this.profiler);
 
 		this.gui = new Gui(this); // needs some things to be constructed already
-		this.profiler = new Profiler();
 	}
 
 	async run(scene: string) {
@@ -82,7 +81,7 @@ export class Engine {
 		cancelAnimationFrame(this.scheduledFrameHandle);
 		this.gui.updateInfo("loading...");
 
-		if (path == "scene") {
+		if (path == "scene") { // use scene default
 			this.renderer.postShaderOverride = undefined;
 			this.renderer.postFragUniformsOverride = undefined;
 			this.renderer.postTexturesOverride = textures?.length > 0 ? textures : undefined;
@@ -118,11 +117,13 @@ export class Engine {
 		}
 		let deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / 60.0;
 
+
 		this.profiler.start("  updatePlayer");
         this.player.updatePosition(this.input.activeActions, deltaTime);
         this.player.updateRotation(this.input.cursorChange);
         this.input.resetChange();
 		this.profiler.stop("  updatePlayer");
+
 
 		this.profiler.start("  updateScene");
 
@@ -142,8 +143,6 @@ export class Engine {
 		}
 		this.scene.objects.splice(0, this.scene.objects.length,...this.scene.objects.filter(obj => obj.lifetime === undefined || obj.lifetime > 0.0))
 
-		this.profiler.stop("  updateScene");
-
 		// update camera matrices
 		this.player.updateCamera();
 		this.scene.shadowSource?.updateMatrices();
@@ -156,6 +155,9 @@ export class Engine {
 		})
         this.scene.objects.sort((a, b) => b.z - a.z);
 
+		this.profiler.stop("  updateScene");
+
+
 		// update gui
 		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.objects.length}/${this.scene.objects.filter(o => o.visible).length}/${this.scene.objects.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
 		
@@ -163,9 +165,9 @@ export class Engine {
 		if (frame % 120 == 0) this.profiler.print();
 	}
 
-	private draw(time: number, frame: number) {
+	private async draw(time: number, frame: number) {
 		this.profiler.start("draw");
-		this.renderer.drawScene(this.scene, this.player.camera, time, frame, this.profiler);
+		await this.renderer.drawScene(this.scene, this.player.camera, time, frame);
 		this.profiler.stop("draw");
 	}
 
@@ -183,7 +185,7 @@ export class Engine {
             	t0 = t;
 				f++;
                 await this.update(t / 1000, f, dt);
-                this.draw(t / 1000, f);
+                await this.draw(t / 1000, f);
             }
         }
 
