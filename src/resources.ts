@@ -160,7 +160,7 @@ export class Resources {
     // ---- create and destroy asset-dependent resources ---- 
 
     createGlobalUniformBuffer() {
-        const globalUniformLength = new GlobalUniforms()._size();
+        const globalUniformLength = new GlobalUniforms().size();
         const globalUniformBuffer = this.device.createBuffer({
             label: "global uniform buffer",
             size: globalUniformLength * 4,
@@ -239,31 +239,31 @@ export class Resources {
     async createObjectUniformBuffers(vertUniforms: Uniforms, fragUniforms: Uniforms, pipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBuffer, GPUBindGroup]> {
         const globalUniformBuffer = this.globalUniformBuffer;
 
-        const objectUniformLength = new ObjectUniforms()._size();
+        const objectUniformLength = new ObjectUniforms().size();
         const objectUniformBuffer = this.device.createBuffer({
-            label: `object base uniform buffer: ${vertUniforms._name}/${fragUniforms._name}`,
+            label: `object base uniform buffer: ${vertUniforms.name}/${fragUniforms.name}`,
             size: objectUniformLength * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
 
-        const vertUniformLength = vertUniforms._size();
+        const vertUniformLength = vertUniforms.size();
         const vertUniformBuffer = this.device.createBuffer({
-            label: `vert uniform buffer: ${vertUniforms._name}`,
+            label: `vert uniform buffer: ${vertUniforms.name}`,
             size: vertUniformLength * 4,
-            usage: ((vertUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
+            usage: ((vertUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (vertUniformLength > 0) {
-            this.device.queue.writeBuffer(vertUniformBuffer, 0, vertUniforms._update().buffer);
+            this.device.queue.writeBuffer(vertUniformBuffer, 0, vertUniforms.update().buffer);
         }
 
-        const fragUniformLength = fragUniforms._size();
+        const fragUniformLength = fragUniforms.size();
         const fragUniformBuffer = this.device.createBuffer({
-            label: `frag uniform buffer: ${fragUniforms._name}`,
+            label: `frag uniform buffer: ${fragUniforms.name}`,
             size: fragUniformLength * 4,
-            usage: ((fragUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
+            usage: ((fragUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (fragUniformLength > 0) {
-            this.device.queue.writeBuffer(fragUniformBuffer, 0, fragUniforms._update().buffer);
+            this.device.queue.writeBuffer(fragUniformBuffer, 0, fragUniforms.update().buffer);
         }
 
         let uniformBindings: GPUBindGroupEntry[] = [];
@@ -277,7 +277,7 @@ export class Resources {
         }
 
         const uniformBindgroup = this.device.createBindGroup({
-            label: `uniform bindgroup: ${vertUniforms._name}/${fragUniforms._name}`,
+            label: `uniform bindgroup: ${vertUniforms.name}/${fragUniforms.name}`,
             layout: pipeline.getBindGroupLayout(0),
             entries: uniformBindings,
         });
@@ -398,21 +398,21 @@ export class Resources {
 
     /** create post uniforms and bindgroup at group 0 */
     async createPostUniformBuffers(postUniforms: Uniforms, postPipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBindGroup]> {
-        const postBaseUniformLength = new PostUniforms()._size();
+        const postBaseUniformLength = new PostUniforms().size();
         const postBaseUniformBuffer = this.device.createBuffer({
             label: `post base uniform buffer`,
             size: postBaseUniformLength * 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
         
-        const postUniformLength = postUniforms._size();
+        const postUniformLength = postUniforms.size();
         const postUniformBuffer = this.device.createBuffer({
             label: `post uniform buffer`,
             size: postUniformLength * 4,
-            usage: ((postUniforms._useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
+            usage: ((postUniforms.useStorageBuffer === true) ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_DST,
         });
         if (postUniformLength > 0) {
-            this.device.queue.writeBuffer(postUniformBuffer, 0, postUniforms._update().buffer);
+            this.device.queue.writeBuffer(postUniformBuffer, 0, postUniforms.update().buffer);
         }
 
         let postUniformBindings: GPUBindGroupEntry[] = [];

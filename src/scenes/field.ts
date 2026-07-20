@@ -80,7 +80,7 @@ export class FieldScene extends Scene {
 			grass.vertShader = "world/psx_instanced.vert.wgsl";
 
 			let grassUniforms = new InstancedUniforms();
-			grassUniforms._instanceCount = this.GRASS_COUNT;
+			grassUniforms.instanceCount = this.GRASS_COUNT;
 			
 			for (let i=0; i<this.GRASS_COUNT; i++) {
 				grassUniforms.models.push(this.grassModels[i]);

@@ -357,7 +357,7 @@ export class Renderer {
         globalUniforms.shadow_projection = scene.shadowCamera?.projection ?? new Mat4();
 
         const globalUniformBuffer = this.resources.globalUniformBuffer;
-        this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms._update().buffer);
+        this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms.update().buffer);
         this.profiler.stop("  bufferWorldGlobal");
     }
 
@@ -385,12 +385,12 @@ export class Renderer {
             throw new Error(`missing uniform buffers ${obj.id}`);
         }
 
-        this.device.queue.writeBuffer(objectUniformBuffer, 0, objectUniforms._update().buffer);
-        if (obj.vertUniforms._size() > 0) {
-            this.device.queue.writeBuffer(vertUniformBuffer, 0, obj.vertUniforms._update().buffer);
+        this.device.queue.writeBuffer(objectUniformBuffer, 0, objectUniforms.update().buffer);
+        if (obj.vertUniforms.size() > 0) {
+            this.device.queue.writeBuffer(vertUniformBuffer, 0, obj.vertUniforms.update().buffer);
         }
-        if (obj.fragUniforms._size() > 0) {
-            this.device.queue.writeBuffer(fragUniformBuffer, 0, obj.fragUniforms._update().buffer);
+        if (obj.fragUniforms.size() > 0) {
+            this.device.queue.writeBuffer(fragUniformBuffer, 0, obj.fragUniforms.update().buffer);
         }
     }
 
@@ -403,11 +403,11 @@ export class Renderer {
         postBaseUniforms.post_config = scene.postConfig;
         postBaseUniforms.view = camera.view;
         postBaseUniforms.projection = camera.projection;
-        this.device.queue.writeBuffer(this.resources.postBaseUniformBuffer, 0, postBaseUniforms._update().buffer);
+        this.device.queue.writeBuffer(this.resources.postBaseUniformBuffer, 0, postBaseUniforms.update().buffer);
 
         let postUniforms = this.postFragUniformsOverride ?? scene.postUniforms;
-        if (postUniforms._size() > 0) {
-            this.device.queue.writeBuffer(this.resources.postFragUniformBuffer, 0, postUniforms._update().buffer);
+        if (postUniforms.size() > 0) {
+            this.device.queue.writeBuffer(this.resources.postFragUniformBuffer, 0, postUniforms.update().buffer);
         }
         this.profiler.stop("  bufferPost");
     }
@@ -445,7 +445,7 @@ export class Renderer {
             pass.setVertexBuffer(0, vertexBuffer);
             pass.setBindGroup(0, uniformBindgroup);
             pass.setBindGroup(1, textureBindgroup);
-            pass.draw(vertexBuffer.size / 4 / MESH_STRIDE, obj.vertUniforms._instanceCount || 1);
+            pass.draw(vertexBuffer.size / 4 / MESH_STRIDE, obj.vertUniforms.instanceCount || 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);

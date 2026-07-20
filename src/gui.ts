@@ -181,16 +181,18 @@ export class Gui {
 	private initUniformConfig(shader: FragShaderPath | "scene", uniforms: Uniforms, textures: TexturePath[]) {
 		this.uniformSizes.clear();
 		this.uniformConfig.textContent = "";
-		if (uniforms._size() == 0 && textures.length == 0) {
+		if (uniforms.size() == 0 && textures.length == 0) {
 			return;
 		}
 
 		let name = document.createElement("span");
-		name.textContent = uniforms._name;
+		name.textContent = uniforms.name;
 		this.uniformConfig.appendChild(name);
 
 		for (let [k, v] of Object.entries(uniforms)) {
-			const blacklist: string[] = [];
+			const blacklist: string[] = [
+				"name", "useStorageBuffer", "instanceCount", "data", "size", "update",
+			];
 			if (k.startsWith("_") || blacklist.includes(k)) {
 				continue;
 			}

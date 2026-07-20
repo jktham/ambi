@@ -65,8 +65,8 @@ export class PierScene extends Scene {
 		snow.vertShader = "world/psx_instanced.vert.wgsl";
 		
 		let snowUniforms = new InstancedUniforms();
-		snowUniforms._instanceCount = 1000;
-		for (let i=0; i<snowUniforms._instanceCount; i++) {
+		snowUniforms.instanceCount = 1000;
+		for (let i=0; i<snowUniforms.instanceCount; i++) {
 			let range = 20;
 			let model = Mat4.trs(
 				new Vec3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2), 
@@ -100,7 +100,7 @@ export class PierScene extends Scene {
 	update(time: number, deltaTime: number, player: Player) {
 		let snow = this.getObject("snow")!;
 		let snowUniforms = snow.vertUniforms as InstancedUniforms;
-		for (let i=0; i<snowUniforms._instanceCount; i++) {
+		for (let i=0; i<snowUniforms.instanceCount; i++) {
 			let model = snowUniforms.models[i];
 			let fall = Mat4.translate(new Vec3(0, -0.2 * deltaTime, 0.1 * deltaTime));
 			model = model.mul(fall);

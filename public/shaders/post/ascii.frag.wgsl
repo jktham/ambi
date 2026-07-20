@@ -2,8 +2,8 @@
 #import "../lib/lighting.wgsl"
 
 struct PostAsciiUniforms {
-	size: f32,
-	scale: f32,
+	char_size: f32,
+	pixel_scale: f32,
 	samples: f32,
 	stages: f32,
 };
@@ -27,8 +27,8 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	let pixel = vec2i(in.screen.xy);
 	let data = decodeFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 
-	let SIZE = i32(u_ascii.size);
-	let SCALE = i32(u_ascii.scale);
+	let SIZE = i32(u_ascii.char_size);
+	let SCALE = i32(u_ascii.pixel_scale);
 	let SAMPLES = i32(u_ascii.samples);
 	let STAGES = i32(u_ascii.stages);
 	let N = SIZE * SCALE;

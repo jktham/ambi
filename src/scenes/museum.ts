@@ -526,7 +526,7 @@ export class MuseumScene extends Scene {
 		obj.fragUniforms = this.phong;
 		obj.vertShader = "world/instanced.vert.wgsl";
 		let uniforms = new InstancedUniforms();
-		uniforms._instanceCount = 4;
+		uniforms.instanceCount = 4;
 		uniforms.models = [
 			Mat4.trs(new Vec3(0, 0, -88), new Vec3(0, 0, 0), 1),
 			Mat4.trs(new Vec3(88, 0, 0), new Vec3(0, 0, 0), 1),
@@ -893,7 +893,7 @@ export class MuseumScene extends Scene {
 			obj.mask = 1;
 			obj.vertShader = "world/instanced.vert.wgsl";
 			obj.vertUniforms = new InstancedUniforms();
-			(obj.vertUniforms as InstancedUniforms)._instanceCount = models.length;
+			(obj.vertUniforms as InstancedUniforms).instanceCount = models.length;
 			(obj.vertUniforms as InstancedUniforms).models = models;
 			(obj.vertUniforms as InstancedUniforms).normals = models.map(m => m.inverse().transpose());
 			objects.push(obj);
@@ -906,7 +906,7 @@ export class MuseumScene extends Scene {
 			obj.fragUniforms = this.phong;
 			obj.vertShader = "world/instanced.vert.wgsl";
 			obj.vertUniforms = new InstancedUniforms();
-			(obj.vertUniforms as InstancedUniforms)._instanceCount = models.length;
+			(obj.vertUniforms as InstancedUniforms).instanceCount = models.length;
 			(obj.vertUniforms as InstancedUniforms).models = models;
 			(obj.vertUniforms as InstancedUniforms).normals = models.map(m => m.inverse().transpose());
 			objects.push(obj);
