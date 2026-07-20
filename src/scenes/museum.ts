@@ -7,7 +7,7 @@ import { InstancedUniforms, PhongUniforms, PostOutlineUniforms, RayspheresUnifor
 import { clamp, rad, rnd, rndarr, rndint, rndseed, rndvec3, rndvec4 } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import { engine } from "../main";
-import type { FragShaderPath, TexturePath } from "../assets";
+import type { PostFragShaderPath, TexturePath } from "../assets";
 
 const MASK_OUTLINE_NONE = 13;
 const MASK_OUTLINE_EXT_ONLY = 14;
@@ -21,7 +21,7 @@ export class MuseumScene extends Scene {
 	resolution = new Vec2(1920, 1080);
 	cameraMode: CameraMode = "walk";
 	spawnPos: Vec3 = new Vec3(0.001, 2, 0.001);
-	postShader: FragShaderPath = "post/outline.frag.wgsl";
+	postShader: PostFragShaderPath = "post/outline.frag.wgsl";
 	postUniforms = new PostOutlineUniforms();
 
 	roomSlots: number[] = [0, 1, 2, 3, 4]; // CNESW
@@ -115,7 +115,7 @@ export class MuseumScene extends Scene {
 		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 1, 0), new Vec3(0, 0, 0), 0.9);
 		obj.mesh = "museum/tree.obj";
-		obj.zsort = true;
+		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
 		obj.collider = "cube.obj";
 		obj.textures[0] = "white.png";
@@ -149,7 +149,7 @@ export class MuseumScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-10, 2, 0), new Vec3(0, rad(-90), 0), 1);
 		obj.mesh = "quad_vertical.obj";
-		obj.zsort = true;
+		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
 		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
@@ -172,7 +172,7 @@ export class MuseumScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(10, 2, 0), new Vec3(0, rad(90), 0), 1);
 		obj.mesh = "quad_vertical.obj";
-		obj.zsort = true;
+		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
 		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
@@ -195,7 +195,7 @@ export class MuseumScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 2, -10), new Vec3(0, rad(180), 0), 1);
 		obj.mesh = "quad_vertical.obj";
-		obj.zsort = true;
+		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
 		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
@@ -218,7 +218,7 @@ export class MuseumScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 2, 10), new Vec3(0, rad(0), 0), 1);
 		obj.mesh = "quad_vertical.obj";
-		obj.zsort = true;
+		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
 		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_EXT_ONLY;

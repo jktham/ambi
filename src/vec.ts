@@ -409,6 +409,10 @@ export class Mat4 {
 		return [translation, rotation, scale];
 	}
 
+	copy(): Mat4 {
+		return new Mat4([...this.data]);
+	}
+
 	/** create translation matrix */
 	static translate(t: Vec3): Mat4 {
 		return new Mat4([

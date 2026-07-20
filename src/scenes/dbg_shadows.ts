@@ -30,7 +30,7 @@ export class DebugShadowsScene extends Scene {
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.fragConfig.x = this.shadow_bias;
-		obj.zsort = true;
+		obj.z_sort = true;
 		this.objects.push(obj);
 
 		obj = new Object();
@@ -41,7 +41,7 @@ export class DebugShadowsScene extends Scene {
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.fragConfig.x = this.shadow_bias;
-		obj.zsort = true;
+		obj.z_sort = true;
 		this.objects.push(obj);
 
 		obj = new Object();
@@ -52,7 +52,7 @@ export class DebugShadowsScene extends Scene {
 		obj.fragShader = "world/phong_shadow.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		obj.fragConfig.x = this.shadow_bias;
-		obj.zsort = true;
+		obj.z_sort = true;
 		this.objects.push(obj);
 
 		obj = new Object();

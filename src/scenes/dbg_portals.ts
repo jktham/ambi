@@ -4,7 +4,7 @@ import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Camera } from "../camera";
-import type { FragShaderPath } from "../assets";
+import type { PostFragShaderPath } from "../assets";
 
 export class DebugPortalsScene extends Scene {
 	name = "dbg_portals";
@@ -18,7 +18,7 @@ export class DebugPortalsScene extends Scene {
 	constructor() {
 		super();
 
-		this.postShader = "post/outline.frag.wgsl" as FragShaderPath;
+		this.postShader = "post/outline.frag.wgsl" as PostFragShaderPath;
 		this.postUniforms = new PostOutlineUniforms();
 		(this.postUniforms as PostOutlineUniforms).mode[0] = 1; // self edges
 		(this.postUniforms as PostOutlineUniforms).mode[1] = 0;

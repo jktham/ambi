@@ -43,8 +43,9 @@ export class Engine {
 
 	async setScene(name: string) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
+		this.deltaHist = [];
         console.log(`loading scene: ${name}`);
-		this.gui.updateInfo("loading...");
+		this.gui.updateInfo(`loading scene: ${name}`);
 
 		let scene = scenes.get(name);
 		if (scene) {
@@ -79,7 +80,9 @@ export class Engine {
 
 	async setPost(path: FragShaderPath | "scene", uniforms: Uniforms, textures: TexturePath[]) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
-		this.gui.updateInfo("loading...");
+		this.deltaHist = [];
+		console.log(`loading post: ${path}`);
+		this.gui.updateInfo(`loading post: ${path}`);
 
 		if (path == "scene") { // use scene default
 			this.renderer.postShaderOverride = undefined;
@@ -95,6 +98,7 @@ export class Engine {
 		}
 		await this.renderer.loadPost(this.scene);
 
+        console.log(`done`);
 		this.loop();
 	}
 
@@ -149,7 +153,7 @@ export class Engine {
 
         // z-sort objects
 		let dist = (obj: Object) => obj.model.origin().dist(this.player.camera.model.origin())
-        this.scene.objects.filter(obj => obj.zsort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
+        this.scene.objects.filter(obj => obj.z_sort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
             let z_frac = (i+1) / (arr.length+1); // (0, 1)
             obj.z = Math.floor(obj.z) + z_frac;
 		})

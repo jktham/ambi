@@ -4,34 +4,35 @@ import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
 import { Vec2, Vec3, Vec4 } from "./vec";
 import type { Camera } from "./camera";
-import type { Assets, FragShaderPath, TexturePath } from "./assets";
+import type { Assets, PostFragShaderPath, TexturePath } from "./assets";
 
 export class Scene {
 	name: string = "none";
 	resolution: Vec2 = new Vec2(960, 540);
 	spawnPos: Vec3 = new Vec3();
-	spawnRot: Vec3 = new Vec3(); // pitch, yaw, roll
+	/** pitch, yaw, roll */
+	spawnRot: Vec3 = new Vec3();
 	/** "fly" is 6dof and ignores colliders, \
 	 *  "walk" is locked in plane, \
 	 *  "static" ignores movement input */
 	cameraMode: CameraMode = "fly";
 
-	/** path to .frag.wgsl file in public/shaders/ */
-	postShader: FragShaderPath = "post/fb_color.frag.wgsl";
+	/** post fragment shader */
+	postShader: PostFragShaderPath = "post/fb_color.frag.wgsl";
 	postUniforms: Uniforms = new Uniforms();
 	postTextures: TexturePath[] = [];
 	postConfig: Vec4 = new Vec4();
 
-	/** cast shadows from this camera, if not set skips shadow render pass. renders to $shadowmap */
+	/** cast shadows from this camera, if not set skips shadow render pass. renders to $shadowmap builtin texture */
 	shadowCamera?: Camera;
 
-	/** renders to $portal_N */
+	/** renders to $portal_i builtin texture */
 	portalCameras: Camera[] = [];
 
 	objects: Object[] = [];
 	triggers: Trigger[] = [];
 
-	/** called before init, generates dynamic assets and places them in asset cache */
+	/** called before init, generate dynamic assets and place them in asset cache */
 	generateAssets(assets: Assets) {
 
 	}

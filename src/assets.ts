@@ -6,11 +6,20 @@ const shaderTypes = ["wgsl"] as const;
 type ShaderTypes = typeof shaderTypes[number];
 
 /** path relative to public/shaders/ */
+export type ShaderPath = `${string}.${ShaderTypes}`;
+/** path relative to public/shaders/ */
 export type VertShaderPath = `${string}.vert.${ShaderTypes}`;
 /** path relative to public/shaders/ */
 export type FragShaderPath = `${string}.frag.${ShaderTypes}`;
 /** path relative to public/shaders/ */
-export type ShaderPath = `${string}.${ShaderTypes}`;
+export type WorldVertShaderPath = `world/${VertShaderPath}`;
+/** path relative to public/shaders/ */
+export type WorldFragShaderPath = `world/${FragShaderPath}`;
+/** path relative to public/shaders/ */
+export type PostVertShaderPath = `post/${VertShaderPath}`;
+/** path relative to public/shaders/ */
+export type PostFragShaderPath = `post/${FragShaderPath}`;
+
 
 /** dynamic assets added to cache by scene.generateAssets, not loaded from a file */
 export type DynamicAssetLabel = `:${string}`;
@@ -21,6 +30,7 @@ type MeshTypes = typeof meshTypes[number];
 
 /** path relative to public/meshes/ or dynamic label */
 export type MeshPath = `${string}.${MeshTypes}` | DynamicAssetLabel;
+
 
 /** supported texture filetypes */
 const textureTypes = ["png", "jpg", "json"] as const;
@@ -35,12 +45,14 @@ export type BuiltinTextureLabel = `$${"shadowmap" | "framebuffer" | `portal_${nu
 /** path relative to public/textures/ or material/builtin/dynamic label */
 export type TexturePath = `${string}.${TextureTypes}` | MaterialTextureLabel | BuiltinTextureLabel | DynamicAssetLabel;
 
+
 /** supported material filetypes */
 const materialTypes = ["mtl"] as const;
 type MaterialTypes = typeof materialTypes[number];
 
 /** path relative to public/meshes/ */
 export type MaterialPath = `${string}.${MaterialTypes}`;
+
 
 // floats per vertex
 export const MESH_STRIDE = 15;

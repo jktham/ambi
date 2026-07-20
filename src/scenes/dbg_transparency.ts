@@ -18,7 +18,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		obj.zsort = true;
+		obj.z_sort = true;
 		this.objects.push(obj);
 
 		obj = new Object();
@@ -29,7 +29,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		obj.zsort = true;
+		obj.z_sort = true;
 		this.objects.push(obj);
 
 		obj = new Object();
@@ -40,7 +40,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = -1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		obj.zsort = true;
+		obj.z_sort = true;
 		this.objects.push(obj);
 
 		obj = new Object();
@@ -51,7 +51,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		obj.zsort = true;
+		obj.z_sort = true;
 		this.objects.push(obj);
 
 		obj = new Object();
@@ -62,7 +62,7 @@ export class DebugTransparencyScene extends Scene {
 		obj.cull = 1.0;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
-		obj.zsort = true;
+		obj.z_sort = true;
 		this.objects.push(obj);
 
 		obj = new Object();
