@@ -118,16 +118,20 @@ export class Engine {
 		let deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / 60.0;
 
 
+		// ---- player ----
 		this.profiler.start("  updatePlayer");
         this.player.updatePosition(this.input.activeActions, deltaTime);
         this.player.updateRotation(this.input.cursorChange);
         this.input.resetChange();
+		this.player.updateCamera();
 		this.profiler.stop("  updatePlayer");
 
 
+		// ---- scene ----
 		this.profiler.start("  updateScene");
 
 		this.scene.update(time, deltaTime, this.player);
+		this.player.updateCamera(); // in case position changed by update
 
 		for (let trigger of this.scene.triggers) {
 			if (trigger.enabled) await trigger.test(this.player.position);
@@ -143,10 +147,6 @@ export class Engine {
 		}
 		this.scene.objects.splice(0, this.scene.objects.length,...this.scene.objects.filter(obj => obj.lifetime === undefined || obj.lifetime > 0.0))
 
-		// update camera matrices
-		this.player.updateCamera();
-		this.scene.shadowSource?.updateMatrices();
-
         // z-sort objects
 		let dist = (obj: Object) => obj.model.origin().dist(this.player.camera.model.origin())
         this.scene.objects.filter(obj => obj.zsort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
@@ -158,9 +158,10 @@ export class Engine {
 		this.profiler.stop("  updateScene");
 
 
-		// update gui
+		// ---- gui ----
 		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.objects.length}/${this.scene.objects.filter(o => o.visible).length}/${this.scene.objects.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
 		
+	
 		this.profiler.stop("update");
 		if (frame % 120 == 0) this.profiler.print();
 	}

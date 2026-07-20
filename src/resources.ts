@@ -14,8 +14,10 @@ export class Resources {
     colorFramebuffer!: GPUTexture;
     posDepthFramebuffer!: GPUTexture;
     normalMaskFramebuffer!: GPUTexture;
+
     shadowmapFramebuffer!: GPUTexture;
     finalFramebuffer!: GPUTexture;
+    portalFramebuffers: GPUTexture[] = [];
 
     worldRenderPassDescriptor!: GPURenderPassDescriptor;
     postRenderPassDescriptor!: GPURenderPassDescriptor;
@@ -49,15 +51,15 @@ export class Resources {
 		this.assets = assets;
     }
 
-    recreateFramebuffers(resolution: Vec2, renderTarget: GPUTexture) {
+    recreateFramebuffers(resolution: Vec2, n_portals: number, renderTarget: GPUTexture) {
         this.destroyFramebufferTextures();
-        this.createFramebufferTextures(resolution);
+        this.createFramebufferTextures(resolution, n_portals);
         this.configureRenderPass(renderTarget);
     }
 
     // ---- config render targets ----
 
-    createFramebufferTextures(resolution: Vec2) {
+    createFramebufferTextures(resolution: Vec2, n_portals: number) {
         this.depthFramebuffer = this.device.createTexture({
             label: "depth texture",
             size: [resolution.x, resolution.y],
@@ -96,6 +98,14 @@ export class Resources {
             format: "rgba8unorm",
             usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
         });
+        this.portalFramebuffers = new Array(n_portals).fill(0).map((_, i) => {
+            return this.device.createTexture({
+                label: `portal ${i} framebuffer`,
+                size: [resolution.x, resolution.y],
+                format: "rgba8unorm",
+                usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+            });
+        });
     }
 
     destroyFramebufferTextures() {
@@ -106,6 +116,7 @@ export class Resources {
 
         this.shadowmapFramebuffer?.destroy();
         this.finalFramebuffer?.destroy();
+        this.portalFramebuffers.map(t => t.destroy());
     }
 
     configureRenderPass(renderTarget: GPUTexture) {

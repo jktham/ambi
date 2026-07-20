@@ -11,13 +11,14 @@ import { DebugEchoScene } from "./scenes/dbg_echo";
 import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
 import { DebugPixelScene } from "./scenes/dbg_pixel";
 import { DebugTriggerScene } from "./scenes/dbg_trigger";
-import { DebugShadowScene } from "./scenes/dbg_shadow";
+import { DebugShadowsScene } from "./scenes/dbg_shadows";
 import { DebugMaterialScene } from "./scenes/dbg_material";
 import type { FragShaderPath, TexturePath } from "./assets";
 import { DebugRotationScene } from "./scenes/dbg_rotation";
 import { DebugErrorScene } from "./scenes/dbg_error";
 import { DebugLightingScene } from "./scenes/dbg_lighting";
 import { DebugDynamicScene } from "./scenes/dbg_dynamic";
+import { DebugPortalsScene } from "./scenes/dbg_portals";
 
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
@@ -33,11 +34,12 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["dbg_pixel", DebugPixelScene],
 	["dbg_trigger", DebugTriggerScene],
 	["dbg_rotation", DebugRotationScene],
-	["dbg_shadow", DebugShadowScene],
+	["dbg_shadows", DebugShadowsScene],
 	["dbg_material", DebugMaterialScene],
 	["dbg_error", DebugErrorScene],
 	["dbg_lighting", DebugLightingScene],
 	["dbg_dynamic", DebugDynamicScene],
+	["dbg_portals", DebugPortalsScene],
 ]);
 
 // <path, [uniforms constructor, textures]>

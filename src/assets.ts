@@ -30,7 +30,7 @@ type TextureTypes = typeof textureTypes[number];
 export type MaterialTextureLabel = `@${"diffuse" | "normal" | "roughness" | "specular"}`;
 
 /** special labels from renderer that are intercepted before asset load */
-export type BuiltinTextureLabel = `$${"shadowmap" | "framebuffer"}`;
+export type BuiltinTextureLabel = `$${"shadowmap" | "framebuffer" | `portal_${number}`}`;
 
 /** path relative to public/textures/ or material/builtin/dynamic label */
 export type TexturePath = `${string}.${TextureTypes}` | MaterialTextureLabel | BuiltinTextureLabel | DynamicAssetLabel;

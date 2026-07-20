@@ -16,6 +16,8 @@ export class Object {
     collidable: boolean = true;
     /** set false to skip draw call in shadow pass */
     shadows: boolean = true;
+    /** whether to draw in portal i, should be length of scene portals or undefined */
+    portal_visible?: boolean[];
     /** set true if object has changed since last frame, otherwise skip uniform updates */
     changed: boolean = true;
 

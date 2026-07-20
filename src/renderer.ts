@@ -19,6 +19,8 @@ export class Renderer {
     private profiler: Profiler;
     private resources!: Resources;
 
+    private scenePortalsCount = 0;;
+
     resolution: Vec2 = new Vec2(960, 540);
 	postShaderOverride?: FragShaderPath;
 	postFragUniformsOverride?: Uniforms;
@@ -39,7 +41,7 @@ export class Renderer {
         this.context = this.getContext();
 
         this.resources = new Resources(this.device, this.assets);
-        this.resources.recreateFramebuffers(this.resolution, this.context.getCurrentTexture());
+        this.resources.recreateFramebuffers(this.resolution, this.scenePortalsCount, this.context.getCurrentTexture());
     }
 
     // ---- webgpu housekeeping ----
@@ -81,6 +83,8 @@ export class Renderer {
     // ---- load scene resources ---- 
 
     async loadScene(scene: Scene, gui: Gui) {
+        this.scenePortalsCount = scene.portalCameras.length;
+
         this.setResolution(scene.resolution);
         console.log("preloading assets");
         await this.preloadAssets(scene, gui);
@@ -95,7 +99,7 @@ export class Renderer {
         this.canvas.width = resolution.x;
         this.canvas.height = resolution.y;
 
-        this.resources.recreateFramebuffers(this.resolution, this.context.getCurrentTexture());
+        this.resources.recreateFramebuffers(this.resolution, this.scenePortalsCount, this.context.getCurrentTexture());
     }
 
     private async preloadAssets(scene: Scene, gui: Gui) {
@@ -226,25 +230,24 @@ export class Renderer {
         if (!this.resources.objectTextureBindgroups.has(obj.id)
             || obj.textures.find(p => p.startsWith("$"))) { // recreate bindgroups if using builtins, in case framebuffers were resized
             const textureBuffers = obj.textures.map(texture => {
-                switch (texture) {
-                    case "$shadowmap": {
-                        return this.resources.shadowmapFramebuffer;
+                if (texture == "$shadowmap") {
+                    return this.resources.shadowmapFramebuffer;
+                } else if (texture == "$framebuffer") {
+                    return this.resources.finalFramebuffer;
+                } else if (texture.startsWith("$portal")) {
+                    let i = parseFloat(texture.split("_")[1]);
+                    return this.resources.portalFramebuffers[i];
+                } else {
+                    if (texture.startsWith("@")) {
+                        throw new Error(`material texture label ${texture} not resolved`);
                     }
-                    case "$framebuffer": {
-                        return this.resources.finalFramebuffer;
+                    if (texture.startsWith("$")) {
+                        throw new Error(`builtin texture label ${texture} not handled`);
                     }
-                    default: {
-                        if (texture.startsWith("@")) {
-                            throw new Error(`material texture label ${texture} not resolved`);
-                        }
-                        if (texture.startsWith("$")) {
-                            throw new Error(`builtin texture label ${texture} not available`);
-                        }
-                        if (!this.resources.textureBuffers.has(texture)) {
-                            throw new Error(`texture buffer ${texture} not available`);
-                        }
-                        return this.resources.textureBuffers.get(texture)!;
+                    if (!this.resources.textureBuffers.has(texture)) {
+                        throw new Error(`texture buffer ${texture} not available`);
                     }
+                    return this.resources.textureBuffers.get(texture)!;
                 }
             });
             const textureBindgroup = await this.resources.createTextureBindgroup(textureBuffers, pipeline);
@@ -295,38 +298,50 @@ export class Renderer {
         // update object buffers once
         this.profiler.start("  bufferWorldObject");
         for (let obj of scene.objects) {
-            this.updateWorldObjectBuffers(obj);
+            this.updateObjectBuffers(obj);
         }
         this.profiler.stop("  bufferWorldObject");
 
-        if (scene.shadowSource) {
-            // draw from shadow source pov
-            this.updateWorldGlobalBuffers(scene, scene.shadowSource, time, frame);
-            this.drawShadows(scene);
+        // draw portals (including post pass)
+        for (let [i, portalCamera] of scene.portalCameras.entries()) {
+            this.updateGlobalBuffers(scene, portalCamera, time, frame);
+            this.drawObjects(scene, `portal_${i}`);
 
-            if (scene.objects.flatMap(obj => obj.textures).includes("$shadowmap")) { // only copy if we intend to use it
-                // copy depth buffer to shadow map texture
-                const encoder = this.device.createCommandEncoder({ label: "copy depth" });
-                encoder.copyTextureToTexture({texture: this.resources.depthFramebuffer}, {texture: this.resources.shadowmapFramebuffer}, {width: this.resources.depthFramebuffer.width, height: this.resources.depthFramebuffer.height})
-                this.device.queue.submit([encoder.finish()]);
-            }
+            this.updatePostBuffers(scene, portalCamera, time, frame);
+            this.drawPost();
+
+            // copy color buffer to portal framebuffer texture
+            const encoder = this.device.createCommandEncoder({ label: `copy portal ${i}` });
+            encoder.copyTextureToTexture({texture: this.context.getCurrentTexture()}, {texture: this.resources.portalFramebuffers[i]}, [this.context.getCurrentTexture().width, this.context.getCurrentTexture().height])
+            this.device.queue.submit([encoder.finish()]);
         }
 
-        this.updateWorldGlobalBuffers(scene, camera, time, frame);
-        this.drawWorld(scene);
+        if (scene.shadowCamera) {
+            // draw from shadow source pov
+            this.updateGlobalBuffers(scene, scene.shadowCamera, time, frame);
+            this.drawObjects(scene, "shadow");
+
+            // copy depth buffer to shadow map texture
+            const encoder = this.device.createCommandEncoder({ label: "copy depth" });
+            encoder.copyTextureToTexture({texture: this.resources.depthFramebuffer}, {texture: this.resources.shadowmapFramebuffer}, [this.resources.depthFramebuffer.width, this.resources.depthFramebuffer.height])
+            this.device.queue.submit([encoder.finish()]);
+        }
+
+        this.updateGlobalBuffers(scene, camera, time, frame);
+        this.drawObjects(scene, "world");
 
         this.updatePostBuffers(scene, camera, time, frame);
         this.drawPost();
 
         if (scene.objects.flatMap(obj => obj.textures).includes("$framebuffer")) { // only copy if we intend to use it
-            // copy color buffer to prev framebuffer texture
+            // copy color buffer to final framebuffer texture
             const encoder = this.device.createCommandEncoder({ label: "copy framebuffer" });
-            encoder.copyTextureToTexture({texture: this.context.getCurrentTexture()}, {texture: this.resources.finalFramebuffer}, {width: this.context.getCurrentTexture().width, height: this.context.getCurrentTexture().height})
+            encoder.copyTextureToTexture({texture: this.context.getCurrentTexture()}, {texture: this.resources.finalFramebuffer}, [this.context.getCurrentTexture().width, this.context.getCurrentTexture().height])
             this.device.queue.submit([encoder.finish()]);
         }
     }
 
-    private updateWorldGlobalBuffers(scene: Scene, camera: Camera, time: number, frame: number) {
+    private updateGlobalBuffers(scene: Scene, camera: Camera, time: number, frame: number) {
         this.profiler.start("  bufferWorldGlobal");
 
         // global uniforms, always update
@@ -338,15 +353,15 @@ export class Renderer {
         globalUniforms.view_pos = camera.model.origin();
         globalUniforms.view = camera.view;
         globalUniforms.projection = camera.projection;
-        globalUniforms.shadow_view = scene.shadowSource?.view ?? new Mat4();
-        globalUniforms.shadow_projection = scene.shadowSource?.projection ?? new Mat4();
+        globalUniforms.shadow_view = scene.shadowCamera?.view ?? new Mat4();
+        globalUniforms.shadow_projection = scene.shadowCamera?.projection ?? new Mat4();
 
         const globalUniformBuffer = this.resources.globalUniformBuffer;
         this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms._update().buffer);
         this.profiler.stop("  bufferWorldGlobal");
     }
 
-    private updateWorldObjectBuffers(obj: Object) {
+    private updateObjectBuffers(obj: Object) {
         if (!obj.visible || !obj.changed) {
             return;
         }
@@ -397,54 +412,40 @@ export class Renderer {
         this.profiler.stop("  bufferPost");
     }
 
-    private drawShadows(scene: Scene) {
-        this.profiler.start("  drawShadows");
-        const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
-        const pass = encoder.beginRenderPass(this.resources.worldRenderPassDescriptor);
-        for (let object of scene.objects) {
-            if (!object.visible || !object.shadows) {
-                continue;
-            }
-            const pipeline = this.resources.objectPipelines.get(object.id);
-            const vertexBuffer = this.resources.vertexBuffers.get(object.mesh);
-            const uniformBindgroup = this.resources.objectUniformBindgroups.get(object.id);
-            const textureBindgroup = this.resources.objectTextureBindgroups.get(object.id);
-            if (!pipeline || !vertexBuffer || !uniformBindgroup || !textureBindgroup) {
-                throw new Error(`missing object assets ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
-            }
-
-            pass.setPipeline(pipeline);
-            pass.setVertexBuffer(0, vertexBuffer);
-            pass.setBindGroup(0, uniformBindgroup);
-            pass.setBindGroup(1, textureBindgroup);
-            pass.draw(vertexBuffer.size / 4 / MESH_STRIDE, object.vertUniforms._instanceCount || 1);
-        }
-        pass.end();
-        this.device.queue.submit([encoder.finish()]);
-        this.profiler.stop("  drawShadows");
-    }
-
-    private drawWorld(scene: Scene) {
+    private drawObjects(scene: Scene, drawMode: "world" | "shadow" | `portal_${number}`) {
         this.profiler.start("  drawWorld");
         const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
         const pass = encoder.beginRenderPass(this.resources.worldRenderPassDescriptor);
-        for (let object of scene.objects) {
-            if (!object.visible) {
-                continue;
+        for (let obj of scene.objects) {
+            // decide wether to draw object based on what were using the draw call for
+            if (drawMode == "world") {
+                if (!obj.visible) {
+                    continue;
+                }
+            } else if (drawMode == "shadow") {
+                if (!obj.shadows) {
+                    continue;
+                }
+            } else if (drawMode.startsWith("portal")) {
+                let i = parseFloat(drawMode.split("_")[1]);
+                if (obj.portal_visible && !obj.portal_visible[i]) {
+                    continue;
+                }
             }
-            const pipeline = this.resources.objectPipelines.get(object.id);
-            const vertexBuffer = this.resources.vertexBuffers.get(object.mesh);
-            const uniformBindgroup = this.resources.objectUniformBindgroups.get(object.id);
-            const textureBindgroup = this.resources.objectTextureBindgroups.get(object.id);
+
+            const pipeline = this.resources.objectPipelines.get(obj.id);
+            const vertexBuffer = this.resources.vertexBuffers.get(obj.mesh);
+            const uniformBindgroup = this.resources.objectUniformBindgroups.get(obj.id);
+            const textureBindgroup = this.resources.objectTextureBindgroups.get(obj.id);
             if (!pipeline || !vertexBuffer || !uniformBindgroup || !textureBindgroup) {
-                throw new Error(`missing object assets ${object.id}, ${object.tags}, ${object.mesh}, ${object.textures}`);
+                throw new Error(`missing object assets ${obj.id}, ${obj.tags}, ${obj.mesh}, ${obj.textures}`);
             }
 
             pass.setPipeline(pipeline);
             pass.setVertexBuffer(0, vertexBuffer);
             pass.setBindGroup(0, uniformBindgroup);
             pass.setBindGroup(1, textureBindgroup);
-            pass.draw(vertexBuffer.size / 4 / MESH_STRIDE, object.vertUniforms._instanceCount || 1);
+            pass.draw(vertexBuffer.size / 4 / MESH_STRIDE, obj.vertUniforms._instanceCount || 1);
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);

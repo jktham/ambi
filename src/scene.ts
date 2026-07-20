@@ -22,8 +22,11 @@ export class Scene {
 	postTextures: TexturePath[] = [];
 	postConfig: Vec4 = new Vec4();
 
-	/** casts shadows from this camera, if not set skips shadow render pass */
-	shadowSource?: Camera;
+	/** cast shadows from this camera, if not set skips shadow render pass. renders to $shadowmap */
+	shadowCamera?: Camera;
+
+	/** renders to $portal_N */
+	portalCameras: Camera[] = [];
 
 	objects: Object[] = [];
 	triggers: Trigger[] = [];

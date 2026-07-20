@@ -5,10 +5,10 @@ import type { Player } from "../player";
 import { Camera } from "../camera";
 import { PhongUniforms } from "../uniforms";
 
-export class DebugShadowScene extends Scene {
-	name = "dbg_shadow";
+export class DebugShadowsScene extends Scene {
+	name = "dbg_shadows";
 	spawnPos = new Vec3(0, -2, 6);
-	shadowSource? = new Camera();
+	shadowCamera? = new Camera();
 	
 	phong = new PhongUniforms();
 	shadow_bias = 0.000005;
@@ -16,9 +16,9 @@ export class DebugShadowScene extends Scene {
 	constructor() {
 		super();
 
-		this.shadowSource!.fov = 80.0;
-		this.shadowSource!.near = 0.01;
-		this.shadowSource!.far = 100.0;
+		this.shadowCamera!.fov = 80.0;
+		this.shadowCamera!.near = 0.01;
+		this.shadowCamera!.far = 100.0;
 	}
 
 	init() {
@@ -84,7 +84,8 @@ export class DebugShadowScene extends Scene {
 			obj.changed = true;
 		}
 
-		this.shadowSource!.model = Mat4.translate(lightPos).mul(Mat4.rotateLookAt(lightPos, new Vec3(0, 0, 0)));
+		this.shadowCamera!.model = Mat4.translate(lightPos).mul(Mat4.rotateLookAt(lightPos, new Vec3(0, 0, 0)));
+		this.shadowCamera!.updateMatrices();
 
 	}
 }

@@ -69,6 +69,10 @@ export class Vec2 {
 		return this.mul(-1);
 	}
 
+	copy(): Vec2 {
+		return new Vec2(...this.data);
+	}
+
 	static splat(v: number): Vec2 {
 		return new Vec2(v, v);
 	}
@@ -157,6 +161,10 @@ export class Vec3 {
 		return this.mul(-1);
 	}
 
+	copy(): Vec3 {
+		return new Vec3(...this.data);
+	}
+
 	static splat(v: number): Vec3 {
 		return new Vec3(v, v, v);
 	}
@@ -237,6 +245,10 @@ export class Vec4 {
 
 	negate(): Vec4 {
 		return this.mul(-1);
+	}
+
+	copy(): Vec4 {
+		return new Vec4(...this.data);
 	}
 
 	static splat(v: number): Vec4 {
