@@ -5,6 +5,7 @@ import type { Player } from "../player";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Camera } from "../camera";
 import type { PostFragShaderPath } from "../assets";
+import { rnd, rndvec3 } from "../utils";
 
 export class DebugPortalsScene extends Scene {
 	name = "dbg_portals";
@@ -50,24 +51,58 @@ export class DebugPortalsScene extends Scene {
 
 
 		obj = new Object();
+		obj.tags = ["check_backside"];
 		obj.model = Mat4.trs(new Vec3(-10, 2, -5), new Vec3(), 1);
 		obj.mesh = "monke.obj";
-		obj.textures = ["test.png"];
+		obj.textures = ["white.png"];
 		obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
 		obj.mask = 1;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
+		for (let i=0; i<20; i++) {
+			let offset = new Vec3(-10, 2, 0).add(rndvec3().sub(0.5).mul(2).mul(new Vec3(10, 3, 10)));
+			if (Math.abs(offset.z) < 2) offset.z = 2 * Math.sign(offset.z); // prevent intersecting portal
+
+			obj = new Object();
+			obj.tags = ["check_backside"];
+			obj.model = Mat4.trs(offset, new Vec3(), rnd(0.2, 0.6));
+			obj.mesh = "cube.obj";
+			obj.textures = ["white.png"];
+			obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
+			obj.mask = 1;
+			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragUniforms = this.phong;
+			this.objects.push(obj);
+		}
+
 		obj = new Object();
+		obj.tags = ["check_backside"];
 		obj.model = Mat4.trs(new Vec3(10, 2, -5), new Vec3(), 1);
 		obj.mesh = "monke.obj";
-		obj.textures = ["test.png"];
+		obj.textures = ["white.png"];
 		obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
 		obj.mask = 1;
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
+
+		for (let i=0; i<20; i++) {
+			let offset = new Vec3(10, 2, 0).add(rndvec3().sub(0.5).mul(2).mul(new Vec3(10, 3, 10)));
+			if (Math.abs(offset.z) < 2) offset.z = 2 * Math.sign(offset.z); // prevent intersecting portal
+
+			obj = new Object();
+			obj.tags = ["check_backside"];
+			obj.model = Mat4.trs(offset, new Vec3(), rnd(0.2, 0.6));
+			obj.mesh = "cube.obj";
+			obj.textures = ["white.png"];
+			obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
+			obj.mask = 1;
+			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragUniforms = this.phong;
+			this.objects.push(obj);
+		}
 
 
 		obj = new Object();
@@ -133,6 +168,13 @@ export class DebugPortalsScene extends Scene {
 		this.portalCameras[1].aspect = player.camera.aspect;
 		this.portalCameras[1].fov = player.camera.fov;
 		this.portalCameras[1].updateMatrices();
+
+		// hide objects on backside of portal
+		for (let obj of this.getObjects("check_backside")) {
+			obj.portal_visible = [true, true];
+			obj.portal_visible[0] = this.portalCameras[0].model.origin().z * obj.model.origin().z < 0;
+			obj.portal_visible[1] = this.portalCameras[1].model.origin().z * obj.model.origin().z < 0;
+		}
 
 	}
 }
