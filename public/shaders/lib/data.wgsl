@@ -1,40 +1,40 @@
 struct VertexIn {
-	@location(0) pos: vec3f,
+	@location(0) pos: vec3f, // object space
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
-	@location(4) tangent: vec3f
+	@location(4) tangent: vec3f, // GL tangent
 };
 
 struct VertexOut {
 	@builtin(position) ndc: vec4f, // -1..1
-	@location(0) pos: vec3f,
+	@location(0) pos: vec3f, // world space
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
-	@location(4) tangent: vec3f,
-	@location(5) bary: vec3f,
+	@location(4) tangent: vec3f, // GL tangent
+	@location(5) bary: vec3f, // barycentric triangle coords, 0..1
 	@location(6) shadow_space: vec4f, // -1..1
 };
 
 struct FragmentIn {
 	@builtin(position) screen: vec4f, // 0..res
-	@location(0) pos: vec3f,
+	@location(0) pos: vec3f, // world space
 	@location(1) normal: vec3f,
 	@location(2) color: vec4f,
 	@location(3) uv: vec2f,
-	@location(4) tangent: vec3f,
-	@location(5) bary: vec3f,
+	@location(4) tangent: vec3f, // GL tangent
+	@location(5) bary: vec3f, // barycentric triangle coords, 0..1
 	@location(6) shadow_space: vec4f, // -1..1
 };
 
 struct FragmentOut {
 	@location(0) color: vec4f,
 	@location(1) pos_depth: vec4f,
-	@location(2) normal_mask: vec4f
+	@location(2) normal_mask: vec4f,
 };
 
-/** world frag shader output */
+/// world frag shader output
 struct FbData {
 	color: vec4f,
 	pos: vec3f,
@@ -43,6 +43,7 @@ struct FbData {
 	mask: u32,
 };
 
+/// global world pass uniforms
 struct GlobalUniforms {
 	time: f32,
 	frame: f32,
@@ -55,6 +56,7 @@ struct GlobalUniforms {
 	shadow_transform: mat4x4f,
 };
 
+/// per object world pass uniforms
 struct ObjectUniforms {
 	mask: f32,
 	cull: f32,
@@ -67,6 +69,7 @@ struct ObjectUniforms {
 	normal: mat4x4f,
 };
 
+/// base post pass uniforms
 struct PostUniforms {
 	time: f32,
 	frame: f32,
@@ -76,6 +79,7 @@ struct PostUniforms {
 	projection: mat4x4f,
 };
 
+/// encode world pass output data into framebuffers
 fn encodeFbData(data: FbData) -> FragmentOut {
 	var out: FragmentOut;
 	out.color = data.color;
@@ -84,7 +88,8 @@ fn encodeFbData(data: FbData) -> FragmentOut {
 	return out;
 }
 
-fn loadFbData(pixel: vec2i, fb_color: texture_storage_2d<rgba8unorm, read>, fb_pos_depth: texture_storage_2d<rgba32float, read>, fb_normal_mask: texture_storage_2d<rgba8unorm, read>) -> FbData {
+/// decode post pass input framebuffers back into data
+fn decodeFbData(pixel: vec2i, fb_color: texture_storage_2d<rgba8unorm, read>, fb_pos_depth: texture_storage_2d<rgba32float, read>, fb_normal_mask: texture_storage_2d<rgba8unorm, read>) -> FbData {
 	var data: FbData;
 	let color = textureLoad(fb_color, pixel);
 	let pd = textureLoad(fb_pos_depth, pixel);

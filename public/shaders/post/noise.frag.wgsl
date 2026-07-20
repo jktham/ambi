@@ -15,7 +15,7 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	_ = t_sampler;
 	_ = t_sampler_direct;
 	let pixel = vec2i(in.screen.xy);
-	let data = loadFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
+	let data = decodeFbData(pixel, fb_color, fb_pos_depth, fb_normal_mask);
 	var color = data.color;
 
 	let seed = u_post.frame / 1000.0 % 10.0 + 1.0;

@@ -19,6 +19,7 @@ fn rndvec4(seed: f32) -> vec4f {
 	);
 }
 
+/// Gold Noise ©2015 dcerisano@standard3d.com
 fn gold_noise(xy: vec2f, seed: f32) -> f32 {
 	let PHI = 1.61803398874989484820459; 
 	return fract(tan(distance(xy*PHI, xy)*seed)*xy.x);

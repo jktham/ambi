@@ -1,0 +1,2 @@
+- various textures: polyhaven.com
+- suzanne <3: blender.org

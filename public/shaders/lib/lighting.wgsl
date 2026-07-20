@@ -2,14 +2,14 @@ struct PhongMaterial {
 	ambient: vec3f,
 	diffuse: vec3f,
 	specular: vec3f,
-	shininess: f32,
+	shininess: f32, // specular exponent
 };
 
 struct PointLight {
 	pos: vec3f,
 	diffuse: vec3f,
 	specular: vec3f,
-	falloff_constant: f32,
+	falloff_constant: f32, // default 1
 	falloff_linear: f32,
 	falloff_exponential: f32,
 };
@@ -55,6 +55,7 @@ fn phong_color(pos: vec3f, normal: vec3f, view_pos: vec3f, material: PhongMateri
 	return lighting;
 }
 
+/// relative luminance from linear rgb
 fn luminance(color: vec4f) -> f32 {
 	return dot(color, vec4f(0.2126, 0.7152, 0.0722, 0.0));
 }
