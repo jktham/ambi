@@ -28,6 +28,8 @@ export class DebugPortalsScene extends Scene {
 	}
 
 	init() {
+		this.phong.light.pos = new Vec3(0, 10, 0);
+
 		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
 		obj.mesh = "quad_vertical.obj";
@@ -103,12 +105,6 @@ export class DebugPortalsScene extends Scene {
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
-		let lightPos = new Vec3(20*Math.cos(time/2), 20, 20*Math.sin(time/2));
-		this.phong.light.pos = lightPos;
-		for (let obj of this.objects) {
-			obj.changed = true;
-		}
-
 		if (player.position.x > -13 && player.position.x < -7 &&
 			player.position.y > 0 && player.position.y < 4 &&
 			player.position.z * this.prevPos.z < 0

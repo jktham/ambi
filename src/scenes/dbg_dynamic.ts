@@ -30,6 +30,8 @@ export class DebugDynamicScene extends Scene {
 	}
 	
 	init() {
+		this.phong.light.pos = new Vec3(0, 10, 0);
+		
 		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-3, 0, -5), new Vec3(), 1);
 		obj.mesh = "quad_vertical.obj";
@@ -79,10 +81,6 @@ export class DebugDynamicScene extends Scene {
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
-		let lightPos = new Vec3(20*Math.cos(time/2), 40, 20*Math.sin(time/2));
-		this.phong.light.pos = lightPos;
-		for (let obj of this.objects) {
-			obj.changed = true;
-		}
+
 	}
 }

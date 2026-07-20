@@ -12,6 +12,8 @@ export class DebugRotationScene extends Scene {
 	phong = new PhongUniforms();
 	
 	init() {
+		this.phong.light.pos = new Vec3(0, 10, 0);
+		
 		let obj = new Object();
 		obj.tags = ["static"];
 		obj.model = Mat4.trs(new Vec3(-6, 0, 0), new Vec3(), 1.0);
@@ -70,30 +72,29 @@ export class DebugRotationScene extends Scene {
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
-		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
-		this.phong.light.pos = lightPos;
-		for (let obj of this.objects) {
-			obj.changed = true;
-		}
-
 		let projectiles = this.getObjects("projectile");
 		for (let obj of projectiles) {
 			obj.model = obj.model.mul(Mat4.translate(new Vec3(0, 0, -1).mul(30.0 * deltaTime)));
 			let d = clamp(obj.lifetime!, 0.0, 1.0);
 			obj.color = Vec4.splat(d);
+			obj.changed = true;
 		}
 
 		let intrinsic = this.getObject("intrinsic")!;
 		intrinsic.model = Mat4.translate(intrinsic.model.origin()).mul(Mat4.rotateIntrinsic(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
+		intrinsic.changed = true;
 
 		let extrinsic = this.getObject("extrinsic")!;
 		extrinsic.model = Mat4.translate(extrinsic.model.origin()).mul(Mat4.rotateExtrinsic(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
+		extrinsic.changed = true;
 
 		let heading = this.getObject("heading")!;
 		heading.model = Mat4.translate(heading.model.origin()).mul(Mat4.rotateHeading(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
+		heading.changed = true;
 
 		let lookat = this.getObject("lookat")!;
 		lookat.model = Mat4.translate(lookat.model.origin()).mul(Mat4.rotateLookAt(lookat.model.origin(), player.position));
+		lookat.changed = true;
 
 		// test decompose identity
 		for (let obj of this.objects) {

@@ -13,6 +13,8 @@ export class DebugTriggerScene extends Scene {
 	phong = new PhongUniforms();
 	
 	init() {
+		this.phong.light.pos = new Vec3(0, 10, 0);
+
 		// simple cube, manual bbox
 		let obj = new Object();
 		obj.tags = ["1"];
@@ -146,12 +148,6 @@ export class DebugTriggerScene extends Scene {
 	}
 
 	update(time: number, deltaTime: number, player: Player) {
-		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
-		this.phong.light.pos = lightPos;
-		for (let obj of this.objects) {
-			obj.changed = true;
-		}
-
 		// move 4
 		let obj4 = this.getObject("4")!;
 		let origin = Mat4.trs(new Vec3(0, 0, -5), new Vec3(0, 0, Math.PI / 4.0), 1);
