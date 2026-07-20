@@ -17,7 +17,7 @@ export class Renderer {
     
     private assets: Assets;
     private profiler: Profiler;
-    private resources!: Resources;
+    resources!: Resources;
 
     private scenePortalsCount = 0;;
 
@@ -296,11 +296,11 @@ export class Renderer {
         }
 
         // update object buffers once
-        this.profiler.start("  bufferWorldObject");
+        this.profiler.start("  bufferObjects");
         for (let obj of scene.objects) {
             this.updateObjectBuffers(obj);
         }
-        this.profiler.stop("  bufferWorldObject");
+        this.profiler.stop("  bufferObjects");
 
         // draw portals (including post pass)
         for (let [i, portalCamera] of scene.portalCameras.entries()) {
@@ -342,7 +342,7 @@ export class Renderer {
     }
 
     private updateGlobalBuffers(scene: Scene, camera: Camera, time: number, frame: number) {
-        this.profiler.start("  bufferWorldGlobal");
+        this.profiler.start("  bufferGlobal");
 
         // global uniforms, always update
         let globalUniforms = new GlobalUniforms();
@@ -358,7 +358,7 @@ export class Renderer {
 
         const globalUniformBuffer = this.resources.globalUniformBuffer;
         this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms.update().buffer);
-        this.profiler.stop("  bufferWorldGlobal");
+        this.profiler.stop("  bufferGlobal");
     }
 
     private updateObjectBuffers(obj: Object) {
@@ -413,7 +413,7 @@ export class Renderer {
     }
 
     private drawObjects(scene: Scene, drawMode: "world" | "shadow" | `portal_${number}`) {
-        this.profiler.start("  drawWorld");
+        this.profiler.start("  drawObjects");
         const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
         const pass = encoder.beginRenderPass(this.resources.worldRenderPassDescriptor);
         for (let obj of scene.objects) {
@@ -449,7 +449,7 @@ export class Renderer {
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);
-        this.profiler.stop("  drawWorld");
+        this.profiler.stop("  drawObjects");
     }
 
     private drawPost() {

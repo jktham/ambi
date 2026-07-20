@@ -459,4 +459,15 @@ export class Assets {
 		this.colliders.clear();
 		this.materials.clear();
 	}
+
+	/** returns number of assets in cache */
+	size(): number {
+		return [
+			...this.shaders.values(),
+			...this.meshes.values(),
+			...this.textures.values(),
+			...this.colliders.values(),
+			...this.materials.values()
+		].length;
+	}
 }

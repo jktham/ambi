@@ -146,7 +146,7 @@ export class Gui {
 	}
 
 	updateInfo(text: string) {
-		this.info.innerHTML = text;
+		this.info.innerHTML = text.replace("\n", "<br>");
 	}
 
 	updateScene(name: string) {

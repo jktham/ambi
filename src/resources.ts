@@ -456,4 +456,46 @@ export class Resources {
         (this.postUniformBindgroup as any) = undefined;
         (this.postFramebufferBindgroup as any) = undefined;
     }
+
+	/** returns size of loaded buffers in megabytes */
+	computeMemoryUsage(): number {
+        const bytes_per_pixel = (format: GPUTextureFormat): number => {
+            switch (format) {
+                case "depth32float": return 4
+                case "rgba8unorm": return 4;
+                case "rgba32float": return 16;
+                default: return 4;
+            };
+        };
+        const texture_bytes = (texture: GPUTexture): number => {
+            return texture.width * texture.height * bytes_per_pixel(texture.format);
+        };
+        
+		let bytes = 0;
+		for (let texture of [
+            this.depthFramebuffer, 
+            this.colorFramebuffer, 
+            this.posDepthFramebuffer, 
+            this.normalMaskFramebuffer, 
+            this.shadowmapFramebuffer, 
+            this.finalFramebuffer,
+            ...this.portalFramebuffers,
+            ...this.textureBuffers.values(),
+            ...this.postTextureBuffers.values(),
+        ]) {
+			bytes += texture_bytes(texture);
+		}
+		for (let buffer of [
+            ...this.vertexBuffers.values(),
+            this.globalUniformBuffer,
+            ...this.objectBaseUniformBuffers.values(),
+            ...this.objectVertUniformBuffers.values(),
+            ...this.objectFragUniformBuffers.values(),
+            this.postBaseUniformBuffer,
+            this.postFragUniformBuffer,
+        ]) {
+			bytes += buffer.size;
+		}
+		return bytes / 1_000_000;
+	}
 }

@@ -22,7 +22,12 @@ export class Engine {
 	gui: Gui;
 	profiler: Profiler;
 
+	/** framerate limit, 0 to disable */
+	framerate = 60;
+
 	private deltaHist: number[] = [];
+	private deltaAvg: number = 0;
+	private mbMem: number = 0;
 	private scheduledFrameHandle: number = 0;
 
 	constructor(canvas: HTMLCanvasElement) {
@@ -54,6 +59,8 @@ export class Engine {
 			console.error(`no scene called ${name}`);
 			this.scene = new Scene();
 		}
+
+		this.assets.clear();
 
 		this.renderer.postShaderOverride = undefined;
 		this.renderer.postFragUniformsOverride = undefined;
@@ -115,12 +122,6 @@ export class Engine {
 
 	private async update(time: number, frame: number, deltaTime: number) {
 		this.profiler.start("update");
-		this.deltaHist.push(deltaTime);
-		if (this.deltaHist.length > 60) {
-			this.deltaHist.shift();
-		}
-		let deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / 60.0;
-
 
 		// ---- player ----
 		this.profiler.start("  updatePlayer");
@@ -163,9 +164,14 @@ export class Engine {
 
 
 		// ---- gui ----
-		this.gui.updateInfo(`${(1/deltaAvg).toFixed(2)} fps, ${deltaAvg.toFixed(4)} s, ${this.scene.objects.length}/${this.scene.objects.filter(o => o.visible).length}/${this.scene.objects.filter(o => o.collider && o.collidable).length} obj, ${this.scene.triggers.length}/${this.scene.triggers.filter(t => t.enabled).length} trg`);
+		if (frame % 60 == 0) this.mbMem = this.renderer.resources.computeMemoryUsage();
+		this.gui.updateInfo(`\
+			${(1/this.deltaAvg).toFixed(2)} fps, ${(this.deltaAvg * 1000.0).toFixed(2)} ms, ${this.mbMem.toFixed(2)} mb,\n\
+			${this.scene.objects.length}t/${this.scene.objects.filter(o => o.visible).length}v/${this.scene.objects.filter(o => o.collider && o.collidable).length}c obj, \
+			${this.scene.triggers.length}t/${this.scene.triggers.filter(t => t.enabled).length}e trg,\
+			${this.assets.size()} ast\
+		`);
 		
-	
 		this.profiler.stop("update");
 		if (frame % 120 == 0) this.profiler.print();
 	}
@@ -177,7 +183,6 @@ export class Engine {
 	}
 
 	private loop() {
-		let frameRate = 60;
         let t0 = 0;
 		let f = 0;
         const newFrame = async (t: number) => {
@@ -186,9 +191,16 @@ export class Engine {
                 t0 = t;
             }
             const dt = (t - t0) / 1000;
-            if (frameRate == 0 || dt >= 1 / frameRate - 0.001) {
+            if (this.framerate == 0 || dt >= 1 / this.framerate - 0.001) {
             	t0 = t;
 				f++;
+
+				this.deltaHist.push(dt);
+				if (this.deltaHist.length > 60) {
+					this.deltaHist.shift();
+				}
+				this.deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / this.deltaHist.length;
+
                 await this.update(t / 1000, f, dt);
                 await this.draw(t / 1000, f);
             }
