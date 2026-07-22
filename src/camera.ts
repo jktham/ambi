@@ -21,12 +21,12 @@ export class Camera {
 	}
 
 	/** compute view matrix from model transform */
-	computeView(): Mat4 {
+	private computeView(): Mat4 {
 		return this.model.inverse();
 	}
 
 	/** compute projection matrix from near and far planes, fov and aspect ratio */
-	computeProjection(): Mat4 {
+	private computeProjection(): Mat4 {
 		const phi = Math.tan((1.0 - this.fov / 180.0) * Math.PI / 2.0);
 
 		return new Mat4([

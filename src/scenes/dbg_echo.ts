@@ -3,24 +3,28 @@ import { Object } from "../object";
 import { InstancedUniforms, PhongUniforms, PostEchoUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
-import type { FragShaderPath } from "../assets";
 
 export class DebugEchoScene extends Scene {
-	name = "dbg_echo";
-	spawnPos = new Vec3(0, 1.8, 0);
+	phong = new PhongUniforms();
 
-	postShader: FragShaderPath = "post/echo.frag.wgsl";
-	postUniforms = new PostEchoUniforms();
+	constructor() {
+		super();
+
+		this.name = "dbg_echo";
+		this.spawnPos = new Vec3(0, 1.8, 0);
+
+		this.postShader = "post/echo.frag.wgsl";
+		this.postUniforms = new PostEchoUniforms();
+
+		this.phong.light.pos = new Vec3(0, 10, 0);
+	}
 
 	init() {
-		let phong = new PhongUniforms();
-		phong.light.pos = new Vec3(0, 10, 0);
-
 		let obj = new Object();
 		obj.mesh = "quad.obj";
 		obj.model = Mat4.trs(new Vec3(), new Vec3(), 20);
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = phong;
+		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
 		obj = new Object();
@@ -28,7 +32,7 @@ export class DebugEchoScene extends Scene {
 		obj.vertShader = "world/instanced.vert.wgsl";
 		obj.vertUniforms = new InstancedUniforms();
 		obj.fragShader = "world/phong.frag.wgsl";
-		obj.fragUniforms = phong;
+		obj.fragUniforms = this.phong;
 
 		let count = 1000;
 		let range = 100;
@@ -65,11 +69,12 @@ export class DebugEchoScene extends Scene {
 	}
 
 	sendPulse(origin: Vec3, color: Vec4, time: number) {
-		this.postUniforms.pulse_origins.unshift(new Vec3(origin.x, origin.y, origin.z));
-		this.postUniforms.pulse_origins.pop();
-		this.postUniforms.pulse_times.unshift(time);
-		this.postUniforms.pulse_times.pop();
-		this.postUniforms.pulse_colors.unshift(color);
-		this.postUniforms.pulse_colors.pop();
+		let u = this.postUniforms as PostEchoUniforms;
+		u.pulse_origins.unshift(new Vec3(origin.x, origin.y, origin.z));
+		u.pulse_origins.pop();
+		u.pulse_times.unshift(time);
+		u.pulse_times.pop();
+		u.pulse_colors.unshift(color);
+		u.pulse_colors.pop();
 	}
 }

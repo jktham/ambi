@@ -6,10 +6,16 @@ import type { Player } from "../player";
 import type { Assets } from "../assets";
 
 export class DebugDynamicScene extends Scene {
-	name = "dbg_dynamic";
-	spawnPos = new Vec3(0, 0, 5);
-
 	phong = new PhongUniforms();
+
+	constructor() {
+		super();
+
+		this.name = "dbg_dynamic";
+		this.spawnPos = new Vec3(0, 0, 5);
+
+		this.phong.light.pos = new Vec3(0, 10, 0);
+	}
 
 	generateAssets(assets: Assets) {
 		let dynMesh = [ // pos, normal, color, uv, tangent
@@ -30,8 +36,6 @@ export class DebugDynamicScene extends Scene {
 	}
 	
 	init() {
-		this.phong.light.pos = new Vec3(0, 10, 0);
-		
 		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-3, 0, -5), new Vec3(), 1);
 		obj.mesh = "quad_vertical.obj";

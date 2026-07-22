@@ -1,17 +1,17 @@
 import { Scene } from "../scene";
 import { Object } from "../object";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
-import type { CameraMode } from "../player";
 
 export class DebugPixelScene extends Scene {
-	name = "dbg_pixel";
-	cameraMode: CameraMode = "static";
+	constructor() {
+		super();
 
-	resolution = new Vec2(96, 54);
+		this.name = "dbg_pixel";
+		this.resolution = new Vec2(96, 54);
+		this.cameraMode = "static";
+	}
 	
 	init() {
-		this.objects = [];
-
 		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(0, 0, -1), new Vec3(Math.PI/2.0, 0, 0), 2);
 		obj.mesh = "quad.obj";

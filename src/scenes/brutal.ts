@@ -1,24 +1,28 @@
 import { Bbox } from "../bbox";
-import type { CameraMode } from "../player";
 import { Scene } from "../scene";
 import { Object } from "../object";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
-import type { MeshPath, FragShaderPath } from "../assets";
+import type { MeshPath } from "../assets";
 
 export class BrutalScene extends Scene {
-	name = "brutal";
-	cameraMode = "walk" as CameraMode;
-	spawnPos = new Vec3(0, 2.0, 0);
-	postShader: FragShaderPath = "post/noise.frag.wgsl";
+	phong = new PhongUniforms();
+
+	constructor() {
+		super();
+
+		this.name = "brutal";
+		this.cameraMode = "walk";
+		this.spawnPos = new Vec3(0, 2, 0);
+		this.postShader = "post/noise.frag.wgsl";
+		
+		this.phong.light.pos = new Vec3(100, 300, 200);
+		this.phong.light.diffuse = new Vec3(1.0, 0.2, 0.2);
+		this.phong.light.specular = Vec3.splat(0.0);
+		this.phong.material.specular = Vec3.splat(0.0);
+	}
 
 	init() {
-		let phong = new PhongUniforms();
-		phong.light.pos = new Vec3(100, 300, 200);
-		phong.light.diffuse = new Vec3(1.0, 0.2, 0.2);
-		phong.light.specular = Vec3.splat(0.0);
-		phong.material.specular = Vec3.splat(0.0);
-
 		const size = 21;
 		const scale = 20.0;
 		let tiles = getTiles();
@@ -55,14 +59,14 @@ export class BrutalScene extends Scene {
 			tileObj.mesh = mesh;
 			tileObj.textures = ["concrete.jpg"];
 			tileObj.fragShader = "world/phong.frag.wgsl";
-			tileObj.fragUniforms = phong;
+			tileObj.fragUniforms = this.phong;
 			tileObj.vertShader = "world/instanced.vert.wgsl";
 			tileObj.vertUniforms = u;
 			this.objects.push(tileObj);
 		}
 
 		let sun = new Object();
-		sun.model = Mat4.trs(phong.light.pos, new Vec3(), 20.0);
+		sun.model = Mat4.trs(this.phong.light.pos, new Vec3(), 20.0);
 		sun.mesh = "sphere.obj";
 		sun.textures = ["white.png"];
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);

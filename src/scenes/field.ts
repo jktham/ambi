@@ -1,21 +1,11 @@
-import type { Player, CameraMode } from "../player";
+import type { Player } from "../player";
 import { Scene } from "../scene";
 import { Object } from "../object";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { rad, rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
-import type { FragShaderPath } from "../assets";
 
 export class FieldScene extends Scene {
-	name = "field";
-	resolution = new Vec2(320, 180);
-	spawnPos = new Vec3(0, 1.8, 0);
-	spawnRot = new Vec3(0, rad(90), 0);
-	cameraMode = "walk" as CameraMode;
-
-	postShader: FragShaderPath = "post/psx_fog.frag.wgsl";
-	postUniforms = new PostPsxUniforms();
-
 	CHUNK_SIZE = 30.0;
 	GRASS_COUNT = 1000;
 	grassOrigins: Mat4[] = [];
@@ -26,11 +16,20 @@ export class FieldScene extends Scene {
 
 	constructor() {
 		super();
-		
+
+		this.name = "field";
+		this.resolution = new Vec2(320, 180);
+		this.cameraMode = "walk";
+		this.spawnPos = new Vec3(0, 1.8, 0);
+		this.spawnRot = new Vec3(0, rad(90), 0);
+
 		// always initialize postuniforms in constructor, important for override reset
-		(this.postUniforms as PostPsxUniforms).fog_start = -5.0;
-		(this.postUniforms as PostPsxUniforms).fog_end = 12.0;
-		(this.postUniforms as PostPsxUniforms).fog_color = new Vec4(0.20, 0.20, 0.20, 1.0);
+		this.postShader = "post/psx_fog.frag.wgsl";
+		let postUniforms = new PostPsxUniforms();
+		postUniforms.fog_start = -5.0;
+		postUniforms.fog_end = 12.0;
+		postUniforms.fog_color = new Vec4(0.20, 0.20, 0.20, 1.0);
+		this.postUniforms = postUniforms;
 	}
 
 	init() {

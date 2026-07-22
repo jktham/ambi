@@ -1,27 +1,26 @@
-import type { Player, CameraMode } from "../player";
+import type { Player } from "../player";
 import { Scene } from "../scene";
 import { Object } from "../object";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
-import type { FragShaderPath } from "../assets";
 import { rad } from "../utils";
 
 export class PierScene extends Scene {
-	name = "pier";
-	resolution = new Vec2(320, 180);
-	spawnPos = new Vec3(8, 1.8, -0.5);
-	spawnRot = new Vec3(0, rad(90), 0);
-	cameraMode = "walk" as CameraMode;
-
-	postShader: FragShaderPath = "post/psx_fog.frag.wgsl";
-	postUniforms = new PostPsxUniforms();
-
 	constructor() {
 		super();
 
-		(this.postUniforms as PostPsxUniforms).fog_start = -2.0;
-		(this.postUniforms as PostPsxUniforms).fog_end = 10.0;
-		(this.postUniforms as PostPsxUniforms).fog_color = new Vec4(0.60, 0.60, 0.60, 1.0);
+		this.name = "pier";
+		this.resolution = new Vec2(320, 180);
+		this.cameraMode = "walk";
+		this.spawnPos = new Vec3(8, 1.8, -0.5);
+		this.spawnRot = new Vec3(0, rad(90), 0);
+
+		this.postShader = "post/psx_fog.frag.wgsl";
+		let postUniforms = new PostPsxUniforms();
+		postUniforms.fog_start = -2.0;
+		postUniforms.fog_end = 10.0;
+		postUniforms.fog_color = new Vec4(0.60, 0.60, 0.60, 1.0);
+		this.postUniforms = postUniforms;
 	}
 
 	init() {

@@ -6,16 +6,16 @@ import { Camera } from "../camera";
 import { PhongUniforms } from "../uniforms";
 
 export class DebugShadowsScene extends Scene {
-	name = "dbg_shadows";
-	spawnPos = new Vec3(0, -2, 6);
-	shadowCamera? = new Camera();
-	
 	phong = new PhongUniforms();
 	shadow_bias = 0.000005;
 
 	constructor() {
 		super();
 
+		this.name = "dbg_shadows";
+		this.spawnPos = new Vec3(0, -2, 6);
+		
+		this.shadowCamera = new Camera();
 		this.shadowCamera!.fov = 80.0;
 		this.shadowCamera!.near = 0.01;
 		this.shadowCamera!.far = 100.0;

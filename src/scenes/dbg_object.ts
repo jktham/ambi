@@ -7,9 +7,13 @@ import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 
 export class DebugObjectScene extends Scene {
-	name = "dbg_object";
-
 	phong = new PhongUniforms();
+
+	constructor() {
+		super();
+
+		this.name = "dbg_object";
+	}
 	
 	init() {
 		let obj = new Object();

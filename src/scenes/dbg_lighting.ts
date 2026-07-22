@@ -5,8 +5,12 @@ import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 
 export class DebugLightingScene extends Scene {
-	name = "dbg_lighting";
-	spawnPos = new Vec3(0, 4, 8);
+	constructor() {
+		super();
+
+		this.name = "dbg_lighting";
+		this.spawnPos = new Vec3(0, 4, 8);
+	}
 	
 	init() {
 		let obj = new Object();

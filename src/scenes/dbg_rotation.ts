@@ -6,14 +6,18 @@ import type { Player } from "../player";
 import { clamp, rad } from "../utils";
 
 export class DebugRotationScene extends Scene {
-	name = "dbg_rotation";
-	spawnPos = new Vec3(0, 0, 5);
-
 	phong = new PhongUniforms();
+
+	constructor() {
+		super();
+
+		this.name = "dbg_rotation";
+		this.spawnPos = new Vec3(0, 0, 5);
+
+		this.phong.light.pos = new Vec3(0, 10, 0);
+	}
 	
 	init() {
-		this.phong.light.pos = new Vec3(0, 10, 0);
-		
 		let obj = new Object();
 		obj.tags = ["static"];
 		obj.model = Mat4.trs(new Vec3(-6, 0, 0), new Vec3(), 1.0);

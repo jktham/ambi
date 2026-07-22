@@ -9,13 +9,13 @@ import type { Assets, FragShaderPath, TexturePath } from "./assets";
 export class Scene {
 	name: string = "none";
 	resolution: Vec2 = new Vec2(960, 540);
-	spawnPos: Vec3 = new Vec3();
-	/** pitch, yaw, roll */
-	spawnRot: Vec3 = new Vec3();
 	/** "fly" is 6dof and ignores colliders, \
 	 *  "walk" is locked in plane, \
 	 *  "static" ignores movement input */
 	cameraMode: CameraMode = "fly";
+	spawnPos: Vec3 = new Vec3();
+	/** pitch, yaw, roll */
+	spawnRot: Vec3 = new Vec3();
 
 	/** post fragment shader */
 	postShader: FragShaderPath = "post/fb_color.frag.wgsl";
@@ -23,10 +23,9 @@ export class Scene {
 	postTextures: TexturePath[] = [];
 	postConfig: Vec4 = new Vec4();
 
-	/** cast shadows from this camera, if not set skips shadow render pass. renders to $shadowmap builtin texture */
+	/** renders depth to $shadowmap builtin texture */
 	shadowCamera?: Camera;
-
-	/** renders to $portal_i builtin texture */
+	/** renders color to $portal_i builtin texture */
 	portalCameras: Camera[] = [];
 
 	objects: Object[] = [];

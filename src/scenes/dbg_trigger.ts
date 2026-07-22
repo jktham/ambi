@@ -7,14 +7,18 @@ import { Trigger } from "../trigger";
 import { Bbox } from "../bbox";
 
 export class DebugTriggerScene extends Scene {
-	name = "dbg_trigger";
-	spawnPos = new Vec3(0, 0, 5);
-
 	phong = new PhongUniforms();
+
+	constructor() {
+		super();
+
+		this.name = "dbg_trigger";
+		this.spawnPos = new Vec3(0, 0, 5);
+
+		this.phong.light.pos = new Vec3(0, 10, 0);
+	}
 	
 	init() {
-		this.phong.light.pos = new Vec3(0, 10, 0);
-
 		// simple cube, manual bbox
 		let obj = new Object();
 		obj.tags = ["1"];

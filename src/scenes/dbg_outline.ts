@@ -3,31 +3,29 @@ import { Object } from "../object";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
-import type { FragShaderPath } from "../assets";
 
 export class DebugOutlineScene extends Scene {
-	name = "dbg_outline";
-	spawnPos = new Vec3(0, 0, 5);
-
-	postShader: FragShaderPath = "post/outline.frag.wgsl";
-	resolution = new Vec2(1920, 1080);
-
 	phong = new PhongUniforms();
 
 	constructor() {
 		super();
-		
-		let u = new PostOutlineUniforms();
-		u.scale[0] = 2;
-		u.scale[1] = 1;
-		u.scale[2] = 2;
-		u.scale[3] = 8;
-		u.mode[0] = 1;
-		u.mode[1] = 1;
-		u.color[1] = new Vec4(1, 0, 0, 1);
-		u.color[2] = new Vec4(0, 1, 0, 1);
-		u.color[3] = new Vec4(0, 0, 1, 1);
-		this.postUniforms = u;
+
+		this.name = "dbg_outline";
+		this.resolution = new Vec2(1920, 1080);
+		this.spawnPos = new Vec3(0, 0, 5);
+
+		this.postShader = "post/outline.frag.wgsl";
+		let postUniforms = new PostOutlineUniforms();
+		postUniforms.scale[0] = 2;
+		postUniforms.scale[1] = 1;
+		postUniforms.scale[2] = 2;
+		postUniforms.scale[3] = 8;
+		postUniforms.mode[0] = 1;
+		postUniforms.mode[1] = 1;
+		postUniforms.color[1] = new Vec4(1, 0, 0, 1);
+		postUniforms.color[2] = new Vec4(0, 1, 0, 1);
+		postUniforms.color[3] = new Vec4(0, 0, 1, 1);
+		this.postUniforms = postUniforms;
 	}
 	
 	init() {

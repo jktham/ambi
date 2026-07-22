@@ -177,7 +177,7 @@ export class Gui {
 		
 	}
 
-	// this is awful i'll improve it at some point i hope
+	// todo: this is awful i'll improve it at some point i hope
 	private initUniformConfig(shader: FragShaderPath | "scene", uniforms: Uniforms, textures: TexturePath[]) {
 		this.uniformSizes.clear();
 		this.uniformConfig.textContent = "";

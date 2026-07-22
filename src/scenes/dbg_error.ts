@@ -5,14 +5,18 @@ import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 
 export class DebugErrorScene extends Scene {
-	name = "dbg_error";
-	spawnPos = new Vec3(0, 0, 5);
-
 	phong = new PhongUniforms();
+
+	constructor() {
+		super();
+
+		this.name = "dbg_error";
+		this.spawnPos = new Vec3(0, 0, 5);
+
+		this.phong.light.pos = new Vec3(0, 10, 0);
+	}
 	
 	init() {
-		this.phong.light.pos = new Vec3(0, 10, 0);
-		
 		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-9, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";

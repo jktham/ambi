@@ -20,6 +20,7 @@ import { DebugLightingScene } from "./scenes/dbg_lighting";
 import { DebugDynamicScene } from "./scenes/dbg_dynamic";
 import { DebugPortalsScene } from "./scenes/dbg_portals";
 
+/** <name, Scene> */
 export const scenes: Map<string, new () => Scene> = new Map([
 	["none", Scene],
 	["museum", MuseumScene],

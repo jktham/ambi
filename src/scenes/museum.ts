@@ -1,5 +1,5 @@
 import { Bbox } from "../bbox";
-import type { Player, CameraMode } from "../player";
+import type { Player } from "../player";
 import { Scene } from "../scene";
 import { Object } from "../object";
 import { Trigger } from "../trigger";
@@ -7,7 +7,7 @@ import { InstancedUniforms, PhongUniforms, PostOutlineUniforms, RayspheresUnifor
 import { clamp, rad, rnd, rndarr, rndint, rndseed, rndvec3, rndvec4 } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import { engine } from "../main";
-import type { FragShaderPath, TexturePath } from "../assets";
+import type { TexturePath } from "../assets";
 
 const MASK_OUTLINE_NONE = 13;
 const MASK_OUTLINE_EXT_ONLY = 14;
@@ -17,13 +17,6 @@ const N_ROOMS = 10;
 const FIRST_ROOM = 0;
 
 export class MuseumScene extends Scene {
-	name = "museum";
-	resolution = new Vec2(1920, 1080);
-	cameraMode: CameraMode = "walk";
-	spawnPos: Vec3 = new Vec3(0.001, 2, 0.001);
-	postShader: FragShaderPath = "post/outline.frag.wgsl";
-	postUniforms = new PostOutlineUniforms();
-
 	roomSlots: number[] = [0, 1, 2, 3, 4]; // CNESW
 	roomObjects: Object[][] = Array(N_ROOMS).fill(0).map(_ => []); // different [] objects
 	roomTriggers: Trigger[][] = Array(N_ROOMS).fill(0).map(_ => []);
@@ -34,13 +27,21 @@ export class MuseumScene extends Scene {
 
 	constructor() {
 		super();
-		
-		this.postUniforms.scale.fill(2);
-		this.postUniforms.mode.fill(1);
-		this.postUniforms.color = this.postUniforms.color.map(_ => new Vec4(0, 0, 0, 1));
-		this.postUniforms.scale[MASK_OUTLINE_NONE] = 0;
-		this.postUniforms.mode[MASK_OUTLINE_EXT_ONLY] = 0;
-		this.postUniforms.color[MASK_OUTLINE_WHITE] = new Vec4(1, 1, 1, 1);
+
+		this.name = "museum";
+		this.cameraMode = "walk";
+		this.resolution = new Vec2(1920, 1080);
+		this.spawnPos = new Vec3(0.001, 2, 0.001);
+
+		this.postShader = "post/outline.frag.wgsl";	
+		let postUniforms = new PostOutlineUniforms();
+		postUniforms.scale.fill(2);
+		postUniforms.mode.fill(1);
+		postUniforms.color = postUniforms.color.map(_ => new Vec4(0, 0, 0, 1));
+		postUniforms.scale[MASK_OUTLINE_NONE] = 0;
+		postUniforms.mode[MASK_OUTLINE_EXT_ONLY] = 0;
+		postUniforms.color[MASK_OUTLINE_WHITE] = new Vec4(1, 1, 1, 1);
+		this.postUniforms = postUniforms;
 
 		this.phong.light.pos = new Vec3(400, 1200, 800);
 		this.phong.material.ambient = Vec3.splat(0.8);

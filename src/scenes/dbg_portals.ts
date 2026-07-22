@@ -8,29 +8,30 @@ import type { FragShaderPath } from "../assets";
 import { rnd, rndvec3 } from "../utils";
 
 export class DebugPortalsScene extends Scene {
-	name = "dbg_portals";
-	spawnPos = new Vec3(0, 2, 6);
-	
-	portalCameras = [new Camera(), new Camera()];
-
 	phong = new PhongUniforms();
 	prevPos = new Vec3();
 
 	constructor() {
 		super();
 
+		this.name = "dbg_portals";
+		this.spawnPos = new Vec3(0, 2, 6);
+
 		this.postShader = "post/outline.frag.wgsl" as FragShaderPath;
-		this.postUniforms = new PostOutlineUniforms();
-		(this.postUniforms as PostOutlineUniforms).mode[0] = 1; // self edges
-		(this.postUniforms as PostOutlineUniforms).mode[1] = 0;
-		(this.postUniforms as PostOutlineUniforms).color[0] = new Vec4(0.0, 0.0, 0.0, 1.0);
-		(this.postUniforms as PostOutlineUniforms).color[1] = new Vec4(0.0, 0.0, 0.0, 1.0);
-		(this.postUniforms as PostOutlineUniforms).color[2] = new Vec4(0.0, 0.0, 0.0, 0.0);
+		let postUniforms = new PostOutlineUniforms();
+		postUniforms.mode[0] = 1; // self edges
+		postUniforms.mode[1] = 0;
+		postUniforms.color[0] = new Vec4(0.0, 0.0, 0.0, 1.0);
+		postUniforms.color[1] = new Vec4(0.0, 0.0, 0.0, 1.0);
+		postUniforms.color[2] = new Vec4(0.0, 0.0, 0.0, 0.0);
+		this.postUniforms = postUniforms;
+	
+		this.portalCameras = [new Camera(), new Camera()];
+
+		this.phong.light.pos = new Vec3(0, 10, 0);
 	}
 
 	init() {
-		this.phong.light.pos = new Vec3(0, 10, 0);
-
 		let obj = new Object();
 		obj.model = Mat4.trs(new Vec3(-10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
 		obj.mesh = "quad_vertical.obj";
