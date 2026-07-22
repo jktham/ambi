@@ -172,11 +172,11 @@ export class Resources {
     async createObjectPipeline(vertShader: VertShaderPath, fragShader: FragShaderPath): Promise<GPURenderPipeline> {
         const vertexShader = this.device.createShaderModule({
             label: `vertex shader: ${vertShader}`,
-            code: await this.assets.loadShader(vertShader),
+            code: await this.assets.loadShader(vertShader).then(s => s.data),
         });
         const fragmentShader = this.device.createShaderModule({
             label: `fragment shader: ${fragShader}`,
-            code: await this.assets.loadShader(fragShader),
+            code: await this.assets.loadShader(fragShader).then(s => s.data),
         });
 
         const pipeline = this.device.createRenderPipeline({
@@ -290,10 +290,10 @@ export class Resources {
         const vertexData = await this.assets.loadMesh(mesh);
         const vertexBuffer = this.device.createBuffer({
             label: `vertex buffer: ${mesh}`,
-            size: vertexData.byteLength,
+            size: vertexData.data.byteLength,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
         });
-        this.device.queue.writeBuffer(vertexBuffer, 0, vertexData.buffer);
+        this.device.queue.writeBuffer(vertexBuffer, 0, vertexData.data.buffer);
         return vertexBuffer;
     }
 
@@ -368,11 +368,11 @@ export class Resources {
         let vertShader: VertShaderPath = "post/quad.vert.wgsl";
         const postVertexShader = this.device.createShaderModule({
             label: `post vertex shader: ${vertShader}`,
-            code: await this.assets.loadShader(vertShader),
+            code: await this.assets.loadShader(vertShader).then(s => s.data),
         });
         const postFragmentShader = this.device.createShaderModule({
             label: `post fragment shader: ${postShader}`,
-            code: await this.assets.loadShader(postShader),
+            code: await this.assets.loadShader(postShader).then(s => s.data),
         });
 
         const postPipeline = this.device.createRenderPipeline({

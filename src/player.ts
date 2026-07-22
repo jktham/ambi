@@ -1,4 +1,4 @@
-import type { Assets } from "./assets";
+import type { Assets, Collider } from "./assets";
 import { Bbox } from "./bbox";
 import { Camera } from "./camera";
 import type { Object } from "./object";
@@ -33,7 +33,7 @@ export class Player {
 	up: Vec3 = new Vec3();
 
 	private entities: Object[] = [];
-	private colliders: Map<string, Vec3[][]> = new Map();
+	private colliders: Map<string, Collider> = new Map();
 
 	/** update position based on action input */
 	updatePosition(actions: Set<Action>, deltaTime: number) {
@@ -157,7 +157,7 @@ export class Player {
 
 				let collider = this.colliders.get(object.collider);
 				if (collider) {
-					let transformed = collider.map(face => face.map(vert => object.model.transform(vert)));
+					let transformed = collider.data.map(face => face.map(vert => object.model.transform(vert)));
 					
 					for (let face of transformed) {
 						let [v0, v1, v2] = face;

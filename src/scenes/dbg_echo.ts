@@ -3,13 +3,13 @@ import { Object } from "../object";
 import { InstancedUniforms, PhongUniforms, PostEchoUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
-import type { PostFragShaderPath } from "../assets";
+import type { FragShaderPath } from "../assets";
 
 export class DebugEchoScene extends Scene {
 	name = "dbg_echo";
 	spawnPos = new Vec3(0, 1.8, 0);
 
-	postShader: PostFragShaderPath = "post/echo.frag.wgsl";
+	postShader: FragShaderPath = "post/echo.frag.wgsl";
 	postUniforms = new PostEchoUniforms();
 
 	init() {

@@ -1,4 +1,4 @@
-import type { MeshPath, MaterialPath, TexturePath, WorldVertShaderPath, WorldFragShaderPath } from "./assets";
+import type { MeshPath, MaterialPath, TexturePath, VertShaderPath, FragShaderPath } from "./assets";
 import type { Bbox } from "./bbox";
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec4 } from "./vec";
@@ -50,9 +50,9 @@ export class Object {
     mtl?: MaterialPath = undefined;
 
     /** world vertex shader */
-    vertShader: WorldVertShaderPath = "world/base.vert.wgsl";
+    vertShader: VertShaderPath = "world/base.vert.wgsl";
     /** world fragment shader */
-    fragShader: WorldFragShaderPath = "world/base.frag.wgsl";
+    fragShader: FragShaderPath = "world/base.frag.wgsl";
 
     /** uniform values for vertex shader stage */
     vertUniforms: Uniforms = new Uniforms();

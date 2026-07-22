@@ -3,13 +3,13 @@ import { Object } from "../object";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
-import type { PostFragShaderPath } from "../assets";
+import type { FragShaderPath } from "../assets";
 
 export class DebugOutlineScene extends Scene {
 	name = "dbg_outline";
 	spawnPos = new Vec3(0, 0, 5);
 
-	postShader: PostFragShaderPath = "post/outline.frag.wgsl";
+	postShader: FragShaderPath = "post/outline.frag.wgsl";
 	resolution = new Vec2(1920, 1080);
 
 	phong = new PhongUniforms();

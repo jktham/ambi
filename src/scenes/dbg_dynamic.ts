@@ -26,7 +26,7 @@ export class DebugDynamicScene extends Scene {
 			[1.0, 1.0, 1.0, 1.0], [0.8, 0.8, 0.8, 1.0],
 			[0.8, 0.8, 0.8, 1.0], [1.0, 1.0, 1.0, 0.5],
 		].flat().map(f => Math.floor(f*255));
-		assets.addDynamicTexture(":dynTexture", new ImageData(new Uint8ClampedArray(dynTexture), 2, 2));
+		assets.addDynamicTexture(":dynTexture", new Uint8ClampedArray(dynTexture), 2, 2);
 	}
 	
 	init() {

@@ -3,7 +3,7 @@ import { Scene } from "../scene";
 import { Object } from "../object";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
-import type { PostFragShaderPath } from "../assets";
+import type { FragShaderPath } from "../assets";
 import { rad } from "../utils";
 
 export class PierScene extends Scene {
@@ -13,7 +13,7 @@ export class PierScene extends Scene {
 	spawnRot = new Vec3(0, rad(90), 0);
 	cameraMode = "walk" as CameraMode;
 
-	postShader: PostFragShaderPath = "post/psx_fog.frag.wgsl";
+	postShader: FragShaderPath = "post/psx_fog.frag.wgsl";
 	postUniforms = new PostPsxUniforms();
 
 	constructor() {

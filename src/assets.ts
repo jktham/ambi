@@ -11,14 +11,6 @@ export type ShaderPath = `${string}.${ShaderTypes}`;
 export type VertShaderPath = `${string}.vert.${ShaderTypes}`;
 /** path relative to public/shaders/ */
 export type FragShaderPath = `${string}.frag.${ShaderTypes}`;
-/** path relative to public/shaders/ */
-export type WorldVertShaderPath = `world/${VertShaderPath}`;
-/** path relative to public/shaders/ */
-export type WorldFragShaderPath = `world/${FragShaderPath}`;
-/** path relative to public/shaders/ */
-export type PostVertShaderPath = `post/${VertShaderPath}`;
-/** path relative to public/shaders/ */
-export type PostFragShaderPath = `post/${FragShaderPath}`;
 
 
 /** dynamic assets added to cache by scene.generateAssets, not loaded from a file */
@@ -54,29 +46,74 @@ type MaterialTypes = typeof materialTypes[number];
 export type MaterialPath = `${string}.${MaterialTypes}`;
 
 
+export type Shader = {
+	readonly path: ShaderPath;
+	/** shader code */
+	readonly data: string;
+};
+
+export type Mesh = {
+	readonly path: MeshPath;
+	/** packed f32 array with length size\*stride */
+	readonly data: Float32Array;
+	/** number of vertices */
+	readonly size: number;
+	/** floats per vertex */
+	readonly stride: number;
+};
+
+export type Texture = {
+	readonly path: TexturePath;
+	/** packed u8 array with length width\*height\*4 */
+	readonly data: Uint8ClampedArray;
+	readonly width: number;
+	readonly height: number;
+};
+
+export type Collider = {
+	readonly path: MeshPath;
+	/** array of triangle vertices */
+	readonly data: [Vec3, Vec3, Vec3][];
+	/** number of triangles */
+	readonly size: number;
+};
+
+
 // floats per vertex
 export const MESH_STRIDE = 15;
 
 /** loads, processes and caches assets */
 export class Assets {
-	private shaders: Map<ShaderPath, string> = new Map();
-	private meshes: Map<MeshPath, Float32Array> = new Map();
-	private textures: Map<TexturePath, ImageData> = new Map();
-	private colliders: Map<MeshPath, Vec3[][]> = new Map();
+	private shaders: Map<ShaderPath, Shader> = new Map();
+	private meshes: Map<MeshPath, Mesh> = new Map();
+	private textures: Map<TexturePath, Texture> = new Map();
+	private colliders: Map<MeshPath, Collider> = new Map();
 	private bboxes: Map<MeshPath, Bbox> = new Map();
 	private materials: Map<MaterialPath, Map<MaterialTextureLabel, TexturePath>> = new Map();
 
 
 	addDynamicMesh(label: DynamicAssetLabel, data: Float32Array) {
-		this.meshes.set(label, data);
+		let mesh: Mesh = {
+			path: label,
+			data,
+			size: data.length / MESH_STRIDE,
+			stride: MESH_STRIDE,
+		};
+		this.meshes.set(label, mesh);
 	}
 
-	addDynamicTexture(label: DynamicAssetLabel, data: ImageData) {
-		this.textures.set(label, data);
+	addDynamicTexture(label: DynamicAssetLabel, data: Uint8ClampedArray, width: number, height: number) {
+		let texture: Texture = {
+			path: label,
+			data,
+			width,
+			height,
+		};
+		this.textures.set(label, texture);
 	}
 
 	/** load .wgsl shader from public/shaders/ */
-	async loadShader(path: ShaderPath): Promise<string> {
+	async loadShader(path: ShaderPath): Promise<Shader> {
 		if (this.shaders.has(path)) {
 			return this.shaders.get(path)!;
 		}
@@ -91,13 +128,18 @@ export class Assets {
 		}
 		
 		let file = await this.fetchFile(`/shaders/${path}`);
-		let processed = await this.preprocessShader(`/shaders/${path}`, file);
-		this.shaders.set(path, processed);
-		return processed;
+		let code = await this.preprocessShader(`/shaders/${path}`, file);
+		
+		let shader: Shader = {
+			path,
+			data: code,
+		};
+		this.shaders.set(path, shader);
+		return shader;
 	}
 
 	/** load .obj or .json mesh from public/meshes/ */
-	async loadMesh(path: MeshPath): Promise<Float32Array> {
+	async loadMesh(path: MeshPath): Promise<Mesh> {
 		if (this.meshes.has(path)) {
 			return this.meshes.get(path)!;
 		}
@@ -118,14 +160,27 @@ export class Assets {
 		switch (type) {
 			case "obj": { // braces for block scoped variables
 				let file = await this.fetchFile(`/meshes/${path}`);
-				let mesh = this.parseObj(path, file);
+				let data = this.parseObj(path, file);
+
+				let mesh: Mesh = {
+					path,
+					data,
+					size: data.length / MESH_STRIDE,
+					stride: MESH_STRIDE,
+				};
 				this.meshes.set(path, mesh);
 				return mesh;
 			}
 			case "json": {
 				let file = await this.fetchFile(`/meshes/${path}`);
-				let data = JSON.parse(file || "[]") as number[]; // should be list of vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz)
-				let mesh = new Float32Array(data);
+				let data = new Float32Array(JSON.parse(file || "[]") as number[]); // should be list of vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz)
+
+				let mesh: Mesh = {
+					path,
+					data,
+					size: data.length / MESH_STRIDE,
+					stride: MESH_STRIDE,
+				};
 				this.meshes.set(path, mesh);
 				return mesh;
 			}
@@ -133,7 +188,7 @@ export class Assets {
 	}
 
 	/** load .png, .jpg or .json texture from public/textures/ */
-	async loadTexture(path: TexturePath): Promise<ImageData> {
+	async loadTexture(path: TexturePath): Promise<Texture> {
 		if (this.textures.has(path)) {
 			return this.textures.get(path)!;
 		}
@@ -171,8 +226,15 @@ export class Assets {
 					let context = canvas.getContext("2d")!;
 					context.drawImage(image, 0, 0);
 					let imageData = context.getImageData(0, 0, width, height);
-					this.textures.set(path, imageData);
-					return imageData;
+
+					let texture: Texture = {
+						path,
+						data: imageData.data,
+						width,
+						height,
+					};
+					this.textures.set(path, texture);
+					return texture;
 
 				} catch (e) {
 					throw new Error(`invalid texture data: ${path}`);
@@ -185,22 +247,36 @@ export class Assets {
 					throw new Error(`invalid texture data: ${path}`);
 				}
 
+				const height = data.length;
 				const width = data[0].length;
-				let imageData = new ImageData(new Uint8ClampedArray(data.flat(2)), width);
-				this.textures.set(path, imageData);
-				return imageData;
+				let imageData = new ImageData(new Uint8ClampedArray(data.flat(2)), width, height);
+
+				let texture: Texture = {
+					path,
+					data: imageData.data,
+					width,
+					height,
+				};
+				this.textures.set(path, texture);
+				return texture;
 			}
 		}
 	}
 
 	/** generate collider based on .obj or .json mesh from public/meshes/ */
-	async loadCollider(path: MeshPath): Promise<Vec3[][]> {
+	async loadCollider(path: MeshPath): Promise<Collider> {
 		if (this.colliders.has(path)) {
 			return this.colliders.get(path)!;
 		}
 		
 		let mesh = await this.loadMesh(path);
-		let collider = this.parseCollider(path, mesh);
+		let data = this.parseCollider(path, mesh.data);
+
+		let collider: Collider = {
+			path,
+			data,
+			size: data.length,
+		};
 		this.colliders.set(path, collider);
 		return collider;
 	}
@@ -212,7 +288,7 @@ export class Assets {
 		}
 
 		let mesh = await this.loadMesh(path);
-		let bbox = this.parseBbox(path, mesh);
+		let bbox = this.parseBbox(path, mesh.data);
 		this.bboxes.set(path, bbox);
 		return bbox;
 	}
@@ -356,8 +432,8 @@ export class Assets {
 	}
 
 	/** returns 2d list of vertex positions from full mesh array */
-	private parseCollider(path: MeshPath, mesh: Float32Array): Vec3[][] {
-		let collider: Vec3[][] = [];
+	private parseCollider(path: MeshPath, mesh: Float32Array): [Vec3, Vec3, Vec3][] {
+		let collider: [Vec3, Vec3, Vec3][] = [];
 		let s = MESH_STRIDE;
 		for (let i=0; i<mesh.length; i+=s*3) {
 			let v0 = new Vec3(mesh[i], mesh[i+1], mesh[i+2]);
@@ -445,7 +521,7 @@ export class Assets {
 				let currentPath = path.split("/").slice(0, -1).join("/").replace("/shaders/", "") + "/";
 				let relPath = line.replace(/#import\s+/, "").replace(/"/g, "");
 				let absPath = currentPath + relPath;
-				line = await this.loadShader(absPath as ShaderPath);
+				line = await this.loadShader(absPath as ShaderPath).then(s => s.data);
 			}
 			out += line + "\n";
 		}
