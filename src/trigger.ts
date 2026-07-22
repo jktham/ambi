@@ -2,6 +2,7 @@ import { Bbox } from "./bbox";
 import { Vec3 } from "./vec";
 
 export class Trigger {
+	/** trigger area */
 	bbox: Bbox = new Bbox();
 	enabled: boolean = true;
 	active: boolean = false; // true while player in trigger

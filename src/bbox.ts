@@ -6,13 +6,18 @@ export class Bbox {
 	max: Vec3 = new Vec3(-Infinity, -Infinity, -Infinity);
 	/** transform to world space, ie. reference to parent object */
 	model: Mat4 = new Mat4();
-	/** computes bbox from mesh vertices if specified, overrides min and max on asset load */
-	mesh?: MeshPath;
+	/** overrides min and max on asset load */
+	readonly mesh?: MeshPath;
 
-	constructor(bounds?: [Vec3, Vec3]) {
-		if (bounds && bounds[0] && bounds[1]) {
-			this.min = new Vec3(Math.min(bounds[0].x, bounds[1].x), Math.min(bounds[0].y, bounds[1].y), Math.min(bounds[0].z, bounds[1].z));
-			this.max = new Vec3(Math.max(bounds[0].x, bounds[1].x), Math.max(bounds[0].y, bounds[1].y), Math.max(bounds[0].z, bounds[1].z));
+	/** either initialize concrete bounds, or use mesh path and init later at asset load */
+	constructor(bounds?: [Vec3, Vec3] | MeshPath) {
+		if (bounds) {
+			if (typeof bounds == "string") {
+				this.mesh = bounds;
+			} else if (bounds[0] && bounds[1]) {
+				this.min = new Vec3(Math.min(bounds[0].x, bounds[1].x), Math.min(bounds[0].y, bounds[1].y), Math.min(bounds[0].z, bounds[1].z));
+				this.max = new Vec3(Math.max(bounds[0].x, bounds[1].x), Math.max(bounds[0].y, bounds[1].y), Math.max(bounds[0].z, bounds[1].z));
+			}
 		}
 	}
 

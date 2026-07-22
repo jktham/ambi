@@ -32,7 +32,7 @@ export class Player {
 	right: Vec3 = new Vec3();
 	up: Vec3 = new Vec3();
 
-	private entities: Object[] = [];
+	private objects: Object[] = [];
 	private colliders: Map<string, Collider> = new Map();
 
 	/** update position based on action input */
@@ -111,8 +111,8 @@ export class Player {
 	
 	/** load collision data (concrete vertices) from entity assets */
 	async loadColliders(assets: Assets, entities: Object[]) {
-		this.entities = entities;
-		for (let object of this.entities) {
+		this.objects = entities;
+		for (let object of this.objects) {
 			if (object.collider && !this.colliders.has(object.collider)) {
 				const collider = await assets.loadCollider(object.collider);
 				this.colliders.set(object.collider, collider);
@@ -149,7 +149,7 @@ export class Player {
 		let collisions: Collision[] = [];
 		let cameraBbox = new Bbox([position.sub(velocity.length()*2), position.add(velocity.length()*2)]);
 
-		for (let object of this.entities) {
+		for (let object of this.objects) {
 			if (object.collider && object.collidable) {
 				if (object.bbox) {
 					if (!object.bbox.intersectsBbox(cameraBbox)) continue;

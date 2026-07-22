@@ -34,8 +34,7 @@ export class DebugObjectScene extends Scene {
 		obj.fragUniforms = this.phong;
 		obj.mask = 200;
 		
-		let monkeBbox = new Bbox();
-		monkeBbox.mesh = obj.mesh;
+		let monkeBbox = new Bbox(obj.mesh);
 		monkeBbox.model = obj.model;
 		obj.bbox = monkeBbox;
 

@@ -815,9 +815,8 @@ export class MuseumScene extends Scene {
 				objects.push(obj);
 
 				let t = new Trigger();
-				t.bbox = new Bbox();
+				t.bbox = new Bbox(`museum/portal_${["h", "v", "h", "v"][i]}.obj`);
 				t.bbox.model = Mat4.translate(positions[i][j]);
-				t.bbox.mesh = `museum/portal_${["h", "v", "h", "v"][i]}.obj`;
 				t.onEnter = async () => await engine.setScene(scenes[i][j]);
 				triggers.push(t);
 			}

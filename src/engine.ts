@@ -52,6 +52,10 @@ export class Engine {
         console.log(`loading scene: ${name}`);
 		this.gui.updateInfo(`loading scene: ${name}`);
 
+		if (name != this.scene.name) {
+			this.assets.clear();
+		}
+
 		let scene = scenes.get(name);
 		if (scene) {
 			this.scene = new scene();
@@ -59,8 +63,6 @@ export class Engine {
 			console.error(`no scene called ${name}`);
 			this.scene = new Scene();
 		}
-
-		this.assets.clear();
 
 		this.renderer.postShaderOverride = undefined;
 		this.renderer.postFragUniformsOverride = undefined;
