@@ -3,13 +3,21 @@ import type { oid } from "./object";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
 import type { Vec2 } from "./vec";
 
+export type ObjectResources = {
+    pipeline: GPURenderPipeline;
+    baseUniformBuffer: GPUBuffer;
+    vertUniformBuffer: GPUBuffer;
+    fragUniformBuffer: GPUBuffer;
+    uniformBindgroup: GPUBindGroup;
+    textureBindgroup: GPUBindGroup;
+};
+
 /** renderer resources, handles low level buffers */
 export class Resources {
-    private device!: GPUDevice;
-
+    private device: GPUDevice;
     private assets: Assets;
 
-    // resolution dependent textures
+    // resolution dependent textures, initialized in constructor
     depthFramebuffer!: GPUTexture;
     colorFramebuffer!: GPUTexture;
     posDepthFramebuffer!: GPUTexture;
@@ -17,44 +25,40 @@ export class Resources {
 
     shadowmapFramebuffer!: GPUTexture;
     finalFramebuffer!: GPUTexture;
-    portalFramebuffers: GPUTexture[] = [];
+    portalFramebuffers!: GPUTexture[];
 
+    // render passes, initialized in constructor
     worldRenderPassDescriptor!: GPURenderPassDescriptor;
     postRenderPassDescriptor!: GPURenderPassDescriptor;
 
-    // world resources
+    // asset buffers
     vertexBuffers: Map<MeshPath, GPUBuffer> = new Map(); // mesh asset buffer
     textureBuffers: Map<TexturePath, GPUTexture> = new Map(); // texture asset buffer
+    postTextureBuffers: Map<TexturePath, GPUTexture> = new Map(); // texture asset buffer, for post textures separately clearable
 
-    globalUniformBuffer!: GPUBuffer;
-
-    objectInitialized: Map<oid, boolean> = new Map();
-    objectPipelines: Map<oid, GPURenderPipeline> = new Map();
-    objectBaseUniformBuffers: Map<oid, GPUBuffer> = new Map();
-    objectVertUniformBuffers: Map<oid, GPUBuffer> = new Map();
-    objectFragUniformBuffers: Map<oid, GPUBuffer> = new Map();
-    objectUniformBindgroups: Map<oid, GPUBindGroup> = new Map();
-    objectTextureBindgroups: Map<oid, GPUBindGroup> = new Map();
+    // world resources
+    globalUniformBuffer?: GPUBuffer;
+    objectResources: Map<oid, ObjectResources> = new Map();
 
     // post resources
-    postTextureBuffers: Map<TexturePath, GPUTexture> = new Map();
+    postPipeline?: GPURenderPipeline;
+    postBaseUniformBuffer?: GPUBuffer;
+    postFragUniformBuffer?: GPUBuffer;
+    postUniformBindgroup?: GPUBindGroup;
+    postTextureBindgroup?: GPUBindGroup;
+    postFramebufferBindgroup?: GPUBindGroup;
 
-    postPipeline!: GPURenderPipeline;
-    postBaseUniformBuffer!: GPUBuffer;
-    postFragUniformBuffer!: GPUBuffer;
-    postUniformBindgroup!: GPUBindGroup;
-    postTextureBindgroup!: GPUBindGroup;
-    postFramebufferBindgroup!: GPUBindGroup;
-
-    constructor(device: GPUDevice, assets: Assets) {
+    constructor(device: GPUDevice, assets: Assets, resolution: Vec2, n_portals: number, renderTarget: GPUTexture) {
 		this.device = device;
 		this.assets = assets;
+        this.createFramebufferTextures(resolution, n_portals);
+        this.configureRenderPasses(renderTarget);
     }
 
     recreateFramebuffers(resolution: Vec2, n_portals: number, renderTarget: GPUTexture) {
         this.destroyFramebufferTextures();
         this.createFramebufferTextures(resolution, n_portals);
-        this.configureRenderPass(renderTarget);
+        this.configureRenderPasses(renderTarget);
     }
 
     // ---- config render targets ----
@@ -109,17 +113,17 @@ export class Resources {
     }
 
     destroyFramebufferTextures() {
-        this.depthFramebuffer?.destroy();
-        this.colorFramebuffer?.destroy();
-        this.posDepthFramebuffer?.destroy();
-        this.normalMaskFramebuffer?.destroy();
+        this.depthFramebuffer.destroy();
+        this.colorFramebuffer.destroy();
+        this.posDepthFramebuffer.destroy();
+        this.normalMaskFramebuffer.destroy();
 
-        this.shadowmapFramebuffer?.destroy();
-        this.finalFramebuffer?.destroy();
+        this.shadowmapFramebuffer.destroy();
+        this.finalFramebuffer.destroy();
         this.portalFramebuffers.map(t => t.destroy());
     }
 
-    configureRenderPass(renderTarget: GPUTexture) {
+    configureRenderPasses(renderTarget: GPUTexture) {
         this.worldRenderPassDescriptor = {
             label: "render pass descriptor",
             colorAttachments: [{
@@ -238,6 +242,9 @@ export class Resources {
     /** create object uniforms and bindgroup at group 0 */
     async createObjectUniformBuffers(vertUniforms: Uniforms, fragUniforms: Uniforms, pipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBuffer, GPUBindGroup]> {
         const globalUniformBuffer = this.globalUniformBuffer;
+        if (!globalUniformBuffer) {
+            throw new Error(`missing global uniform buffer`);
+        }
 
         const objectUniformLength = new ObjectUniforms().size();
         const objectUniformBuffer = this.device.createBuffer({
@@ -347,19 +354,18 @@ export class Resources {
     destroyWorldBuffers() {
         this.vertexBuffers.forEach(b => b.destroy());
         this.textureBuffers.forEach(b => b.destroy());
-        this.objectBaseUniformBuffers.forEach(b => b.destroy());
-        this.objectVertUniformBuffers.forEach(b => b.destroy());
-        this.objectFragUniformBuffers.forEach(b => b.destroy());
+        this.objectResources.forEach((_, id) => this.destroyObjectBuffers(id));
 
-        this.objectPipelines = new Map();
         this.vertexBuffers = new Map();
         this.textureBuffers = new Map();
-        (this.globalUniformBuffer as any) = undefined;
-        this.objectBaseUniformBuffers = new Map();
-        this.objectVertUniformBuffers = new Map();
-        this.objectFragUniformBuffers = new Map();
-        this.objectUniformBindgroups = new Map();
-        this.objectTextureBindgroups = new Map();
+        this.globalUniformBuffer = undefined;
+    }
+
+    destroyObjectBuffers(id: oid) {
+        let o = this.objectResources.get(id);
+        o?.baseUniformBuffer.destroy();
+        o?.vertUniformBuffer.destroy();
+        o?.fragUniformBuffer.destroy();
     }
 
     // ---- post resources ----
@@ -450,11 +456,11 @@ export class Resources {
         this.postFragUniformBuffer?.destroy();
 
         this.postTextureBuffers = new Map();
-        (this.postPipeline as any) = undefined;
-        (this.postBaseUniformBuffer as any) = undefined;
-        (this.postFragUniformBuffer as any) = undefined;
-        (this.postUniformBindgroup as any) = undefined;
-        (this.postFramebufferBindgroup as any) = undefined;
+        this.postPipeline = undefined;
+        this.postBaseUniformBuffer = undefined;
+        this.postFragUniformBuffer = undefined;
+        this.postUniformBindgroup = undefined;
+        this.postFramebufferBindgroup = undefined;
     }
 
 	/** returns size of loaded buffers in megabytes */
@@ -488,13 +494,13 @@ export class Resources {
 		for (let buffer of [
             ...this.vertexBuffers.values(),
             this.globalUniformBuffer,
-            ...this.objectBaseUniformBuffers.values(),
-            ...this.objectVertUniformBuffers.values(),
-            ...this.objectFragUniformBuffers.values(),
+            ...[...this.objectResources.values()].map(o => o.baseUniformBuffer),
+            ...[...this.objectResources.values()].map(o => o.vertUniformBuffer),
+            ...[...this.objectResources.values()].map(o => o.fragUniformBuffer),
             this.postBaseUniformBuffer,
             this.postFragUniformBuffer,
         ]) {
-			bytes += buffer.size;
+			bytes += buffer?.size ?? 0;
 		}
 		return bytes / 1_000_000;
 	}

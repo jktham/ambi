@@ -13,7 +13,7 @@ struct PostSsaoUniforms {
 
 @group(1) @binding(0) var t_sampler: sampler;
 @group(1) @binding(1) var t_sampler_direct: sampler;
-@group(1) @binding(1) var t_noise: texture_2d<f32>;
+@group(1) @binding(2) var t_noise: texture_2d<f32>;
 
 @group(2) @binding(0) var fb_color: texture_storage_2d<rgba8unorm, read>;
 @group(2) @binding(1) var fb_pos_depth: texture_storage_2d<rgba32float, read>;

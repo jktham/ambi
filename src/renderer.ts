@@ -6,18 +6,18 @@ import type { Object } from "./object";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
 import { Mat4, Vec2 } from "./vec";
 import type { Gui } from "./gui";
-import { Resources } from "./resources";
+import { Resources, type ObjectResources } from "./resources";
 
 /** renderer, handles drawing and high level scene loading */
 export class Renderer {
     private canvas: HTMLCanvasElement;
-    private context!: GPUCanvasContext;
-    private device!: GPUDevice;
-    private presentationFormat!: GPUTextureFormat;
+    private context!: GPUCanvasContext; // async init
+    private device!: GPUDevice; // async init
+    private presentationFormat!: GPUTextureFormat; // async init
     
     private assets: Assets;
     private profiler: Profiler;
-    resources!: Resources;
+    resources!: Resources; // async init
 
     private scenePortalsCount = 0;;
 
@@ -38,10 +38,8 @@ export class Renderer {
 
     async init() {
         this.device = await this.getGPUDevice();
-        this.context = this.getContext();
-
-        this.resources = new Resources(this.device, this.assets);
-        this.resources.recreateFramebuffers(this.resolution, this.scenePortalsCount, this.context.getCurrentTexture());
+        [this.context, this.presentationFormat] = this.getContext();
+        this.resources = new Resources(this.device, this.assets, this.resolution, this.scenePortalsCount, this.context.getCurrentTexture());
     }
 
     // ---- webgpu housekeeping ----
@@ -65,19 +63,19 @@ export class Renderer {
         }
     }
 
-	private getContext(): GPUCanvasContext {
+	private getContext(): [GPUCanvasContext, GPUTextureFormat] {
         const context = this.canvas.getContext("webgpu");
         if (!context) {
             throw new Error("no webgpu context");
         }
 
-        this.presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+        const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
         context.configure({
             device: this.device,
-            format: this.presentationFormat,
+            format: presentationFormat,
             usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
         });
-        return context;
+        return [context, presentationFormat];
     }
 
     // ---- load scene resources ---- 
@@ -152,17 +150,14 @@ export class Renderer {
     }
 
     private async loadWorld(scene: Scene) {
-        this.resources.destroyWorldBuffers();
-
-        this.resources.createGlobalUniformBuffer();
-
+        // load bboxes
         for (let obj of scene.objects) {
-            if (!obj.visible) {
-                continue;
+            if (obj.bbox && obj.bbox.mesh !== undefined) {
+                let bbox = await this.assets.loadBbox(obj.bbox.mesh);
+                obj.bbox.min = bbox.min;
+                obj.bbox.max = bbox.max;
             }
-            await this.loadObject(obj);
         }
-
         for (let trigger of scene.triggers) {
             if (trigger.bbox && trigger.bbox.mesh !== undefined) {
                 let bbox = await this.assets.loadBbox(trigger.bbox.mesh);
@@ -170,50 +165,51 @@ export class Renderer {
                 trigger.bbox.max = bbox.max;
             }
         }
+
+        // resolve material labels
+        for (let obj of scene.objects) {
+            if (obj.mtl) {
+                let mtl_textures = await this.assets.loadMaterial(obj.mtl);
+                for (let i=0; i<obj.textures.length; i++) {
+                    if (obj.textures[i].startsWith("@")) {
+                        let label = obj.textures[i] as MaterialTextureLabel;
+                        if (!mtl_textures.has(label)) {
+                            throw new Error(`label ${label} not defined in material`);
+                        }
+                        obj.textures[i] = mtl_textures.get(label)!;
+                    }
+                }
+            }
+        }
+
+        // destroy and recreate world and object buffers
+        this.resources.destroyWorldBuffers();
+
+        this.resources.createGlobalUniformBuffer();
+
+        for (let obj of scene.objects) {
+            await this.loadObject(obj);
+        }
     }
 
     private async loadObject(obj: Object) {
-        // pipeline
-        if (!this.resources.objectPipelines.has(obj.id)) { // turns out we have to make one per object due to layout auto bindgroup constraints
-            const pipeline = await this.resources.createObjectPipeline(obj.vertShader, obj.fragShader);
-            this.resources.objectPipelines.set(obj.id, pipeline);
+        if (this.resources.objectResources.has(obj.id)) {
+            // already loaded, destroy old buffers
+            this.resources.destroyObjectBuffers(obj.id);
+            this.resources.objectResources.delete(obj.id);
+            obj.changed = true; // reupload buffers after this
         }
-        const pipeline = this.resources.objectPipelines.get(obj.id)!;
 
-        // vertex buffer
+        // pipeline, turns out we have to make one per object due to layout auto bindgroup constraints
+        const pipeline = await this.resources.createObjectPipeline(obj.vertShader, obj.fragShader);
+
+        // uniforms, uniform bindgroup
+        const [baseUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindgroup] = await this.resources.createObjectUniformBuffers(obj.vertUniforms, obj.fragUniforms, pipeline);
+
+        // vertex asset buffer
         if (!this.resources.vertexBuffers.has(obj.mesh)) {
             const vertexBuffer = await this.resources.createVertexBuffer(obj.mesh);
             this.resources.vertexBuffers.set(obj.mesh, vertexBuffer);
-        }
-
-        // bbox (this should go somewhere else probably but eh) TODO
-        if (obj.bbox && obj.bbox.mesh !== undefined) {
-            let bbox = await this.assets.loadBbox(obj.bbox.mesh);
-            obj.bbox.min = bbox.min;
-            obj.bbox.max = bbox.max;
-        }
-
-        // uniforms
-        if (!this.resources.objectBaseUniformBuffers.has(obj.id)) {
-            const [objectUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindgroup] = await this.resources.createObjectUniformBuffers(obj.vertUniforms, obj.fragUniforms, pipeline);
-            this.resources.objectBaseUniformBuffers.set(obj.id, objectUniformBuffer);
-            this.resources.objectVertUniformBuffers.set(obj.id, vertUniformBuffer);
-            this.resources.objectFragUniformBuffers.set(obj.id, fragUniformBuffer);
-            this.resources.objectUniformBindgroups.set(obj.id, uniformBindgroup);
-        }
-
-        // resolve material textures (also shouldnt be here lol) TODO
-        if (obj.mtl) {
-            let mtl_textures = await this.assets.loadMaterial(obj.mtl);
-            for (let i=0; i<obj.textures.length; i++) {
-                if (obj.textures[i].startsWith("@")) {
-                    let label = obj.textures[i] as MaterialTextureLabel;
-                    if (!mtl_textures.has(label)) {
-                        throw new Error(`label ${label} not defined in material`);
-                    }
-                    obj.textures[i] = mtl_textures.get(label)!;
-                }
-            }
         }
 
         // texture asset buffers
@@ -227,34 +223,39 @@ export class Renderer {
         }
 
         // texture bindgroup
-        if (!this.resources.objectTextureBindgroups.has(obj.id)
-            || obj.textures.find(p => p.startsWith("$"))) { // recreate bindgroups if using builtins, in case framebuffers were resized
-            const textureBuffers = obj.textures.map(texture => {
-                if (texture == "$shadowmap") {
-                    return this.resources.shadowmapFramebuffer;
-                } else if (texture == "$framebuffer") {
-                    return this.resources.finalFramebuffer;
-                } else if (texture.startsWith("$portal")) {
-                    let i = parseFloat(texture.split("_")[1]);
-                    return this.resources.portalFramebuffers[i];
-                } else {
-                    if (texture.startsWith("@")) {
-                        throw new Error(`material texture label ${texture} not resolved`);
-                    }
-                    if (texture.startsWith("$")) {
-                        throw new Error(`builtin texture label ${texture} not handled`);
-                    }
-                    if (!this.resources.textureBuffers.has(texture)) {
-                        throw new Error(`texture buffer ${texture} not available`);
-                    }
-                    return this.resources.textureBuffers.get(texture)!;
+        const textureBuffers = obj.textures.map(texture => {
+            if (texture == "$shadowmap") {
+                return this.resources.shadowmapFramebuffer;
+            } else if (texture == "$framebuffer") {
+                return this.resources.finalFramebuffer;
+            } else if (texture.startsWith("$portal")) {
+                let i = parseFloat(texture.split("_")[1]);
+                return this.resources.portalFramebuffers[i];
+            } else {
+                if (texture.startsWith("@")) {
+                    throw new Error(`material texture label ${texture} not resolved`);
                 }
-            });
-            const textureBindgroup = await this.resources.createTextureBindgroup(textureBuffers, pipeline);
-            this.resources.objectTextureBindgroups.set(obj.id, textureBindgroup);
-        }
+                if (texture.startsWith("$")) {
+                    throw new Error(`builtin texture label ${texture} not handled`);
+                }
+                if (!this.resources.textureBuffers.has(texture)) {
+                    throw new Error(`texture buffer ${texture} not available`);
+                }
+                return this.resources.textureBuffers.get(texture)!;
+            }
+        });
+        const textureBindgroup = await this.resources.createTextureBindgroup(textureBuffers, pipeline);
 
-        this.resources.objectInitialized.set(obj.id, true);
+
+        let objectResources: ObjectResources = {
+            pipeline,
+            baseUniformBuffer,
+            vertUniformBuffer,
+            fragUniformBuffer,
+            uniformBindgroup,
+            textureBindgroup,
+        };
+        this.resources.objectResources.set(obj.id, objectResources);
     }
 
     async loadPost(scene: Scene) {
@@ -286,27 +287,20 @@ export class Renderer {
     async drawScene(scene: Scene, camera: Camera, time: number, frame: number) {
         // initialize new objects
         for (let obj of scene.objects) {
-            if (!obj.visible) {
-                continue;
-            }
-            if (!(this.resources.objectInitialized.get(obj.id) ?? false) 
-                || obj.textures.find(p => p.startsWith("$"))) { // recreate bindgroups if using builtins, in case framebuffers were resized
+            if (!this.resources.objectResources.has(obj.id) ||
+                obj.textures.find(p => p.startsWith("$"))) { // always recreate bindgroups if using builtins, in case framebuffers were resized
                 await this.loadObject(obj);
             }
         }
 
-        // update object buffers once
-        this.profiler.start("  bufferObjects");
-        for (let obj of scene.objects) {
-            this.updateObjectBuffers(obj);
-        }
-        this.profiler.stop("  bufferObjects");
+        // update object buffers once for all render passes
+        this.updateObjectBuffers(scene);
 
         // draw portals (including post pass)
         for (let [i, portalCamera] of scene.portalCameras.entries()) {
+            // draw from portal camera pov
             this.updateGlobalBuffers(scene, portalCamera, time, frame);
             this.drawObjects(scene, `portal_${i}`);
-
             this.updatePostBuffers(scene, portalCamera, time, frame);
             this.drawPost();
 
@@ -329,7 +323,6 @@ export class Renderer {
 
         this.updateGlobalBuffers(scene, camera, time, frame);
         this.drawObjects(scene, "world");
-
         this.updatePostBuffers(scene, camera, time, frame);
         this.drawPost();
 
@@ -357,45 +350,56 @@ export class Renderer {
         globalUniforms.shadow_projection = scene.shadowCamera?.projection ?? new Mat4();
 
         const globalUniformBuffer = this.resources.globalUniformBuffer;
+        if (!globalUniformBuffer) {
+            throw new Error(`missing global uniform buffer`);
+        }
         this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms.update().buffer);
+        
         this.profiler.stop("  bufferGlobal");
     }
 
-    private updateObjectBuffers(obj: Object) {
-        if (!obj.visible || !obj.changed) {
-            return;
-        }
-        obj.changed = false;
-        
-        let objectUniforms = new ObjectUniforms();
-        objectUniforms.mask = obj.mask;
-        objectUniforms.cull = obj.cull;
-        objectUniforms.id = obj.id;
-        objectUniforms.uv_scale = obj.uv_scale;
-        objectUniforms.color = obj.color;
-        objectUniforms.vert_config = obj.vertConfig;
-        objectUniforms.frag_config = obj.fragConfig;
-        objectUniforms.model = obj.model;
-        objectUniforms.normal = obj.model.inverse().transpose();
+    private updateObjectBuffers(scene: Scene) {
+        this.profiler.start("  bufferObjects");
 
-        const objectUniformBuffer = this.resources.objectBaseUniformBuffers.get(obj.id);
-        const vertUniformBuffer = this.resources.objectVertUniformBuffers.get(obj.id);
-        const fragUniformBuffer = this.resources.objectFragUniformBuffers.get(obj.id);
-        if (!objectUniformBuffer || !vertUniformBuffer || !fragUniformBuffer) {
-            throw new Error(`missing uniform buffers ${obj.id}`);
+        for (let obj of scene.objects) {
+            if (!obj.changed) {
+                continue;
+            }
+            obj.changed = false;
+            
+            let objectUniforms = new ObjectUniforms();
+            objectUniforms.mask = obj.mask;
+            objectUniforms.cull = obj.cull;
+            objectUniforms.id = obj.id;
+            objectUniforms.uv_scale = obj.uv_scale;
+            objectUniforms.color = obj.color;
+            objectUniforms.vert_config = obj.vertConfig;
+            objectUniforms.frag_config = obj.fragConfig;
+            objectUniforms.model = obj.model;
+            objectUniforms.normal = obj.model.inverse().transpose();
+
+            const baseUniformBuffer = this.resources.objectResources.get(obj.id)?.baseUniformBuffer;
+            const vertUniformBuffer = this.resources.objectResources.get(obj.id)?.vertUniformBuffer;
+            const fragUniformBuffer = this.resources.objectResources.get(obj.id)?.fragUniformBuffer;
+            if (!baseUniformBuffer || !vertUniformBuffer || !fragUniformBuffer) {
+                throw new Error(`missing uniform buffers ${obj.id}`);
+            }
+
+            this.device.queue.writeBuffer(baseUniformBuffer, 0, objectUniforms.update().buffer);
+            if (obj.vertUniforms.size() > 0) {
+                this.device.queue.writeBuffer(vertUniformBuffer, 0, obj.vertUniforms.update().buffer);
+            }
+            if (obj.fragUniforms.size() > 0) {
+                this.device.queue.writeBuffer(fragUniformBuffer, 0, obj.fragUniforms.update().buffer);
+            }
         }
 
-        this.device.queue.writeBuffer(objectUniformBuffer, 0, objectUniforms.update().buffer);
-        if (obj.vertUniforms.size() > 0) {
-            this.device.queue.writeBuffer(vertUniformBuffer, 0, obj.vertUniforms.update().buffer);
-        }
-        if (obj.fragUniforms.size() > 0) {
-            this.device.queue.writeBuffer(fragUniformBuffer, 0, obj.fragUniforms.update().buffer);
-        }
+        this.profiler.stop("  bufferObjects");
     }
 
     private updatePostBuffers(scene: Scene, camera: Camera, time: number, frame: number) {
         this.profiler.start("  bufferPost");
+
         let postBaseUniforms = new PostUniforms();
         postBaseUniforms.time = time;
         postBaseUniforms.frame = frame;
@@ -403,17 +407,27 @@ export class Renderer {
         postBaseUniforms.post_config = scene.postConfig;
         postBaseUniforms.view = camera.view;
         postBaseUniforms.projection = camera.projection;
-        this.device.queue.writeBuffer(this.resources.postBaseUniformBuffer, 0, postBaseUniforms.update().buffer);
+
+
+        const postBaseUniformBuffer = this.resources.postBaseUniformBuffer;
+        const postFragUniformBuffer = this.resources.postFragUniformBuffer;
+        if (!postBaseUniformBuffer || !postFragUniformBuffer) {
+            throw new Error(`missing post uniform buffers`);
+        }
+
+        this.device.queue.writeBuffer(postBaseUniformBuffer, 0, postBaseUniforms.update().buffer);
 
         let postUniforms = this.postFragUniformsOverride ?? scene.postUniforms;
         if (postUniforms.size() > 0) {
-            this.device.queue.writeBuffer(this.resources.postFragUniformBuffer, 0, postUniforms.update().buffer);
+            this.device.queue.writeBuffer(postFragUniformBuffer, 0, postUniforms.update().buffer);
         }
+
         this.profiler.stop("  bufferPost");
     }
 
     private drawObjects(scene: Scene, drawMode: "world" | "shadow" | `portal_${number}`) {
         this.profiler.start("  drawObjects");
+
         const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
         const pass = encoder.beginRenderPass(this.resources.worldRenderPassDescriptor);
         for (let obj of scene.objects) {
@@ -433,12 +447,12 @@ export class Renderer {
                 }
             }
 
-            const pipeline = this.resources.objectPipelines.get(obj.id);
+            const pipeline = this.resources.objectResources.get(obj.id)?.pipeline;
             const vertexBuffer = this.resources.vertexBuffers.get(obj.mesh);
-            const uniformBindgroup = this.resources.objectUniformBindgroups.get(obj.id);
-            const textureBindgroup = this.resources.objectTextureBindgroups.get(obj.id);
+            const uniformBindgroup = this.resources.objectResources.get(obj.id)?.uniformBindgroup;
+            const textureBindgroup = this.resources.objectResources.get(obj.id)?.textureBindgroup;
             if (!pipeline || !vertexBuffer || !uniformBindgroup || !textureBindgroup) {
-                throw new Error(`missing object assets ${obj.id}, ${obj.tags}, ${obj.mesh}, ${obj.textures}`);
+                throw new Error(`missing object bindgroups ${obj.id}, ${obj.tags}, ${obj.mesh}, ${obj.textures}`);
             }
 
             pass.setPipeline(pipeline);
@@ -449,21 +463,33 @@ export class Renderer {
         }
         pass.end();
         this.device.queue.submit([encoder.finish()]);
+
         this.profiler.stop("  drawObjects");
     }
 
     private drawPost() {
         this.profiler.start("  drawPost");
+
         (this.resources.postRenderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = this.context.getCurrentTexture().createView();
         const postEncoder = this.device.createCommandEncoder({ label: "post render encoder" });
         const postPass = postEncoder.beginRenderPass(this.resources.postRenderPassDescriptor);
-        postPass.setPipeline(this.resources.postPipeline);
-        postPass.setBindGroup(0, this.resources.postUniformBindgroup);
-        postPass.setBindGroup(1, this.resources.postTextureBindgroup);
-        postPass.setBindGroup(2, this.resources.postFramebufferBindgroup);
+
+        const postPipeline = this.resources.postPipeline;
+        const postUniformBindgroup = this.resources.postUniformBindgroup;
+        const postTextureBindgroup = this.resources.postTextureBindgroup;
+        const postFramebufferBindgroup = this.resources.postFramebufferBindgroup;
+        if (!postPipeline || !postUniformBindgroup || !postTextureBindgroup || !postFramebufferBindgroup) {
+            throw new Error(`missing post bindgroups`);
+        }
+        
+        postPass.setPipeline(postPipeline);
+        postPass.setBindGroup(0, postUniformBindgroup);
+        postPass.setBindGroup(1, postTextureBindgroup);
+        postPass.setBindGroup(2, postFramebufferBindgroup);
         postPass.draw(6);
         postPass.end();
         this.device.queue.submit([postEncoder.finish()]);
+
         this.profiler.stop("  drawPost");
     }
 }
