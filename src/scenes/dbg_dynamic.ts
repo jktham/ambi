@@ -37,7 +37,7 @@ export class DebugDynamicScene extends Scene {
 	
 	init() {
 		let obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-3, 0, -5), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-3, 0, -5), new Vec3(), 1);
 		obj.mesh = "quad_vertical.obj";
 		obj.collider = "quad_vertical.obj";
 		obj.textures = ["test.png"];
@@ -46,7 +46,7 @@ export class DebugDynamicScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 0, -5), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0, 0, -5), new Vec3(), 1);
 		obj.mesh = ":dynMesh";
 		obj.collider = ":dynMesh";
 		obj.textures = ["test.png"];
@@ -55,7 +55,7 @@ export class DebugDynamicScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(3, 0, -5), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(3, 0, -5), new Vec3(), 1);
 		obj.mesh = ":dynMesh";
 		obj.collider = ":dynMesh";
 		obj.textures = [":dynTexture"];
@@ -65,7 +65,7 @@ export class DebugDynamicScene extends Scene {
 		
 		
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -74,7 +74,7 @@ export class DebugDynamicScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);

@@ -18,7 +18,7 @@ export class DebugErrorScene extends Scene {
 	
 	init() {
 		let obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-9, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-9, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["@normal"]; // unresolved
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -26,7 +26,7 @@ export class DebugErrorScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-6, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-6, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["err_texture.png"]; // does not exist
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -34,7 +34,7 @@ export class DebugErrorScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "err_mesh.obj"; // does not exist
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -42,7 +42,7 @@ export class DebugErrorScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = ":err_dynamic"; // does not exist
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -50,7 +50,7 @@ export class DebugErrorScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.mtl = "err_material.mtl"; // does not exist
 		obj.textures = ["test.png"];
@@ -59,7 +59,7 @@ export class DebugErrorScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.mtl = "empty.mtl"; // exists, but empty
 		obj.textures = ["test.png"];
@@ -68,7 +68,7 @@ export class DebugErrorScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(6, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(6, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.collider = "err_collider.obj"; // does not exist
 		obj.textures = ["test.png"];
@@ -77,7 +77,7 @@ export class DebugErrorScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(9, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(9, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.fragShader = "world/err_shader.frag.glsl" as any; // invalid type, does not exist
@@ -86,7 +86,7 @@ export class DebugErrorScene extends Scene {
 
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -95,7 +95,7 @@ export class DebugErrorScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);

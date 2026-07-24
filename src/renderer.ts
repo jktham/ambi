@@ -343,7 +343,7 @@ export class Renderer {
         globalUniforms.frame = frame;
         globalUniforms.fov = camera.fov;
         globalUniforms.resolution = new Vec2(this.canvas.width, this.canvas.height);
-        globalUniforms.view_pos = camera.model.origin();
+        globalUniforms.view_pos = camera.model.translation();
         globalUniforms.view = camera.view;
         globalUniforms.projection = camera.projection;
         globalUniforms.shadow_view = scene.shadowCamera?.view ?? new Mat4();

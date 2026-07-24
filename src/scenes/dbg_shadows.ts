@@ -23,7 +23,7 @@ export class DebugShadowsScene extends Scene {
 
 	init() {
 		let obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-4, -2, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-4, -2, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test_trans2.png", "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -34,7 +34,7 @@ export class DebugShadowsScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -4, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0, -4, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png", "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -45,7 +45,7 @@ export class DebugShadowsScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(4, -2, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(4, -2, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png", "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -56,7 +56,7 @@ export class DebugShadowsScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -66,7 +66,7 @@ export class DebugShadowsScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png", "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);

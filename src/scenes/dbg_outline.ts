@@ -30,7 +30,7 @@ export class DebugOutlineScene extends Scene {
 	
 	init() {
 		let obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
@@ -40,7 +40,7 @@ export class DebugOutlineScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
@@ -50,7 +50,7 @@ export class DebugOutlineScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
@@ -61,7 +61,7 @@ export class DebugOutlineScene extends Scene {
 
 		obj = new Object();
 		obj.tags = ["rotate"];
-		obj.model = Mat4.trs(new Vec3(0, 3, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0, 3, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 0.0);
@@ -71,7 +71,7 @@ export class DebugOutlineScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
@@ -80,7 +80,7 @@ export class DebugOutlineScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);

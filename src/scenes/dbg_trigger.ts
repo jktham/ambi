@@ -22,7 +22,7 @@ export class DebugTriggerScene extends Scene {
 		// simple cube, manual bbox
 		let obj = new Object();
 		obj.tags = ["1"];
-		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
@@ -48,7 +48,7 @@ export class DebugTriggerScene extends Scene {
 		// mesh, mesh bbox
 		obj = new Object();
 		obj.tags = ["2"];
-		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
@@ -75,7 +75,7 @@ export class DebugTriggerScene extends Scene {
 		// transformed cube, mesh bbox
 		obj = new Object();
 		obj.tags = ["3"];
-		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(Math.PI / 4.0, Math.PI / 4.0, Math.PI / 4.0), 0.6);
+		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(Math.PI / 4.0, Math.PI / 4.0, Math.PI / 4.0), 0.6);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
@@ -102,7 +102,7 @@ export class DebugTriggerScene extends Scene {
 		// moving
 		obj = new Object();
 		obj.tags = ["4"];
-		obj.model = Mat4.trs(new Vec3(0, 0, -5), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0, 0, -5), new Vec3(), 1);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
@@ -128,7 +128,7 @@ export class DebugTriggerScene extends Scene {
 
 		// skybox
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -138,7 +138,7 @@ export class DebugTriggerScene extends Scene {
 
 		// floor
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -151,7 +151,7 @@ export class DebugTriggerScene extends Scene {
 	update(time: number, deltaTime: number, player: Player) {
 		// move 4
 		let obj4 = this.getObject("4")!;
-		let origin = Mat4.trs(new Vec3(0, 0, -5), new Vec3(0, 0, Math.PI / 4.0), 1);
+		let origin = Mat4.transform(new Vec3(0, 0, -5), new Vec3(0, 0, Math.PI / 4.0), 1);
 		let offset = Mat4.translate(new Vec3(1, 0, 0).mul(Math.sin(time)*5.0));
 		obj4.model.data = offset.mul(origin).data; // dont change reference, so bbox model gets updated as well
 		obj4.changed = true;

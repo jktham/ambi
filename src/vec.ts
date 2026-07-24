@@ -1,8 +1,8 @@
 import { lerp } from "./utils";
 
 export class Vec2 {
-	data: number[];
-	size: number = 2;
+	data: [number, number];
+	readonly size: number = 2;
 
 	/** defaults to zero vector */
 	constructor(x: number = 0, y: number = 0) {
@@ -83,8 +83,8 @@ export class Vec2 {
 }
 
 export class Vec3 {
-	data: number[];
-	size: number = 3;
+	data: [number, number, number];
+	readonly size: number = 3;
 
 	/** defaults to zero vector */
 	constructor(x: number = 0, y: number = 0, z: number = 0) {
@@ -175,8 +175,8 @@ export class Vec3 {
 }
 
 export class Vec4 {
-	data: number[];
-	size: number = 4;
+	data: [number, number, number, number];
+	readonly size: number = 4;
 
 	/** defaults to zero vector */
 	constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {
@@ -260,13 +260,15 @@ export class Vec4 {
 	}
 }
 
+export type N16 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+
 /** right handed, +y up, -z forward */
 export class Mat4 {
-	data: number[];
-	size: number = 16;
+	data: N16;
+	readonly size: number = 16;
 
 	/** defaults to identity matrix */
-	constructor(data?: number[]) {
+	constructor(data?: N16) {
 		if (!data) {
 			this.data = [
 				1, 0, 0, 0, 
@@ -281,6 +283,7 @@ export class Mat4 {
 		}
 	}
 
+	/** this \* op */
 	mul(op: number | Mat4): Mat4 {
 		if (op instanceof Mat4) {
 			return new Mat4([ // unrolled for performance
@@ -311,8 +314,8 @@ export class Mat4 {
 		}
 	}
 
-	/** returns transformed (x, y, z, 1) vector */
-	transform(op: Vec3): Vec3 {
+	/** transformed (x, y, z, 1) position vector */
+	mulVec(op: Vec3): Vec3 {
 		return new Vec3(
 			this.data[0] * op.x + this.data[1] * op.y + this.data[2] * op.z + this.data[3] * 1,
 			this.data[4] * op.x + this.data[5] * op.y + this.data[6] * op.z + this.data[7] * 1,
@@ -320,8 +323,17 @@ export class Mat4 {
 		);
 	}
 
+	/** transformed (x, y, z, 0) direction vector (without translation), not normalized */
+	mulDir(op: Vec3): Vec3 {
+		return new Vec3(
+			this.data[0] * op.x + this.data[1] * op.y + this.data[2] * op.z + this.data[3] * 0,
+			this.data[4] * op.x + this.data[5] * op.y + this.data[6] * op.z + this.data[7] * 0,
+			this.data[8] * op.x + this.data[9] * op.y + this.data[10] * op.z + this.data[11] * 0,
+		);
+	}
+
 	inverse(): Mat4 {
-		let r: number[] = new Array(16).fill(0);
+		let r: N16 = new Array(16).fill(0) as N16;
 		let m = this.data;
 
 		r[0] = m[5]*m[10]*m[15] - m[5]*m[14]*m[11] - m[6]*m[9]*m[15] + m[6]*m[13]*m[11] + m[7]*m[9]*m[14] - m[7]*m[13]*m[10];
@@ -360,9 +372,10 @@ export class Mat4 {
 		]);
 	}
 
-	/** transformed zero vector */
-	origin(): Vec3 {
-		return this.transform(new Vec3(0, 0, 0));
+	/** translation vector of transform */
+	translation(): Vec3 {
+		let m = this.data;
+		return new Vec3(m[3], m[7], m[11]);
 	}
 
 	/** basis vectors of linear transform component */
@@ -376,8 +389,7 @@ export class Mat4 {
 
 	/** decompose matrix into translation, intrinsic (XYZ) rotation (xyz rad), scale (unsigned) */
 	decompose(): [Vec3, Vec3, Vec3] {
-		let m = this.data;
-		let translation = new Vec3(m[3], m[7], m[11]);
+		let translation = this.translation();
 
 		let [x, y, z] = this.basis();
 		let scale = new Vec3(
@@ -498,7 +510,7 @@ export class Mat4 {
 	}
 
 	/** create transformation matrix from translation, intrinsic (XYZ) rotation (xyz rad) and scale */
-	static trs(translation: Vec3 = new Vec3(), rotation: Vec3 = new Vec3(), scale: number | Vec3 = 1): Mat4 {
+	static transform(translation: Vec3 = new Vec3(), rotation: Vec3 = new Vec3(), scale: number | Vec3 = 1): Mat4 {
 		let T = Mat4.translate(translation);
 		let R = Mat4.rotateIntrinsic(rotation);
 		let S = Mat4.scale(scale);

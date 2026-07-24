@@ -155,7 +155,7 @@ export class Engine {
 		this.scene.objects.splice(0, this.scene.objects.length,...this.scene.objects.filter(obj => obj.lifetime === undefined || obj.lifetime > 0.0))
 
         // z-sort objects
-		let dist = (obj: Object) => obj.model.origin().dist(this.player.camera.model.origin())
+		let dist = (obj: Object) => obj.model.translation().dist(this.player.camera.model.translation())
         this.scene.objects.filter(obj => obj.z_sort).sort((a, b) => dist(a) - dist(b)).map((obj, i, arr) => {
             let z_frac = (i+1) / (arr.length+1); // (0, 1)
             obj.z = Math.floor(obj.z) + z_frac;

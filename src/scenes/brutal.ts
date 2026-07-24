@@ -40,9 +40,9 @@ export class BrutalScene extends Scene {
 
 				let colliderObj = new Object();
 				colliderObj.visible = false;
-				colliderObj.model = Mat4.trs(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
+				colliderObj.model = Mat4.transform(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
 				colliderObj.collider = tile.mesh;
-				colliderObj.bbox = new Bbox([colliderObj.model.transform(new Vec3()).sub(scale/2), colliderObj.model.transform(new Vec3()).add(scale/2)]);
+				colliderObj.bbox = new Bbox([colliderObj.model.mulVec(new Vec3()).sub(scale/2), colliderObj.model.mulVec(new Vec3()).add(scale/2)]);
 				this.objects.push(colliderObj);
 
 				instanceModels.get(tile.mesh)!.push(colliderObj.model);
@@ -66,7 +66,7 @@ export class BrutalScene extends Scene {
 		}
 
 		let sun = new Object();
-		sun.model = Mat4.trs(this.phong.light.pos, new Vec3(), 20.0);
+		sun.model = Mat4.transform(this.phong.light.pos, new Vec3(), 20.0);
 		sun.mesh = "sphere.obj";
 		sun.textures = ["white.png"];
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);

@@ -22,7 +22,7 @@ export class DebugEchoScene extends Scene {
 	init() {
 		let obj = new Object();
 		obj.mesh = "quad.obj";
-		obj.model = Mat4.trs(new Vec3(), new Vec3(), 20);
+		obj.model = Mat4.transform(new Vec3(), new Vec3(), 20);
 		obj.fragShader = "world/phong.frag.wgsl";
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
@@ -49,17 +49,17 @@ export class DebugEchoScene extends Scene {
 		obj.tags = ["pulse_source"];
 		obj.mesh = "sphere.obj";
 		obj.textures = ["white.png"];
-		obj.model = Mat4.trs(new Vec3(0, 10, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0, 10, 0), new Vec3(), 1);
 		this.objects.push(obj);
 	}
 
 	lastPulseTime = 0;
 	update(time: number, deltaTime: number, player: Player) {
 		let src = this.getObject("pulse_source")!;
-		src.model = Mat4.trs(new Vec3(Math.cos(time)*10, 2, Math.sin(time)*10), new Vec3(), 1);
+		src.model = Mat4.transform(new Vec3(Math.cos(time)*10, 2, Math.sin(time)*10), new Vec3(), 1);
 		src.changed = true;
 		if (time - this.lastPulseTime > 1.6) {
-			this.sendPulse(src.model.transform(new Vec3()), new Vec4(Math.random(), Math.random(), Math.random(), 1), time);
+			this.sendPulse(src.model.mulVec(new Vec3()), new Vec4(Math.random(), Math.random(), Math.random(), 1), time);
 			this.lastPulseTime = time;
 		}
 	}

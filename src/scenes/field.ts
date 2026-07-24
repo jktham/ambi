@@ -39,7 +39,7 @@ export class FieldScene extends Scene {
 			ground.textures = ["ground.jpg"];
 			ground.fragShader = "world/psx.frag.wgsl";
 			ground.vertShader = "world/psx.vert.wgsl";
-			ground.model = Mat4.trs(
+			ground.model = Mat4.transform(
 				new Vec3(chunkOffset.x * this.CHUNK_SIZE/2, 0, chunkOffset.y * this.CHUNK_SIZE/2), 
 				new Vec3(0, 0, 0), 
 				this.CHUNK_SIZE
@@ -48,7 +48,7 @@ export class FieldScene extends Scene {
 		}
 
 		let sky = new Object();
-		sky.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
+		sky.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
 		sky.mesh = "cube.obj";
 		sky.textures = ["test.png"];
 		sky.fragShader = "world/skybox.frag.wgsl";
@@ -56,7 +56,7 @@ export class FieldScene extends Scene {
 		this.objects.push(sky);
 
 		for (let i=0; i<this.GRASS_COUNT; i++) {
-			let origin = Mat4.trs(
+			let origin = Mat4.transform(
 				new Vec3(rnd(-this.CHUNK_SIZE/2, this.CHUNK_SIZE/2), 0, rnd(-this.CHUNK_SIZE/2, this.CHUNK_SIZE/2)), 
 				new Vec3(0, rnd(0, Math.PI * 2), rnd(0, Math.PI * 0.2)), 
 				rnd(0.8, 1.6)

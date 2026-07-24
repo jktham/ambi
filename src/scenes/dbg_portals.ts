@@ -33,7 +33,7 @@ export class DebugPortalsScene extends Scene {
 
 	init() {
 		let obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
+		obj.model = Mat4.transform(new Vec3(-10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
 		obj.mesh = "quad_vertical.obj";
 		obj.textures = ["$portal_0"];
 		obj.portal_visible = [true, false];
@@ -42,7 +42,7 @@ export class DebugPortalsScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
+		obj.model = Mat4.transform(new Vec3(10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
 		obj.mesh = "quad_vertical.obj";
 		obj.textures = ["$portal_1"];
 		obj.portal_visible = [false, true];
@@ -53,7 +53,7 @@ export class DebugPortalsScene extends Scene {
 
 		obj = new Object();
 		obj.tags = ["check_backside"];
-		obj.model = Mat4.trs(new Vec3(-10, 2, -5), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-10, 2, -5), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["white.png"];
 		obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
@@ -68,7 +68,7 @@ export class DebugPortalsScene extends Scene {
 
 			obj = new Object();
 			obj.tags = ["check_backside"];
-			obj.model = Mat4.trs(offset, new Vec3(), rnd(0.2, 0.6));
+			obj.model = Mat4.transform(offset, new Vec3(), rnd(0.2, 0.6));
 			obj.mesh = "cube.obj";
 			obj.textures = ["white.png"];
 			obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
@@ -80,7 +80,7 @@ export class DebugPortalsScene extends Scene {
 
 		obj = new Object();
 		obj.tags = ["check_backside"];
-		obj.model = Mat4.trs(new Vec3(10, 2, -5), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(10, 2, -5), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["white.png"];
 		obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
@@ -95,7 +95,7 @@ export class DebugPortalsScene extends Scene {
 
 			obj = new Object();
 			obj.tags = ["check_backside"];
-			obj.model = Mat4.trs(offset, new Vec3(), rnd(0.2, 0.6));
+			obj.model = Mat4.transform(offset, new Vec3(), rnd(0.2, 0.6));
 			obj.mesh = "cube.obj";
 			obj.textures = ["white.png"];
 			obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
@@ -107,7 +107,7 @@ export class DebugPortalsScene extends Scene {
 
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-10, 0, 0), new Vec3(), 10);
+		obj.model = Mat4.transform(new Vec3(-10, 0, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
@@ -118,7 +118,7 @@ export class DebugPortalsScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(10, 0, 0), new Vec3(), 10);
+		obj.model = Mat4.transform(new Vec3(10, 0, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
@@ -130,7 +130,7 @@ export class DebugPortalsScene extends Scene {
 
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 200);
+		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 200);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -173,8 +173,8 @@ export class DebugPortalsScene extends Scene {
 		// hide objects on backside of portal
 		for (let obj of this.getObjects("check_backside")) {
 			obj.portal_visible = [true, true];
-			obj.portal_visible[0] = this.portalCameras[0].model.origin().z * obj.model.origin().z < 0;
-			obj.portal_visible[1] = this.portalCameras[1].model.origin().z * obj.model.origin().z < 0;
+			obj.portal_visible[0] = this.portalCameras[0].model.translation().z * obj.model.translation().z < 0;
+			obj.portal_visible[1] = this.portalCameras[1].model.translation().z * obj.model.translation().z < 0;
 		}
 
 	}

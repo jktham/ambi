@@ -98,9 +98,9 @@ export class Player {
 		this.rotation.x = clamp(this.rotation.x, -Math.PI/2 + 0.01, Math.PI/2 - 0.01);
 
 		let rot = Mat4.rotateHeading(this.rotation);
-		this.front = rot.transform(new Vec3(0, 0, -1)).normalize();
-		this.right = rot.transform(new Vec3(1, 0, 0)).normalize();
-		this.up = rot.transform(new Vec3(0, 1, 0)).normalize();
+		this.front = rot.mulVec(new Vec3(0, 0, -1)).normalize();
+		this.right = rot.mulVec(new Vec3(1, 0, 0)).normalize();
+		this.up = rot.mulVec(new Vec3(0, 1, 0)).normalize();
 	}
 
 	/** update player camera transforms, keep in sync with player pos */
@@ -157,7 +157,7 @@ export class Player {
 
 				let collider = this.colliders.get(object.collider);
 				if (collider) {
-					let transformed = collider.data.map(face => face.map(vert => object.model.transform(vert)));
+					let transformed = collider.data.map(face => face.map(vert => object.model.mulVec(vert)));
 					
 					for (let face of transformed) {
 						let [v0, v1, v2] = face;

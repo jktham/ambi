@@ -85,7 +85,7 @@ export class MuseumScene extends Scene {
 		for (let i=0; i<7; i++) {
 			let obj = new Object();
 			obj.tags = [`lod${i}`, "lookatplayersmooth"];
-			obj.model = Mat4.trs(new Vec3(0, 5, 0), new Vec3(0, 0, 0), 3);
+			obj.model = Mat4.transform(new Vec3(0, 5, 0), new Vec3(0, 0, 0), 3);
 			obj.mesh = `museum/monke_lod${i}.obj`;
 			obj.textures[0] = "white.png";
 			obj.mask = 0;
@@ -97,7 +97,7 @@ export class MuseumScene extends Scene {
 		for (let i=0; i<12; i++) {
 			let obj = new Object();
 			obj.tags = ["rotate", "explode"];
-			obj.model = Mat4.trs(rndvec3(new Vec3(-16, 1, -16), new Vec3(16, 18, 16)), rndvec3().mul(Math.PI), rnd(0.4, 0.8));
+			obj.model = Mat4.transform(rndvec3(new Vec3(-16, 1, -16), new Vec3(16, 18, 16)), rndvec3().mul(Math.PI), rnd(0.4, 0.8));
 			obj.mesh = `monke.obj`;
 			obj.textures[0] = "white.png";
 			obj.mask = 0;
@@ -114,7 +114,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(...o);
 
 		let obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 1, 0), new Vec3(0, 0, 0), 0.9);
+		obj.model = Mat4.transform(new Vec3(0, 1, 0), new Vec3(0, 0, 0), 0.9);
 		obj.mesh = "museum/tree.obj";
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
@@ -125,7 +125,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 4, 0), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(0, 4, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.z = 0.001;
 		obj.color = new Vec4(1, 1, 1, 1);
@@ -148,7 +148,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-10, 2, 0), new Vec3(0, rad(-90), 0), 1);
+		obj.model = Mat4.transform(new Vec3(-10, 2, 0), new Vec3(0, rad(-90), 0), 1);
 		obj.mesh = "quad_vertical.obj";
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
@@ -171,7 +171,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(10, 2, 0), new Vec3(0, rad(90), 0), 1);
+		obj.model = Mat4.transform(new Vec3(10, 2, 0), new Vec3(0, rad(90), 0), 1);
 		obj.mesh = "quad_vertical.obj";
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
@@ -194,7 +194,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 2, -10), new Vec3(0, rad(180), 0), 1);
+		obj.model = Mat4.transform(new Vec3(0, 2, -10), new Vec3(0, rad(180), 0), 1);
 		obj.mesh = "quad_vertical.obj";
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
@@ -217,7 +217,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 2, 10), new Vec3(0, rad(0), 0), 1);
+		obj.model = Mat4.transform(new Vec3(0, 2, 10), new Vec3(0, rad(0), 0), 1);
 		obj.mesh = "quad_vertical.obj";
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
@@ -246,7 +246,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0.2, 1, 0.4);
 		obj.collider = "cube.obj";
@@ -258,7 +258,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 		
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(10, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(10, 2, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(1, 0, 0.86, 0.0001);
 		obj.collider = "cube.obj";
@@ -270,7 +270,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 		
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-10, 2, 0), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(-10, 2, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 1, 1);
 		obj.collider = "cube.obj";
@@ -282,7 +282,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 		
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 2, 10), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(0, 2, 10), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 0, 0.1);
 		obj.collider = "cube.obj";
@@ -294,7 +294,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 		
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 2, -10), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(0, 2, -10), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 0, 1);
 		obj.collider = "cube.obj";
@@ -313,7 +313,7 @@ export class MuseumScene extends Scene {
 
 		obj = new Object();
 		obj.tags = ["spheres"];
-		obj.model = Mat4.trs(new Vec3(0, 5, 0), new Vec3(0, 0, 0), new Vec3(4, 4, 4));
+		obj.model = Mat4.transform(new Vec3(0, 5, 0), new Vec3(0, 0, 0), new Vec3(4, 4, 4));
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(1, 1, 1, 1);
 		obj.textures[0] = "white.png";
@@ -344,7 +344,7 @@ export class MuseumScene extends Scene {
 
 		obj = new Object();
 		obj.tags = ["pulse"];
-		obj.model = Mat4.trs(new Vec3(0, 10, 0), new Vec3(0, 0, 0), 7);
+		obj.model = Mat4.transform(new Vec3(0, 10, 0), new Vec3(0, 0, 0), 7);
 		obj.mesh = "sphere.obj";
 		obj.fragShader = "world/skybox.frag.wgsl";
 		this.roomObjects[r].push(obj);
@@ -356,7 +356,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 12, 0), new Vec3(rad(35.26), 0, rad(45)), 4);
+		obj.model = Mat4.transform(new Vec3(0, 12, 0), new Vec3(rad(35.26), 0, rad(45)), 4);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 0, 1);
 		obj.textures[0] = "white.png";
@@ -368,7 +368,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 12, 0), rndvec3().mul(Math.PI), 2);
+		obj.model = Mat4.transform(new Vec3(0, 12, 0), rndvec3().mul(Math.PI), 2);
 		obj.mesh = "monke.obj";
 		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_NONE;
@@ -377,7 +377,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-10, 2, -10), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(-10, 2, -10), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 0, 1);
 		obj.collider = "cube.obj";
@@ -389,7 +389,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-10, 2, -10), rndvec3().mul(Math.PI), 0.5);
+		obj.model = Mat4.transform(new Vec3(-10, 2, -10), rndvec3().mul(Math.PI), 0.5);
 		obj.mesh = "cone.obj";
 		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_NONE;
@@ -398,7 +398,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(10, 2, -10), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(10, 2, -10), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 0, 1);
 		obj.collider = "cube.obj";
@@ -410,7 +410,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(10, 2, -10), rndvec3().mul(Math.PI), 0.5);
+		obj.model = Mat4.transform(new Vec3(10, 2, -10), rndvec3().mul(Math.PI), 0.5);
 		obj.mesh = "torus.obj";
 		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_NONE;
@@ -419,7 +419,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-10, 2, 10), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(-10, 2, 10), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 0, 1);
 		obj.collider = "cube.obj";
@@ -431,7 +431,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-10, 2, 10), rndvec3().mul(Math.PI), 0.5);
+		obj.model = Mat4.transform(new Vec3(-10, 2, 10), rndvec3().mul(Math.PI), 0.5);
 		obj.mesh = "cylinder.obj";
 		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_NONE;
@@ -440,7 +440,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(10, 2, 10), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(10, 2, 10), new Vec3(0, 0, 0), 1);
 		obj.mesh = "cube.obj";
 		obj.color = new Vec4(0, 0, 0, 1);
 		obj.collider = "cube.obj";
@@ -452,7 +452,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(10, 2, 10), rndvec3().mul(Math.PI), 0.5);
+		obj.model = Mat4.transform(new Vec3(10, 2, 10), rndvec3().mul(Math.PI), 0.5);
 		obj.mesh = "quad.obj";
 		obj.textures[0] = "white.png";
 		obj.mask = MASK_OUTLINE_NONE;
@@ -467,7 +467,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 0.01, 0), new Vec3(), 10.0);
+		obj.model = Mat4.transform(new Vec3(0, 0.01, 0), new Vec3(), 10.0);
 		obj.mesh = "grid.obj";
 		obj.textures = ["brick_diffuse.jpg"];
 		obj.mask = 0;
@@ -488,7 +488,7 @@ export class MuseumScene extends Scene {
 
 		obj = new Object();
 		obj.tags = ["lookatplayer", "scalewithplayer"]
-		obj.model = Mat4.trs(new Vec3(0, 1.95, 0), new Vec3(), 1.0);
+		obj.model = Mat4.transform(new Vec3(0, 1.95, 0), new Vec3(), 1.0);
 		obj.mesh = "error.obj";
 		obj.textures = ["error.png"];
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
@@ -505,7 +505,7 @@ export class MuseumScene extends Scene {
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 2, 0), new Vec3(), new Vec3(16/9, 1, 16/9));
+		obj.model = Mat4.transform(new Vec3(0, 2, 0), new Vec3(), new Vec3(16/9, 1, 16/9));
 		obj.mesh = "cube.obj";
 		obj.textures = ["$framebuffer"];
 		obj.fragShader = "world/base.frag.wgsl";
@@ -519,7 +519,7 @@ export class MuseumScene extends Scene {
 
 		// outer rooms
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "museum/room.obj";
 		obj.textures[0] = "white.png";
 		obj.mask = 0;
@@ -529,10 +529,10 @@ export class MuseumScene extends Scene {
 		let uniforms = new InstancedUniforms();
 		uniforms.instanceCount = 4;
 		uniforms.models = [
-			Mat4.trs(new Vec3(0, 0, -88), new Vec3(0, 0, 0), 1),
-			Mat4.trs(new Vec3(88, 0, 0), new Vec3(0, 0, 0), 1),
-			Mat4.trs(new Vec3(0, 0, 88), new Vec3(0, 0, 0), 1),
-			Mat4.trs(new Vec3(-88, 0, 0), new Vec3(0, 0, 0), 1),
+			Mat4.transform(new Vec3(0, 0, -88), new Vec3(0, 0, 0), 1),
+			Mat4.transform(new Vec3(88, 0, 0), new Vec3(0, 0, 0), 1),
+			Mat4.transform(new Vec3(0, 0, 88), new Vec3(0, 0, 0), 1),
+			Mat4.transform(new Vec3(-88, 0, 0), new Vec3(0, 0, 0), 1),
 		];
 		uniforms.normals = uniforms.models.map(m => m.inverse().transpose());
 		obj.vertUniforms = uniforms;
@@ -576,7 +576,7 @@ export class MuseumScene extends Scene {
 		}
 		for (let i=0; i<lodObjects.length; i++) {
 			for (let obj of lodObjects[i]) {
-				let dist = player.position.sub(obj.model.transform(new Vec3(0, 0, 0))).length();
+				let dist = player.position.sub(obj.model.mulVec(new Vec3(0, 0, 0))).length();
 				if (i == 0) {
 					obj.visible = dist < lodDistances[i] ? true : false;
 					obj.collidable = dist < lodDistances[i] ? true : false;
@@ -593,7 +593,7 @@ export class MuseumScene extends Scene {
 		}
 
 		for (let obj of this.getObjects("rotateY")) {
-			let translation = obj.model.origin();
+			let translation = obj.model.translation();
 			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
 			let globalYRot = Mat4.rotateIntrinsic(new Vec3(0, 0.5 * deltaTime, 0));
 			obj.model = Mat4.translate(translation).mul(globalYRot).mul(modelWithoutTranslation);
@@ -601,7 +601,7 @@ export class MuseumScene extends Scene {
 		}
 
 		for (let obj of this.getObjects("rotate-Y")) {
-			let translation = obj.model.origin();
+			let translation = obj.model.translation();
 			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
 			let globalYRot = Mat4.rotateIntrinsic(new Vec3(0, -0.25 * deltaTime, 0));
 			obj.model = Mat4.translate(translation).mul(globalYRot).mul(modelWithoutTranslation);
@@ -609,7 +609,7 @@ export class MuseumScene extends Scene {
 		}
 
 		for (let obj of this.getObjects("explode")) {
-			let dist = obj.model.origin().mul(new Vec3(1, 0.5, 1)).dist(player.position.mul(new Vec3(1, 0.5, 1)));
+			let dist = obj.model.translation().mul(new Vec3(1, 0.5, 1)).dist(player.position.mul(new Vec3(1, 0.5, 1)));
 			obj.vertConfig.x = clamp((dist - 5.0) / 2.0, 0.0, 10.0);
 			obj.changed = true;
 		}
@@ -628,8 +628,8 @@ export class MuseumScene extends Scene {
 
 		for (let obj of this.getObjects("pulse")) {
 			let pulse = 1.0 + Math.sin(time) * 0.05;
-			let origin = obj.model.origin();
-			obj.model = Mat4.trs(origin, new Vec3(0, 0, 0), 7 * pulse);
+			let origin = obj.model.translation();
+			obj.model = Mat4.transform(origin, new Vec3(0, 0, 0), 7 * pulse);
 			obj.changed = true;
 		}
 
@@ -642,7 +642,7 @@ export class MuseumScene extends Scene {
 		for (let obj of this.getObjects("scalewithplayer")) {
 			let [t, r, _s] = obj.model.decompose();
 			let dist = player.position.dist(t);
-			obj.model = Mat4.trs(t, r, dist * 0.1);
+			obj.model = Mat4.transform(t, r, dist * 0.1);
 			obj.changed = true;
 		}
 
@@ -679,7 +679,7 @@ export class MuseumScene extends Scene {
 			
 			for (let obj of this.roomObjects[r]) {
 				let [translation, rotation, scale] = obj.model.decompose();
-				obj.model = Mat4.trs(translation.add(offset), rotation, scale);
+				obj.model = Mat4.transform(translation.add(offset), rotation, scale);
 				obj.collidable = this.roomSlots[0] == r; // only collidable if in current room
 				obj.z %= 100000.0;
 				obj.z += this.roomSlots[0] == r ? 100000.0 : 0.0; // draw current room first, breaks on negative z!
@@ -687,7 +687,7 @@ export class MuseumScene extends Scene {
 			}
 			for (let t of this.roomTriggers[r]) {
 				let [translation, rotation, scale] = t.bbox.model.decompose();
-				t.bbox.model = Mat4.trs(translation.add(offset), rotation, scale);
+				t.bbox.model = Mat4.transform(translation.add(offset), rotation, scale);
 				t.enabled = this.roomSlots[0] == r;
 			}
 		}
@@ -718,7 +718,7 @@ export class MuseumScene extends Scene {
 		let objects: Object[] = [];
 
 		let obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
+		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		obj.mesh = "museum/room.obj";
 		obj.collider = "museum/room.obj";
 		obj.textures[0] = "white.png";
@@ -742,7 +742,7 @@ export class MuseumScene extends Scene {
 		];
 		for (let i=0; i<4; i++) {
 			let obj = new Object();
-			obj.model = Mat4.trs(positions[i], rotations[i], 1);
+			obj.model = Mat4.transform(positions[i], rotations[i], 1);
 			obj.mesh = `museum/tunnel.obj`;
 			obj.collider = `museum/tunnel.obj`;
 			obj.textures[0] = "white.png";
@@ -798,7 +798,7 @@ export class MuseumScene extends Scene {
 				}
 
 				let obj = new Object();
-				obj.model = Mat4.trs(positions[i][j], rotations[i], 1);
+				obj.model = Mat4.transform(positions[i][j], rotations[i], 1);
 				obj.mesh = `museum/portal_h.obj`;
 				obj.textures[0] = "white.png";
 				obj.fragShader = "world/noise.frag.wgsl";
@@ -806,7 +806,7 @@ export class MuseumScene extends Scene {
 				objects.push(obj);
 
 				obj = new Object();
-				obj.model = Mat4.trs(positions[i][j], rotations[i], 1);
+				obj.model = Mat4.transform(positions[i][j], rotations[i], 1);
 				obj.mesh = `museum/portal_frame.obj`;
 				obj.collider = `museum/portal_frame.obj`;
 				obj.textures[0] = "white.png";
@@ -880,7 +880,7 @@ export class MuseumScene extends Scene {
 				if (!instances.has(texture)) {
 					instances.set(texture, []);
 				}
-				instances.get(texture)?.push(Mat4.trs(position, rotation, 1));
+				instances.get(texture)?.push(Mat4.transform(position, rotation, 1));
 
 			}
 		}

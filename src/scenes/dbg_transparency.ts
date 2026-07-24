@@ -18,7 +18,7 @@ export class DebugTransparencyScene extends Scene {
 	
 	init() {
 		let obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-3, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test_trans.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -28,7 +28,7 @@ export class DebugTransparencyScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 0.2);
@@ -39,7 +39,7 @@ export class DebugTransparencyScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(3, 0, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = "monke.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -50,7 +50,7 @@ export class DebugTransparencyScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-0.5, 3, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(-0.5, 3, 0), new Vec3(), 1);
 		obj.mesh = "sphere.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(1.0, 0.0, 0.0, 0.3);
@@ -61,7 +61,7 @@ export class DebugTransparencyScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0.5, 3, 0), new Vec3(), 1);
+		obj.model = Mat4.transform(new Vec3(0.5, 3, 0), new Vec3(), 1);
 		obj.mesh = "sphere.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.0, 0.0, 1.0, 0.3);
@@ -72,7 +72,7 @@ export class DebugTransparencyScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 20);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = "cube.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
@@ -81,7 +81,7 @@ export class DebugTransparencyScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(0, -5, 0), new Vec3(), 10);
+		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = "quad.obj";
 		obj.textures = ["test.png"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);

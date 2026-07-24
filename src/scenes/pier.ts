@@ -47,7 +47,7 @@ export class PierScene extends Scene {
 		this.objects.push(ground);
 
 		let sky = new Object();
-		sky.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
+		sky.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
 		sky.mesh = "cube.obj";
 		sky.textures = ["test.png"];
 		sky.fragShader = "world/skybox.frag.wgsl";
@@ -56,7 +56,7 @@ export class PierScene extends Scene {
 
 		let snow = new Object();
 		snow.tags = ["snow"];
-		snow.model = Mat4.trs(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
+		snow.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		snow.mesh = "pier/snow.obj";
 		snow.textures = ["white.png"];
 		snow.color = new Vec4(0.9, 0.9, 0.9, 1.0);
@@ -67,7 +67,7 @@ export class PierScene extends Scene {
 		snowUniforms.instanceCount = 1000;
 		for (let i=0; i<snowUniforms.instanceCount; i++) {
 			let range = 20;
-			let model = Mat4.trs(
+			let model = Mat4.transform(
 				new Vec3(Math.random()*range - range/2, Math.random()*range - range/2, Math.random()*range - range/2), 
 				new Vec3(0, Math.PI * Math.random() * 2, 0), 
 				1
@@ -103,7 +103,7 @@ export class PierScene extends Scene {
 			let model = snowUniforms.models[i];
 			let fall = Mat4.translate(new Vec3(0, -0.2 * deltaTime, 0.1 * deltaTime));
 			model = model.mul(fall);
-			if (model.transform(new Vec3()).y < -2) {
+			if (model.mulVec(new Vec3()).y < -2) {
 				model = model.mul(Mat4.translate(new Vec3(0, 10, -5)));
 			}
 			snowUniforms.models[i] = model;

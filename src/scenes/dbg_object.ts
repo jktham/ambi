@@ -65,7 +65,7 @@ export class DebugObjectScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 10);
+		obj.model = Mat4.transform(new Vec3(-5, -5, -10), new Vec3(), 10);
 		obj.mesh = "quad.json";
 		obj.textures = ["house.jpg"];
 		obj.fragShader = "world/phong.frag.wgsl";
@@ -105,10 +105,10 @@ export class DebugObjectScene extends Scene {
 		if (time > 3 && this.getObjects("added_after_init").length == 0) {
 			let obj = new Object();
 			obj.tags = ["added_after_init"];
-			obj.model = Mat4.trs(new Vec3(-5, -5, -10), new Vec3(), 1);
+			obj.model = Mat4.transform(new Vec3(-5, -5, -10), new Vec3(), 1);
 			obj.mesh = "monke.obj";
 			obj.collider = "monke.obj";
-			obj.bbox = new Bbox([obj.model.transform(new Vec3()).sub(2), obj.model.transform(new Vec3()).add(2)]);
+			obj.bbox = new Bbox([obj.model.mulVec(new Vec3()).sub(2), obj.model.mulVec(new Vec3()).add(2)]);
 			obj.fragShader = "world/phong.frag.wgsl";
 			obj.fragUniforms = this.phong;
 			this.objects.push(obj);

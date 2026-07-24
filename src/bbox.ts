@@ -22,7 +22,7 @@ export class Bbox {
 	}
 
 	intersectsPoint(pos: Vec3): boolean {
-		pos = this.model.inverse().transform(pos);
+		pos = this.model.inverse().mulVec(pos);
 		return (
 			pos.x >= this.min.x && pos.x <= this.max.x &&
 			pos.y >= this.min.y && pos.y <= this.max.y &&
@@ -33,8 +33,8 @@ export class Bbox {
 	// todo: implement model transforms correctly lol
 	intersectsBbox(bbox: Bbox): boolean {
 		let tf = this.model.inverse().mul(bbox.model);
-		let min = tf.transform(bbox.min);
-		let max = tf.transform(bbox.max);
+		let min = tf.mulVec(bbox.min);
+		let max = tf.mulVec(bbox.max);
 		return (
 			max.x >= this.min.x && min.x <= this.max.x &&
 			max.y >= this.min.y && min.y <= this.max.y &&
