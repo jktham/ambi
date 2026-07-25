@@ -4,13 +4,14 @@ import { Input } from "./input";
 import { Scene } from "./scene";
 import { Gui } from "./gui";
 import { Uniforms } from "./uniforms";
-import { Assets, type FragShaderPath, type TexturePath } from "./assets";
+import { Assets, type FragShaderPath, type MaterialPath, type MaterialTextureLabel, type MeshPath, type ShaderPath, type TexturePath } from "./assets";
 import { scenes } from "./presets";
 import type { Vec2 } from "./vec";
 import { Profiler } from "./profiler";
 import { Player } from "./player";
 import type { Object } from "./object";
 
+/** main engine class, holds subcomponents and handles update and draw loop */
 export class Engine {
 	assets: Assets;
 	renderer: Renderer;
@@ -49,7 +50,7 @@ export class Engine {
 	async setScene(name: string) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
 		this.deltaHist = [];
-        console.log(`loading scene: ${name}`);
+        console.log(`setting scene: ${name}`);
 		this.gui.updateInfo(`loading scene: ${name}`);
 
 		if (name != this.scene.name) {
@@ -77,9 +78,46 @@ export class Engine {
 		this.gui.updateCameraMode(this.scene.cameraMode);
 		this.gui.updateResolution(this.scene.resolution);
 
+        console.log(`initializing scene`);
 		this.scene.generateAssets(this.assets);
 		this.scene.init();
 
+        console.log(`preloading assets`);
+		await this.preloadAssets(this.scene);
+
+        // load bboxes
+        for (let obj of this.scene.objects) {
+            if (obj.bbox && obj.bbox.mesh !== undefined) {
+                let bbox = await this.assets.loadBbox(obj.bbox.mesh);
+                obj.bbox.min = bbox.min;
+                obj.bbox.max = bbox.max;
+            }
+        }
+        for (let trigger of this.scene.triggers) {
+            if (trigger.bbox && trigger.bbox.mesh !== undefined) {
+                let bbox = await this.assets.loadBbox(trigger.bbox.mesh);
+                trigger.bbox.min = bbox.min;
+                trigger.bbox.max = bbox.max;
+            }
+        }
+
+        // resolve material labels
+        for (let obj of this.scene.objects) {
+            if (obj.mtl) {
+                let mtl_textures = await this.assets.loadMaterial(obj.mtl);
+                for (let i=0; i<obj.textures.length; i++) {
+                    if (obj.textures[i].startsWith("@")) {
+                        let label = obj.textures[i] as MaterialTextureLabel;
+                        if (!mtl_textures.has(label)) {
+                            throw new Error(`label ${label} not defined in material`);
+                        }
+                        obj.textures[i] = mtl_textures.get(label)!;
+                    }
+                }
+            }
+        }
+
+        console.log(`loading scene`);
 		await this.renderer.loadScene(this.scene, this.gui);
 		await this.player.loadColliders(this.assets, this.scene.objects);
 
@@ -210,4 +248,55 @@ export class Engine {
 
         this.scheduledFrameHandle = requestAnimationFrame(newFrame);
     }
+
+	/** request and cache all needed assets in parallel, updates gui with progress */
+	private async preloadAssets(scene: Scene) {
+		let shaders = new Set<ShaderPath>();
+		let meshes = new Set<MeshPath>();
+		let textures = new Set<TexturePath>();
+		let colliders = new Set<MeshPath>();
+		let bboxes = new Set<MeshPath>();
+		let mtls = new Set<MaterialPath>();
+
+		for (let obj of scene.objects) {
+			shaders.add(obj.vertShader);
+			shaders.add(obj.fragShader);
+			meshes.add(obj.mesh);
+			obj.textures.filter(t => !(t.startsWith("@") || t.startsWith("$"))).map(t => textures.add(t));
+			if (obj.collider) colliders.add(obj.collider);
+			if (obj.bbox?.mesh) bboxes.add(obj.bbox.mesh);
+			if (obj.mtl) mtls.add(obj.mtl);
+		}
+		for (let trigger of scene.triggers) {
+			if (trigger.bbox?.mesh) bboxes.add(trigger.bbox.mesh);
+		}
+		shaders.add("post/quad.vert.wgsl");
+		shaders.add(scene.postShader);
+
+		let totalAssets = [...shaders, ...meshes, ...textures, ...colliders, ...bboxes, ...mtls].length;
+
+		let loaded: string[] = [];
+		let errors: string[] = [];
+		const wrapInfo = async (loader: (path: any) => Promise<any>, path: string) => {
+			try {
+				await loader.call(this.assets, path); // bind assets as this
+				loaded.push(path);
+				this.gui.updateInfo(`${loaded.length}/${totalAssets} loaded: ${path}`);
+			} catch (e) {
+				console.error(e);
+				errors.push((e as Error).message);
+			}
+		}
+
+		let promises: Promise<any>[] = [];
+		promises.push(...[...shaders].map((p) => wrapInfo(this.assets.loadShader, p)));
+		promises.push(...[...meshes].map((p) => wrapInfo(this.assets.loadMesh, p)));
+		promises.push(...[...textures].map((p) => wrapInfo(this.assets.loadTexture, p)));
+		promises.push(...[...colliders].map((p) => wrapInfo(this.assets.loadCollider, p)));
+		promises.push(...[...bboxes].map((p) => wrapInfo(this.assets.loadBbox, p)));
+		promises.push(...[...mtls].map((p) => wrapInfo(this.assets.loadMaterial, p)));
+		await Promise.allSettled(promises);
+
+		if (errors.length > 0) this.gui.updateInfo(`${errors.length} error${errors.length > 1 ? "s" : ""}: ${errors.join(", ")}`);
+	}
 }

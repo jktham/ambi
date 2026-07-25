@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
-import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type MeshPath, type MaterialPath, type ShaderPath, type TexturePath, type MaterialTextureLabel } from "./assets";
+import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type TexturePath } from "./assets";
 import type { Scene } from "./scene";
 import type { Object } from "./object";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
@@ -84,11 +84,7 @@ export class Renderer {
         this.scenePortalsCount = scene.portalCameras.length;
 
         this.setResolution(scene.resolution);
-        console.log("preloading assets");
-        await this.preloadAssets(scene, gui);
-        console.log("initializing world");
         await this.loadWorld(scene);
-        console.log("initializing post");
         await this.loadPost(scene);
     }
 
@@ -100,88 +96,7 @@ export class Renderer {
         this.resources.recreateFramebuffers(this.resolution, this.scenePortalsCount, this.context.getCurrentTexture());
     }
 
-    private async preloadAssets(scene: Scene, gui: Gui) {
-        let shaders = new Set<ShaderPath>();
-        let meshes = new Set<MeshPath>();
-        let textures = new Set<TexturePath>();
-        let colliders = new Set<MeshPath>();
-        let bboxes = new Set<MeshPath>();
-        let mtls = new Set<MaterialPath>();
-        for (let object of scene.objects) {
-            shaders.add(object.vertShader);
-            shaders.add(object.fragShader);
-            meshes.add(object.mesh);
-            object.textures.filter(t => !(t.startsWith("@") || t.startsWith("$"))).map(t => textures.add(t));
-            if (object.collider) colliders.add(object.collider);
-            if (object.bbox?.mesh) bboxes.add(object.bbox.mesh);
-            if (object.mtl) mtls.add(object.mtl);
-        }
-        for (let trigger of scene.triggers) {
-            if (trigger.bbox?.mesh) bboxes.add(trigger.bbox.mesh);
-        }
-        shaders.add("post/quad.vert.wgsl");
-        shaders.add(this.postShaderOverride ?? scene.postShader);
-
-        let totalAssets = [...shaders, ...meshes, ...textures, ...colliders, ...bboxes, ...mtls].length;
-
-        let loaded: string[] = [];
-        let errors: string[] = [];
-        const wrapInfo = async (loader: (path: any) => Promise<any>, path: string) => {
-            try {
-                await loader.call(this.assets, path); // bind assets as this
-                loaded.push(path);
-                gui.updateInfo(`${loaded.length}/${totalAssets} loaded: ${path}`);
-            } catch (e) {
-                console.error(e);
-                errors.push((e as Error).message);
-            }
-        }
-
-        let promises: Promise<any>[] = [];
-        promises.push(...[...shaders].map((p) => wrapInfo(this.assets.loadShader, p)));
-        promises.push(...[...meshes].map((p) => wrapInfo(this.assets.loadMesh, p)));
-        promises.push(...[...textures].map((p) => wrapInfo(this.assets.loadTexture, p)));
-        promises.push(...[...colliders].map((p) => wrapInfo(this.assets.loadCollider, p)));
-        promises.push(...[...bboxes].map((p) => wrapInfo(this.assets.loadBbox, p)));
-        promises.push(...[...mtls].map((p) => wrapInfo(this.assets.loadMaterial, p)));
-        await Promise.allSettled(promises);
-
-        if (errors.length > 0) gui.updateInfo(`${errors.length} error${errors.length > 1 ? "s" : ""}: ${errors.join(", ")}`);
-    }
-
     private async loadWorld(scene: Scene) {
-        // load bboxes
-        for (let obj of scene.objects) {
-            if (obj.bbox && obj.bbox.mesh !== undefined) {
-                let bbox = await this.assets.loadBbox(obj.bbox.mesh);
-                obj.bbox.min = bbox.min;
-                obj.bbox.max = bbox.max;
-            }
-        }
-        for (let trigger of scene.triggers) {
-            if (trigger.bbox && trigger.bbox.mesh !== undefined) {
-                let bbox = await this.assets.loadBbox(trigger.bbox.mesh);
-                trigger.bbox.min = bbox.min;
-                trigger.bbox.max = bbox.max;
-            }
-        }
-
-        // resolve material labels
-        for (let obj of scene.objects) {
-            if (obj.mtl) {
-                let mtl_textures = await this.assets.loadMaterial(obj.mtl);
-                for (let i=0; i<obj.textures.length; i++) {
-                    if (obj.textures[i].startsWith("@")) {
-                        let label = obj.textures[i] as MaterialTextureLabel;
-                        if (!mtl_textures.has(label)) {
-                            throw new Error(`label ${label} not defined in material`);
-                        }
-                        obj.textures[i] = mtl_textures.get(label)!;
-                    }
-                }
-            }
-        }
-
         // destroy and recreate world and object buffers
         this.resources.destroyWorldBuffers();
 
@@ -214,8 +129,8 @@ export class Renderer {
 
         // texture asset buffers
         for (let texture of obj.textures) {
-            if (!this.resources.textureBuffers.has(texture)) {
-                if (!(texture.startsWith("$") || texture.startsWith("@"))) {
+            if (!(texture.startsWith("$") || texture.startsWith("@"))) { // concrete path
+                if (!this.resources.textureBuffers.has(texture)) {
                     const textureBuffer = await this.resources.createTextureBuffer(texture);
                     this.resources.textureBuffers.set(texture, textureBuffer);
                 }
