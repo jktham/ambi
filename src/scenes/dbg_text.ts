@@ -39,6 +39,11 @@ export class DebugTextScene extends Scene {
 		obj.textures = ["test.png"];
 		this.objects.push(obj);
 
+		obj = new Object();
+		obj.model = Mat4.transform(new Vec3(-9.5, 2, -4.99), new Vec3(), 1);
+		obj.mesh = "gimbal.obj";
+		this.objects.push(obj);
+
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-2.5, 0, -5), new Vec3(), 2);
@@ -53,6 +58,11 @@ export class DebugTextScene extends Scene {
 		obj.model = Mat4.transform(new Vec3(-4.5, 2, -4.99), new Vec3(), 1);
 		obj.mesh = ":text1";
 		obj.textures = ["fonts/arial.png"];
+		this.objects.push(obj);
+
+		obj = new Object();
+		obj.model = Mat4.transform(new Vec3(-4.5, 2, -4.99), new Vec3(), 1);
+		obj.mesh = "gimbal.obj";
 		this.objects.push(obj);
 
 
@@ -71,6 +81,11 @@ export class DebugTextScene extends Scene {
 		obj.textures = ["fonts/arial_outline.png"];
 		this.objects.push(obj);
 
+		obj = new Object();
+		obj.model = Mat4.transform(new Vec3(2.5, 2, -4.99), new Vec3(), 1);
+		obj.mesh = "gimbal.obj";
+		this.objects.push(obj);
+
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(7.5, 0, -5), new Vec3(), 2);
@@ -85,6 +100,11 @@ export class DebugTextScene extends Scene {
 		obj.model = Mat4.transform(new Vec3(9.5, 2, -4.99), new Vec3(), 1);
 		obj.mesh = ":text3";
 		obj.textures = ["fonts/noto_outline.png"];
+		this.objects.push(obj);
+
+		obj = new Object();
+		obj.model = Mat4.transform(new Vec3(9.5, 2, -4.99), new Vec3(), 1);
+		obj.mesh = "gimbal.obj";
 		this.objects.push(obj);
 		
 		
