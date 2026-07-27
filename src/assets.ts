@@ -1,5 +1,5 @@
 import { Bbox } from "./bbox";
-import { Vec2, Vec3 } from "./vec";
+import { Vec2, Vec3, Vec4 } from "./vec";
 
 /** supported shader filetypes */
 const shaderTypes = ["wgsl"] as const;
@@ -17,7 +17,7 @@ export type FragShaderPath = `${string}.frag.${ShaderTypes}`;
 export type DynamicAssetLabel = `:${string}`;
 
 /** supported mesh filetypes */
-const meshTypes = ["obj", "json"] as const;
+const meshTypes = ["obj", "ply", "json"] as const;
 type MeshTypes = typeof meshTypes[number];
 
 /** path relative to public/meshes/ or dynamic label */
@@ -38,7 +38,7 @@ export type BuiltinTextureLabel = `$${"shadowmap" | "framebuffer" | `portal_${nu
 export type TexturePath = `${string}.${TextureTypes}` | MaterialTextureLabel | BuiltinTextureLabel | DynamicAssetLabel;
 
 
-/** supported material filetypes */
+/** supported material filetypes, wavefront mtl with pbr extensions */
 const materialTypes = ["mtl"] as const;
 type MaterialTypes = typeof materialTypes[number];
 
@@ -46,15 +46,23 @@ type MaterialTypes = typeof materialTypes[number];
 export type MaterialPath = `${string}.${MaterialTypes}`;
 
 
+/** supported font descriptor filetypes, bmfont compatible text file */
+const fontTypes = ["fnt"] as const;
+type FontTypes = typeof fontTypes[number];
+
+/** path relative to public/fonts/ */
+export type FontPath = `${string}.${FontTypes}`;
+
+
 export type Shader = {
 	readonly path: ShaderPath;
 	/** shader code */
-	readonly data: string;
+	readonly code: string;
 };
 
 export type Mesh = {
 	readonly path: MeshPath;
-	/** packed f32 array with length size\*stride */
+	/** packed f32 array with length size\*stride, triangulated vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz) */
 	readonly data: Float32Array;
 	/** number of vertices */
 	readonly size: number;
@@ -73,14 +81,74 @@ export type Texture = {
 export type Collider = {
 	readonly path: MeshPath;
 	/** array of triangle vertices */
-	readonly data: [Vec3, Vec3, Vec3][];
+	readonly triangles: [Vec3, Vec3, Vec3][];
 	/** number of triangles */
 	readonly size: number;
 };
 
+/** map of mtl map label to concrete texture path */
+export type Material = Map<MaterialTextureLabel, TexturePath>;
 
-// floats per vertex
+/** 
+ * bmf font descriptor, used to generate text quads. image data held in separate texture atlas
+ * https://www.angelcode.com/products/bmfont/doc/file_format.html
+ */
+export type Font = {
+	readonly path: FontPath;
+	resolution: Vec2;
+	line_height: number;
+	base: number;
+	chars: {
+		id: number;
+		pos: Vec2;
+		size: Vec2;
+		offset: Vec2;
+		advance: number;
+	}[],
+	/** first, second, amount */
+	kernings: {
+		first: number,
+		second: number,
+		amount: number,	
+	}[];
+};
+
+
+/** floats per vertex */
 export const MESH_STRIDE = 15;
+
+/** vertex layout helper */
+export class Vertex {
+	pos: Vec3 = new Vec3();
+	normal: Vec3 = new Vec3(0, 0, 1);
+	color: Vec4 = Vec4.splat(1);
+	uv: Vec2 = new Vec2();
+	tangent: Vec3 = new Vec3(1, 0, 0);
+
+	constructor(data?: number[]) {
+		if (data) {
+			if (data.length != MESH_STRIDE) {
+				throw new Error("invalid vertex data");
+			}
+
+			this.pos = new Vec3(...data.slice(0, 3));
+			this.normal = new Vec3(...data.slice(3, 6));
+			this.color = new Vec4(...data.slice(6, 10));
+			this.uv = new Vec2(...data.slice(10, 12));
+			this.tangent = new Vec3(...data.slice(12, 15));
+		}
+	}
+
+	flatten(): number[] {
+		return [
+			this.pos.data,
+			this.normal.data,
+			this.color.data,
+			this.uv.data,
+			this.tangent.data,
+		].flat()
+	}
+};
 
 /** loads, processes and caches assets */
 export class Assets {
@@ -89,7 +157,8 @@ export class Assets {
 	private textures: Map<TexturePath, Texture> = new Map();
 	private colliders: Map<MeshPath, Collider> = new Map();
 	private bboxes: Map<MeshPath, Bbox> = new Map();
-	private materials: Map<MaterialPath, Map<MaterialTextureLabel, TexturePath>> = new Map();
+	private materials: Map<MaterialPath, Material> = new Map();
+	private fonts: Map<FontPath, Font> = new Map();
 
 
 	addDynamicMesh(label: DynamicAssetLabel, data: Float32Array) {
@@ -132,7 +201,7 @@ export class Assets {
 		
 		let shader: Shader = {
 			path,
-			data: code,
+			code: code,
 		};
 		this.shaders.set(path, shader);
 		return shader;
@@ -160,7 +229,20 @@ export class Assets {
 		switch (type) {
 			case "obj": { // braces for block scoped variables
 				let file = await this.fetchFile(`/meshes/${path}`);
-				let data = this.parseObj(path, file);
+				let data = this.parseOBJ(path, file);
+
+				let mesh: Mesh = {
+					path,
+					data,
+					size: data.length / MESH_STRIDE,
+					stride: MESH_STRIDE,
+				};
+				this.meshes.set(path, mesh);
+				return mesh;
+			}
+			case "ply": {
+				let file = await this.fetchFile(`/meshes/${path}`);
+				let data = this.parseOBJ(path, file);
 
 				let mesh: Mesh = {
 					path,
@@ -173,7 +255,7 @@ export class Assets {
 			}
 			case "json": {
 				let file = await this.fetchFile(`/meshes/${path}`);
-				let data = new Float32Array(JSON.parse(file || "[]") as number[]); // should be list of vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz)
+				let data = new Float32Array(JSON.parse(file || "[]") as number[]); // should be flat list of vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz)
 
 				let mesh: Mesh = {
 					path,
@@ -274,7 +356,7 @@ export class Assets {
 
 		let collider: Collider = {
 			path,
-			data,
+			triangles: data,
 			size: data.length,
 		};
 		this.colliders.set(path, collider);
@@ -294,7 +376,7 @@ export class Assets {
 	}
 
 	/** returns map of texture labels to texture paths defined in .mtl */
-	async loadMaterial(path: MaterialPath): Promise<Map<MaterialTextureLabel, TexturePath>> {
+	async loadMaterial(path: MaterialPath): Promise<Material> {
 		if (this.materials.has(path)) {
 			return this.materials.get(path)!;
 		}
@@ -309,9 +391,30 @@ export class Assets {
 		}
 
 		let file = await this.fetchFile(`/meshes/${path}`);
-		let material = this.parseMaterial(path, file);
+		let material = this.parseMTL(path, file);
 		this.materials.set(path, material);
 		return material;
+	}
+
+	/** returns font offsets */
+	async loadFont(path: FontPath): Promise<Font> {
+		if (this.fonts.has(path)) {
+			return this.fonts.get(path)!;
+		}
+
+		const type = (path.split(".").pop() || "") as FontTypes;
+		if (!fontTypes.includes(type)) {
+			throw new Error(`unknown font type: ${path}`);
+		}
+
+		if (!await this.fileExists(`/fonts/${path}`)) {
+			throw new Error(`font does not exist: ${path}`);
+		}
+
+		let file = await this.fetchFile(`/fonts/${path}`);
+		let font = this.parseFont(path, file);
+		this.fonts.set(path, font);
+		return font;
 	}
 
 	private async fileExists(path: string): Promise<boolean> {
@@ -349,12 +452,12 @@ export class Assets {
 	}
 
 	/** parses .obj file as string, returns flat f32 array of triangulates vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz) */
-	private parseObj(path: MeshPath, file: string): Float32Array {
+	private parseOBJ(path: MeshPath, file: string): Float32Array {
 		let v: number[][] = []; // vertex pos xyz
 		let vc: number[][] = []; // vertex color rgba
 		let vn: number[][] = []; // vertex normal xyz
 		let vt: number[][] = []; // vertex texcoord uv
-		let f: number[][][] = []; // faces, list of [v1, v2, v3]
+		let faces: number[][][] = []; // faces, list of [v1, v2, v3]
 
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
@@ -381,19 +484,19 @@ export class Assets {
 					let ivn = indices[2];
 					let ivt = indices[1];
 
-					let pos = v[iv-1];
-					let normal = vn[ivn-1];
-					let color = vc[ivc-1];
-					let uv = ivt ? vt[ivt-1] : [0, 0];
-					let tangent = [0, 0, 0];
+					let vertex = new Vertex();
+					vertex.pos = new Vec3(...v[iv-1]);
+					vertex.normal = new Vec3(...vn[ivn-1]);
+					vertex.color = new Vec4(...vc[ivc-1]);
+					vertex.uv = ivt ? new Vec2(...vt[ivt-1]) : new Vec2(0, 0);
+					vertex.tangent = new Vec3(0, 0, 0);
 
-					let vert = [pos, normal, color, uv, tangent].flat();
-					face.push(vert);
+					face.push(vertex.flatten());
 				} if (face.length == 3) {
-					f.push(face);
+					faces.push(face);
 				} else if (face.length > 3) { // we assume convex
 					for (let i=2; i<face.length; i++) { // triangulate ngons
-						f.push([face[0], face[i-1], face[i]]);
+						faces.push([face[0], face[i-1], face[i]]);
 					}
 				} else {
 					console.warn(`invalid mesh face: ${path}, ${face}`);
@@ -402,15 +505,15 @@ export class Assets {
 		}
 
 		// compute tangent as in https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-		for (let i = 0; i < f.length; i++) {
-			let v1 = f[i][0];
-			let v2 = f[i][1];
-			let v3 = f[i][2];
+		for (let i = 0; i < faces.length; i++) {
+			let v0 = new Vertex(faces[i][0]);
+			let v1 = new Vertex(faces[i][1]);
+			let v2 = new Vertex(faces[i][2]);
 
-			let edge1 = new Vec3(v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]);
-			let edge2 = new Vec3(v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]);
-			let duv1 = new Vec2(v2[10] - v1[10], v2[11] - v1[11]);
-			let duv2 = new Vec2(v3[10] - v1[10], v3[11] - v1[11]);
+			let edge1 = v1.pos.sub(v0.pos);
+			let edge2 = v2.pos.sub(v0.pos);
+			let duv1 = v1.uv.sub(v0.uv);
+			let duv2 = v2.uv.sub(v0.uv);
 
 			let tangent = new Vec3();
 			let fract = 1.0 / (duv1.x * duv2.y - duv2.x * duv1.y);
@@ -420,26 +523,27 @@ export class Assets {
 			tangent.z = fract * (duv2.y * edge1.z - duv1.y * edge2.z);
 			tangent = tangent.normalize();
 
-			for (let j = 0; j < 3; j++) {
-				f[i][0][j+12] = tangent.data[j];
-				f[i][1][j+12] = tangent.data[j];
-				f[i][2][j+12] = tangent.data[j];
-			}
+			v0.tangent = tangent;
+			v1.tangent = tangent;
+			v2.tangent = tangent;
+
+			faces[i][0] = v0.flatten();
+			faces[i][1] = v1.flatten();
+			faces[i][2] = v2.flatten();
 		}
 
-		let mesh = f.flat(2);
+		let mesh = faces.flat(2);
 		return new Float32Array(mesh);
 	}
 
 	/** returns 2d list of vertex positions from full mesh array */
 	private parseCollider(path: MeshPath, mesh: Float32Array): [Vec3, Vec3, Vec3][] {
 		let collider: [Vec3, Vec3, Vec3][] = [];
-		let s = MESH_STRIDE;
-		for (let i=0; i<mesh.length; i+=s*3) {
-			let v0 = new Vec3(mesh[i], mesh[i+1], mesh[i+2]);
-			let v1 = new Vec3(mesh[i+s], mesh[i+s+1], mesh[i+s+2]);
-			let v2 = new Vec3(mesh[i+2*s], mesh[i+2*s+1], mesh[i+2*s+2]);
-			collider.push([v0, v1, v2]);
+		for (let i=0; i<mesh.length; i+=MESH_STRIDE*3) {
+			let v0 = new Vertex([...mesh.slice(i, i + MESH_STRIDE)]);
+			let v1 = new Vertex([...mesh.slice(i + MESH_STRIDE, i + 2*MESH_STRIDE)]);
+			let v2 = new Vertex([...mesh.slice(i + 2*MESH_STRIDE, i + 3*MESH_STRIDE)]);
+			collider.push([v0.pos, v1.pos, v2.pos]);
 		}
 		return collider;
 	}
@@ -450,7 +554,7 @@ export class Assets {
 		let max = new Vec3(-Infinity, -Infinity, -Infinity);
 
 		for (let i=0; i<mesh.length; i+=MESH_STRIDE) {
-			let v = new Vec3(mesh[i], mesh[i+1], mesh[i+2]);
+			let v = new Vertex([...mesh.slice(i, i+MESH_STRIDE)]).pos;
 			min.x = Math.min(min.x, v.x);
 			min.y = Math.min(min.y, v.y);
 			min.z = Math.min(min.z, v.z);
@@ -463,7 +567,7 @@ export class Assets {
 	}
 
 	/** parse .mtl and return map of found texture labels to texture paths */
-	private parseMaterial(path: MaterialPath, file: string): Map<MaterialTextureLabel, TexturePath> {
+	private parseMTL(path: MaterialPath, file: string): Material {
 		let maps = new Map<MaterialTextureLabel, TexturePath>();
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
@@ -513,6 +617,60 @@ export class Assets {
 		return maps;
 	}
 
+	/** parse font csv and return offsets */
+	private parseFont(path: FontPath, file: string): Font {
+		/** parses list of key=value strings and returns map */
+		const parseKV = (pairs: string[]): Map<string, number> => {
+			let map = new Map<string, number>();
+			for (let pair of pairs) {
+				let p = pair.split("=");
+				map.set(p[0], parseFloat(p[1]));
+			}
+			return map;
+		}
+
+		let font: Font = {
+			path,
+			resolution: new Vec2(),
+			line_height: 0,
+			base: 0,
+			chars: [],
+			kernings: []
+		};
+
+		for (let line of file.split(/\r?\n/)) {
+			let words = line.split(/\s+/).filter(w => w != "");
+			let kv = parseKV(words.slice(1));
+			
+			if (words[0] == "common") {
+				font.resolution.x = kv.get("scaleW")!;
+				font.resolution.y = kv.get("scaleH")!;
+				font.line_height = kv.get("lineHeight")!;
+				font.base = kv.get("base")!;
+
+			} else if (words[0] == "char") {
+				let char = {
+					id: kv.get("id")!,
+					pos: new Vec2(kv.get("x")!, kv.get("y")!),
+					size: new Vec2(kv.get("width")!, kv.get("height")!),
+					offset: new Vec2(kv.get("xoffset")!, kv.get("yoffset")!),
+					advance: kv.get("xadvance")!,
+				};
+				font.chars.push(char);
+
+			} else if (words[0] == "kerning") {
+				let kerning = {
+					first: kv.get("first")!, 
+					second: kv.get("second")!, 
+					amount: kv.get("amount")!,
+				};
+				font.kernings.push(kerning);
+
+			}
+		}
+		return font;
+	}
+
 	/** resolve #import in shaders relative to its path */
 	private async preprocessShader(path: ShaderPath, file: string): Promise<string> {
 		let out = "";
@@ -521,12 +679,115 @@ export class Assets {
 				let currentPath = path.split("/").slice(0, -1).join("/").replace("/shaders/", "") + "/";
 				let relPath = line.replace(/#import\s+/, "").replace(/"/g, "");
 				let absPath = currentPath + relPath;
-				line = await this.loadShader(absPath as ShaderPath).then(s => s.data);
+				line = await this.loadShader(absPath as ShaderPath).then(s => s.code);
 			}
 			out += line + "\n";
 		}
 		return out;
 	}
+
+	/** generate quads per character with uv coords matching font atlas texture */
+	async generateTextMesh(fontPath: FontPath, text: string, font_size: number = 1, align: "left" | "center" | "right" = "left"): Promise<Float32Array> {
+		let font = await this.loadFont(fontPath);
+		
+		let cursor = new Vec2(0, -font.base);
+		let scale = 1.0 / font.line_height * font_size;
+
+		// generate quads
+		let line = 0;
+		let line_widths = [];
+		let lines: [Vertex, Vertex, Vertex, Vertex][][] = [];
+		for (let i=0; i<text.length; i++) {
+			let c = text.charCodeAt(i);
+			let next = text.charCodeAt(i+1);
+
+			// line break
+			if (c == 10) {
+				cursor.x = 0;
+				cursor.y -= font.line_height;
+				line++;
+				continue;
+			}
+
+			let char = font.chars.find(ch => ch.id == c);
+
+			if (!char) {
+				console.warn(`unknown char ${c}`);
+				continue;
+			}
+
+			let top_left = new Vertex();
+			let top_right = new Vertex();
+			let bottom_left = new Vertex();
+			let bottom_right = new Vertex();
+
+			top_left.pos = new Vec3(cursor.x + char.offset.x, cursor.y + font.base - char.offset.y, 0);
+			top_right.pos = top_left.pos.add(new Vec3(char.size.x, 0, 0));
+			bottom_left.pos = top_left.pos.add(new Vec3(0, -char.size.y, 0));
+			bottom_right.pos = top_left.pos.add(new Vec3(char.size.x, -char.size.y, 0));
+
+			for (let v of [bottom_left, bottom_right, top_left, top_right]) {
+				v.pos = v.pos.mul(scale);
+			}
+
+			top_left.uv = new Vec2(char.pos.x, char.pos.y);
+			top_right.uv = top_left.uv.add(new Vec2(char.size.x, 0));
+			bottom_left.uv = top_left.uv.add(new Vec2(0, char.size.y));
+			bottom_right.uv = top_left.uv.add(new Vec2(char.size.x, char.size.y));
+
+			for (let v of [bottom_left, bottom_right, top_left, top_right]) {
+				v.uv = v.uv.div(font.resolution);
+				v.uv.y = 1.0 - v.uv.y;
+			}
+
+			while (lines.length < line + 1) {
+				lines.push([]);
+			}
+			lines[line].push([bottom_left, bottom_right, top_left, top_right]);
+
+			if (next) {
+				let kerning = font.kernings.find(k => k.first == c && k.second == next);
+				if (kerning) {
+					cursor.x += kerning.amount;
+				}
+			}
+			cursor.x += char.advance;
+
+			while (line_widths.length < line + 1) {
+				line_widths.push(0);
+			}
+			line_widths[line] = cursor.x;
+		}
+
+		// adjust alignment
+		for (let [i, line] of lines.entries()) {
+			for (let quad of line) {
+				for (let vert of quad) {
+					if (align == "center") {
+						vert.pos.x -= line_widths[i] / 2.0 * scale;
+					} else if (align == "right") {
+						vert.pos.x -= line_widths[i] * scale;
+					}
+				}
+			}
+		}
+
+		// triangulate quads
+		let verts: number[][] = [];
+		for (let line of lines) {
+			for (let [bottom_left, bottom_right, top_left, top_right] of line) {
+				verts.push(bottom_left.flatten());
+				verts.push(top_right.flatten());
+				verts.push(top_left.flatten());
+				
+				verts.push(bottom_left.flatten());
+				verts.push(bottom_right.flatten());
+				verts.push(top_right.flatten());
+			}
+		}
+		
+		return new Float32Array(verts.flat());
+	};
 
 	clear() {
 		this.shaders.clear();

@@ -19,6 +19,7 @@ import { DebugErrorScene } from "./scenes/dbg_error";
 import { DebugLightingScene } from "./scenes/dbg_lighting";
 import { DebugDynamicScene } from "./scenes/dbg_dynamic";
 import { DebugPortalsScene } from "./scenes/dbg_portals";
+import { DebugTextScene } from "./scenes/dbg_text";
 
 /** <name, Scene> */
 export const scenes: Map<string, new () => Scene> = new Map([
@@ -40,6 +41,7 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["dbg_error", DebugErrorScene],
 	["dbg_lighting", DebugLightingScene],
 	["dbg_dynamic", DebugDynamicScene],
+	["dbg_text", DebugTextScene],
 	["dbg_portals", DebugPortalsScene],
 ]);
 

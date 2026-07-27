@@ -176,11 +176,11 @@ export class Resources {
     async createObjectPipeline(vertShader: VertShaderPath, fragShader: FragShaderPath): Promise<GPURenderPipeline> {
         const vertexShader = this.device.createShaderModule({
             label: `vertex shader: ${vertShader}`,
-            code: await this.assets.loadShader(vertShader).then(s => s.data),
+            code: await this.assets.loadShader(vertShader).then(s => s.code),
         });
         const fragmentShader = this.device.createShaderModule({
             label: `fragment shader: ${fragShader}`,
-            code: await this.assets.loadShader(fragShader).then(s => s.data),
+            code: await this.assets.loadShader(fragShader).then(s => s.code),
         });
 
         const pipeline = this.device.createRenderPipeline({
@@ -374,11 +374,11 @@ export class Resources {
         let vertShader: VertShaderPath = "post/quad.vert.wgsl";
         const postVertexShader = this.device.createShaderModule({
             label: `post vertex shader: ${vertShader}`,
-            code: await this.assets.loadShader(vertShader).then(s => s.data),
+            code: await this.assets.loadShader(vertShader).then(s => s.code),
         });
         const postFragmentShader = this.device.createShaderModule({
             label: `post fragment shader: ${postShader}`,
-            code: await this.assets.loadShader(postShader).then(s => s.data),
+            code: await this.assets.loadShader(postShader).then(s => s.code),
         });
 
         const postPipeline = this.device.createRenderPipeline({

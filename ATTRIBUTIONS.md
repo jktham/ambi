@@ -1,2 +1,4 @@
-- various textures: polyhaven.com
-- suzanne <3: blender.org
+- various textures: https://polyhaven.com
+- suzanne <3: https://blender.org
+- noto sans mono font: Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic) 
+- font atlases generated with: BMFont, https://www.angelcode.com/products/bmfont/

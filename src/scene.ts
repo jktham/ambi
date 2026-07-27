@@ -32,7 +32,7 @@ export class Scene {
 	triggers: Trigger[] = [];
 
 	/** called before init, generate dynamic assets and place them in asset cache */
-	generateAssets(assets: Assets) {
+	async generateAssets(assets: Assets) {
 
 	}
 

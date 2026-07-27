@@ -79,7 +79,7 @@ export class Engine {
 		this.gui.updateResolution(this.scene.resolution);
 
         console.log(`initializing scene`);
-		this.scene.generateAssets(this.assets);
+		await this.scene.generateAssets(this.assets);
 		this.scene.init();
 
         console.log(`preloading assets`);

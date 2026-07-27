@@ -17,7 +17,7 @@ export class DebugDynamicScene extends Scene {
 		this.phong.light.pos = new Vec3(0, 10, 0);
 	}
 
-	generateAssets(assets: Assets) {
+	async generateAssets(assets: Assets) {
 		let dynMesh = [ // pos, normal, color, uv, tangent
 			[ 1.0,  1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0, 1.0], [1.0, 1.0], [0.0, 0.0, 0.0],
 		    [-1.0, -1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0], [0.0, 0.0, 0.0],

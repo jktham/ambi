@@ -1,8 +1,9 @@
 import type { MeshPath } from "./assets";
 import { Mat4, Vec3 } from "./vec";
 
+/** oriented bounding box */
 export class Bbox {
-	min: Vec3 = new Vec3(Infinity, Infinity, Infinity); // never intersects
+	min: Vec3 = new Vec3(Infinity, Infinity, Infinity); // init never intersects
 	max: Vec3 = new Vec3(-Infinity, -Infinity, -Infinity);
 	/** transform to world space, user responsible for keeping in sync with parent! */
 	model: Mat4 = new Mat4();

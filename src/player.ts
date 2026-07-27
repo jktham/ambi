@@ -157,7 +157,7 @@ export class Player {
 
 				let collider = this.colliders.get(object.collider);
 				if (collider) {
-					let transformed = collider.data.map(face => face.map(vert => object.model.mulVec(vert)));
+					let transformed = collider.triangles.map(face => face.map(vert => object.model.mulVec(vert)));
 					
 					for (let face of transformed) {
 						let [v0, v1, v2] = face;
