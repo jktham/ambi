@@ -78,6 +78,8 @@ export class Engine {
 		this.gui.updateCameraMode(this.scene.cameraMode);
 		this.gui.updateResolution(this.scene.resolution);
 
+		this.renderer.setResolution(this.scene.resolution); // just for black screen during load
+
         console.log(`initializing scene`);
 		await this.scene.generateAssets(this.assets);
 		this.scene.init();
