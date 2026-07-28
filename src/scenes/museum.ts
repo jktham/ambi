@@ -7,7 +7,7 @@ import { InstancedUniforms, PhongUniforms, PostOutlineUniforms, RayspheresUnifor
 import { clamp, rad, rnd, rndarr, rndint, rndseed, rndvec3, rndvec4 } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import { engine } from "../main";
-import type { TexturePath } from "../assets";
+import type { Assets, TexturePath } from "../assets";
 
 const MASK_OUTLINE_NONE = 13;
 const MASK_OUTLINE_EXT_ONLY = 14;
@@ -24,6 +24,13 @@ export class MuseumScene extends Scene {
 	phong = new PhongUniforms();
 
 	playerPosSmooth = new Vec3();
+
+	portalScenes = [
+		["pier", "field"], 
+		["brutal", "dbg_object"], 
+		["dbg_dither", "dbg_outline"], 
+		["dbg_portals", "dbg_echo"]
+	];
 
 	constructor() {
 		super();
@@ -58,18 +65,20 @@ export class MuseumScene extends Scene {
 		}
 	}
 	
+	async generateAssets(assets: Assets) {
+		for (let scene of this.portalScenes.flat()) {
+			let scale = scene.length < 8 ? 0.5 : 0.4;
+			assets.addDynamicMesh(`:text_${scene}`, await assets.generateTextMesh("noto_outline.fnt", `${scene}`, scale, "center"));
+		}
+	}
+
 	init() {
 		// room 0: portals
 		let r = 0;
 		let o = this.createRoomBase();
 		this.roomObjects[r].push(...o);
 		
-		let [o2, t] = this.createPortals([
-			["pier", "field"], 
-			["brutal", "dbg_object"], 
-			["dbg_dither", "dbg_outline"], 
-			["dbg_transparency", "dbg_echo"]
-		]);
+		let [o2, t] = this.createPortals(this.portalScenes);
 		this.roomObjects[r].push(...o2);
 		this.roomTriggers[r].push(...t);
 
@@ -813,6 +822,16 @@ export class MuseumScene extends Scene {
 				obj.mask = 2;
 				obj.fragShader = "world/phong.frag.wgsl";
 				obj.fragUniforms = this.phong;
+				objects.push(obj);
+
+				obj = new Object();
+				obj.model = Mat4.transform(positions[i][j], rotations[i], 1).mul(Mat4.translate(new Vec3(0, 3.75, 0.25)));
+				obj.mesh = `:text_${scenes[i][j]}`;
+				obj.textures[0] = "fonts/noto_outline.png";
+				obj.mask = 3;
+				obj.fragShader = "world/rainbow.frag.wgsl";
+				obj.vertShader = "world/glitch.vert.wgsl";
+				obj.vertConfig.x = 0.03;
 				objects.push(obj);
 
 				let t = new Trigger();
