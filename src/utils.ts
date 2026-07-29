@@ -36,6 +36,10 @@ export function rndseed(seed: number, min: number = 0, max: number = 1): number 
 	return Math.abs(Math.sin(seed) * 43758.5453123) % 1 * (max - min) + min;
 }
 
+export function rndsign(): number {
+	return Math.random() > 0.5 ? -1 : 1;
+}
+
 export function swap(arr: any[], i: number, j: number) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
 }
