@@ -113,9 +113,9 @@ export class Player {
 	async loadColliders(assets: Assets, entities: Object[]) {
 		this.objects = entities;
 		for (let object of this.objects) {
-			if (object.collider && !this.colliders.has(object.collider)) {
-				const collider = await assets.loadCollider(object.collider);
-				this.colliders.set(object.collider, collider);
+			if (object.collider && !this.colliders.has(object.collider.path)) {
+				const collider = object.collider;
+				this.colliders.set(object.collider.path, collider);
 			}
 		}
 	}
@@ -155,7 +155,7 @@ export class Player {
 					if (!object.bbox.intersectsBbox(cameraBbox)) continue;
 				}
 
-				let collider = this.colliders.get(object.collider);
+				let collider = this.colliders.get(object.collider.path);
 				if (collider) {
 					let transformed = collider.triangles.map(face => face.map(vert => object.model.mulVec(vert)));
 					

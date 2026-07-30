@@ -3,6 +3,7 @@ import { Object } from "../object";
 import { InstancedUniforms, PhongUniforms, PostEchoUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
+import type { Assets } from "../assets";
 
 export class DebugEchoScene extends Scene {
 	phong = new PhongUniforms();
@@ -13,25 +14,34 @@ export class DebugEchoScene extends Scene {
 		this.name = "dbg_echo";
 		this.spawnPos = new Vec3(0, 1.8, 0);
 
-		this.postShader = "post/echo.frag.wgsl";
 		this.postUniforms = new PostEchoUniforms();
 
 		this.phong.light.pos = new Vec3(0, 10, 0);
+
+		this.preload = {
+			shaders: ["post/echo.frag.wgsl", "world/phong.frag.wgsl", "world/instanced.vert.wgsl"],
+			textures: ["white.png"],
+			meshes: ["quad.obj", "monke.obj", "sphere.obj"],
+			colliders: [],
+			fonts: [],
+		};
 	}
 
-	init() {
+	async init(assets: Assets) {
+		this.postShader = await assets.loadShader("post/echo.frag.wgsl");
+
 		let obj = new Object();
-		obj.mesh = "quad.obj";
+		obj.mesh = await assets.loadMesh("quad.obj");
 		obj.model = Mat4.transform(new Vec3(), new Vec3(), 20);
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
 		obj = new Object();
-		obj.mesh = "monke.obj";
-		obj.vertShader = "world/instanced.vert.wgsl";
+		obj.mesh = await assets.loadMesh("monke.obj");
+		obj.vertShader = await assets.loadShader("world/instanced.vert.wgsl");
 		obj.vertUniforms = new InstancedUniforms();
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 
 		let count = 1000;
@@ -47,14 +57,14 @@ export class DebugEchoScene extends Scene {
 
 		obj = new Object();
 		obj.tags = ["pulse_source"];
-		obj.mesh = "sphere.obj";
-		obj.textures = ["white.png"];
+		obj.mesh = await assets.loadMesh("sphere.obj");
+		obj.textures = [await assets.loadTexture("white.png")];
 		obj.model = Mat4.transform(new Vec3(0, 10, 0), new Vec3(), 1);
 		this.objects.push(obj);
 	}
 
 	lastPulseTime = 0;
-	update(time: number, deltaTime: number, player: Player) {
+	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		let src = this.getObject("pulse_source")!;
 		src.model = Mat4.transform(new Vec3(Math.cos(time)*10, 2, Math.sin(time)*10), new Vec3(), 1);
 		src.changed = true;
@@ -64,7 +74,7 @@ export class DebugEchoScene extends Scene {
 		}
 	}
 
-	interact(time: number, player: Player) {
+	async interact(time: number, player: Player, assets: Assets) {
 		this.sendPulse(player.position, new Vec4(1, 1, 1, 1), time);
 	}
 

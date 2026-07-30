@@ -5,6 +5,7 @@ import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
+import type { Assets } from "../assets";
 
 export class DebugObjectScene extends Scene {
 	phong = new PhongUniforms();
@@ -13,32 +14,40 @@ export class DebugObjectScene extends Scene {
 		super();
 
 		this.name = "dbg_object";
+
+		this.preload = {
+			shaders: ["world/phong.frag.wgsl", "world/instanced.vert.wgsl"],
+			textures: ["test.png", "house.jpg"],
+			meshes: ["monke.obj", "quad.json"],
+			colliders: ["monke.obj"],
+			fonts: [],
+		};
 	}
 	
-	init() {
+	async init(assets: Assets) {
 		let obj = new Object();
 		obj.model = Mat4.translate(new Vec3(0, 1, -1.5));
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.translate(new Vec3(-1, 0, -2));
 		obj.color = new Vec4(1.0, 0.0, 0.0, 1.0);
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.translate(new Vec3(1, 0, -2));
-		obj.mesh = "monke.obj";
-		obj.textures = ["test.png"];
-		obj.collider = "monke.obj";
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.mesh = await assets.loadMesh("monke.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
+		obj.collider = await assets.loadCollider("monke.obj");
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.mask = 200;
 		
-		let monkeBbox = new Bbox(obj.mesh);
+		let monkeBbox = await assets.loadBbox("monke.obj");
 		monkeBbox.model = obj.model;
 		obj.bbox = monkeBbox;
 
@@ -47,10 +56,10 @@ export class DebugObjectScene extends Scene {
 
 		obj = new Object();
 		obj.tags = ["monke_instanced"];
-		obj.mesh = "monke.obj";
-		obj.vertShader = "world/instanced.vert.wgsl";
+		obj.mesh = await assets.loadMesh("monke.obj");
+		obj.vertShader = await assets.loadShader("world/instanced.vert.wgsl");
 		obj.vertUniforms = new InstancedUniforms();
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.mask = 100;
 
@@ -66,9 +75,9 @@ export class DebugObjectScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-5, -5, -10), new Vec3(), 10);
-		obj.mesh = "quad.json";
-		obj.textures = ["house.jpg"];
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.mesh = await assets.loadMesh("quad.json");
+		obj.textures = [await assets.loadTexture("house.jpg")];
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
@@ -81,7 +90,7 @@ export class DebugObjectScene extends Scene {
 
 	}
 
-	update(time: number, deltaTime: number, player: Player) {
+	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		this.objects[0].model = this.objects[0].model.mul(Mat4.rotateIntrinsic(new Vec3(0, 0, deltaTime)));
 		this.objects[0].changed = true;
 		this.objects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
@@ -106,10 +115,10 @@ export class DebugObjectScene extends Scene {
 			let obj = new Object();
 			obj.tags = ["added_after_init"];
 			obj.model = Mat4.transform(new Vec3(-5, -5, -10), new Vec3(), 1);
-			obj.mesh = "monke.obj";
-			obj.collider = "monke.obj";
+			obj.mesh = await assets.loadMesh("monke.obj");
+			obj.collider = await assets.loadCollider("monke.obj");
 			obj.bbox = new Bbox([obj.model.mulVec(new Vec3()).sub(2), obj.model.mulVec(new Vec3()).add(2)]);
-			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 			obj.fragUniforms = this.phong;
 			this.objects.push(obj);
 		}

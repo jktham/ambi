@@ -1,4 +1,4 @@
-import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type MeshPath, type TexturePath, type VertShaderPath } from "./assets";
+import { MESH_STRIDE, type Mesh, type MeshPath, type Shader, type Texture, type TexturePath, type VertShaderPath } from "./assets";
 import type { oid } from "./object";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
 import type { Vec2 } from "./vec";
@@ -15,7 +15,6 @@ export type ObjectResources = {
 /** renderer resources, handles low level buffers */
 export class Resources {
     private device: GPUDevice;
-    private assets: Assets;
 
     // resolution dependent textures, initialized in constructor
     depthFramebuffer!: GPUTexture;
@@ -48,9 +47,8 @@ export class Resources {
     postTextureBindgroup?: GPUBindGroup;
     postFramebufferBindgroup?: GPUBindGroup;
 
-    constructor(device: GPUDevice, assets: Assets, resolution: Vec2, n_portals: number, renderTarget: GPUTexture) {
+    constructor(device: GPUDevice, resolution: Vec2, n_portals: number, renderTarget: GPUTexture) {
 		this.device = device;
-		this.assets = assets;
         this.createFramebufferTextures(resolution, n_portals);
         this.configureRenderPasses(renderTarget);
     }
@@ -173,14 +171,14 @@ export class Resources {
         this.globalUniformBuffer = globalUniformBuffer;
     }
 
-    async createObjectPipeline(vertShader: VertShaderPath, fragShader: FragShaderPath): Promise<GPURenderPipeline> {
+    createObjectPipeline(vertShader: Shader, fragShader: Shader): GPURenderPipeline {
         const vertexShader = this.device.createShaderModule({
             label: `vertex shader: ${vertShader}`,
-            code: await this.assets.loadShader(vertShader).then(s => s.code),
+            code: vertShader.code,
         });
         const fragmentShader = this.device.createShaderModule({
             label: `fragment shader: ${fragShader}`,
-            code: await this.assets.loadShader(fragShader).then(s => s.code),
+            code: fragShader.code,
         });
 
         const pipeline = this.device.createRenderPipeline({
@@ -240,7 +238,7 @@ export class Resources {
     }
 
     /** create object uniforms and bindgroup at group 0 */
-    async createObjectUniformBuffers(vertUniforms: Uniforms, fragUniforms: Uniforms, pipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBuffer, GPUBindGroup]> {
+    createObjectUniformBuffers(vertUniforms: Uniforms, fragUniforms: Uniforms, pipeline: GPURenderPipeline): [GPUBuffer, GPUBuffer, GPUBuffer, GPUBindGroup] {
         const globalUniformBuffer = this.globalUniformBuffer;
         if (!globalUniformBuffer) {
             throw new Error(`missing global uniform buffer`);
@@ -293,37 +291,35 @@ export class Resources {
     }
 
     /** create vertex buffer from mesh asset path and write */
-    async createVertexBuffer(mesh: MeshPath): Promise<GPUBuffer> {
-        const vertexData = await this.assets.loadMesh(mesh);
+    createVertexBuffer(mesh: Mesh): GPUBuffer {
         const vertexBuffer = this.device.createBuffer({
-            label: `vertex buffer: ${mesh}`,
-            size: vertexData.data.byteLength,
+            label: `vertex buffer: ${mesh.path}`,
+            size: mesh.data.byteLength,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
         });
-        this.device.queue.writeBuffer(vertexBuffer, 0, vertexData.data.buffer);
+        this.device.queue.writeBuffer(vertexBuffer, 0, mesh.data.buffer);
         return vertexBuffer;
     }
 
     /** create texture buffer from texture asset path and write */
-    async createTextureBuffer(path: TexturePath): Promise<GPUTexture> {
-        const textureData = await this.assets.loadTexture(path);
+    createTextureBuffer(texture: Texture): GPUTexture {
         const textureBuffer = this.device.createTexture({
-            label: `texture buffer: ${path}`,
-            size: [textureData.width, textureData.height],
+            label: `texture buffer: ${texture.path}`,
+            size: [texture.width, texture.height],
             format: "rgba8unorm",
             usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
         });
         this.device.queue.writeTexture(
             {texture: textureBuffer},
-            textureData.data,
-            {bytesPerRow: 4 * textureData.width},
-            {width: textureData.width, height: textureData.height}
+            texture.data,
+            {bytesPerRow: 4 * texture.width},
+            {width: texture.width, height: texture.height}
         );
         return textureBuffer;
     }
 
     /** create texture bindgroup at group 1 from set of texture buffers */
-    async createTextureBindgroup(textures: GPUTexture[], pipeline: GPURenderPipeline): Promise<GPUBindGroup> {
+    createTextureBindgroup(textures: GPUTexture[], pipeline: GPURenderPipeline): GPUBindGroup {
         const sampler = this.device.createSampler({
             addressModeU: "repeat", 
             addressModeV: "repeat",
@@ -370,15 +366,154 @@ export class Resources {
 
     // ---- post resources ----
 
-    async createPostPipeline(postShader: FragShaderPath, presentationFormat: GPUTextureFormat): Promise<GPURenderPipeline> {
+    createPostPipeline(postShader: Shader, presentationFormat: GPUTextureFormat): GPURenderPipeline {
         let vertShader: VertShaderPath = "post/quad.vert.wgsl";
         const postVertexShader = this.device.createShaderModule({
             label: `post vertex shader: ${vertShader}`,
-            code: await this.assets.loadShader(vertShader).then(s => s.code),
+            code: `
+                struct VertexIn {
+                    @location(0) pos: vec3f, // object space
+                    @location(1) normal: vec3f,
+                    @location(2) color: vec4f,
+                    @location(3) uv: vec2f,
+                    @location(4) tangent: vec3f, // GL tangent
+                };
+
+                struct VertexOut {
+                    @builtin(position) ndc: vec4f, // -1..1
+                    @location(0) pos: vec3f, // world space
+                    @location(1) normal: vec3f,
+                    @location(2) color: vec4f,
+                    @location(3) uv: vec2f,
+                    @location(4) tangent: vec3f, // GL tangent
+                    @location(5) bary: vec3f, // barycentric triangle coords, 0..1
+                    @location(6) shadow_space: vec4f, // -1..1
+                };
+
+                struct FragmentIn {
+                    @builtin(position) screen: vec4f, // 0..res
+                    @location(0) pos: vec3f, // world space
+                    @location(1) normal: vec3f,
+                    @location(2) color: vec4f,
+                    @location(3) uv: vec2f,
+                    @location(4) tangent: vec3f, // GL tangent
+                    @location(5) bary: vec3f, // barycentric triangle coords, 0..1
+                    @location(6) shadow_space: vec4f, // -1..1
+                };
+
+                struct FragmentOut {
+                    @location(0) color: vec4f,
+                    @location(1) pos_depth: vec4f,
+                    @location(2) normal_mask: vec4f,
+                };
+
+                /// world frag shader output
+                struct FbData {
+                    color: vec4f,
+                    pos: vec3f,
+                    depth: f32,
+                    normal: vec3f,
+                    mask: u32,
+                };
+
+                /// global world pass uniforms
+                struct GlobalUniforms {
+                    time: f32,
+                    frame: f32,
+                    fov: f32,
+                    resolution: vec2f,
+                    view_pos: vec3f,
+                    view: mat4x4f,
+                    view_inv: mat4x4f,
+                    projection: mat4x4f,
+                    shadow_transform: mat4x4f,
+                };
+
+                /// per object world pass uniforms
+                struct ObjectUniforms {
+                    mask: f32,
+                    cull: f32,
+                    id: f32,
+                    uv_scale: f32,
+                    color: vec4f,
+                    vert_config: vec4f,
+                    frag_config: vec4f,
+                    model: mat4x4f,
+                    normal: mat4x4f,
+                };
+
+                /// base post pass uniforms
+                struct PostUniforms {
+                    time: f32,
+                    frame: f32,
+                    resolution: vec2f,
+                    post_config: vec4f,
+                    view: mat4x4f,
+                    projection: mat4x4f,
+                };
+
+                /// encode world pass output data into framebuffers
+                fn encodeFbData(data: FbData) -> FragmentOut {
+                    var out: FragmentOut;
+                    out.color = data.color;
+                    out.pos_depth = vec4f(data.pos, data.depth);
+                    out.normal_mask = vec4f((data.normal + 1.0) / 2.0, f32(data.mask) / 255.0);
+                    return out;
+                }
+
+                /// decode post pass input framebuffers back into data
+                fn decodeFbData(pixel: vec2i, fb_color: texture_storage_2d<rgba8unorm, read>, fb_pos_depth: texture_storage_2d<rgba32float, read>, fb_normal_mask: texture_storage_2d<rgba8unorm, read>) -> FbData {
+                    var data: FbData;
+                    let color = textureLoad(fb_color, pixel);
+                    let pd = textureLoad(fb_pos_depth, pixel);
+                    let nm = textureLoad(fb_normal_mask, pixel);
+
+                    data.color = color;
+                    data.pos = pd.xyz;
+                    data.depth = pd.w;
+                    data.normal = nm.xyz * 2.0 - 1.0;
+                    data.mask = u32(nm.w * 255.0);
+
+                    return data;
+                }
+
+                fn decideDiscard(color: vec4f, pos: vec3f, normal: vec3f, view_pos: vec3f, cull: f32) {
+                    if (color.a == 0.0) {
+                        discard;
+                    }
+
+                    if (cull != 0.0) {
+                        let view_dir = normalize(view_pos - pos);
+                        let face = dot(normalize(normal), view_dir);
+                        if (face * cull < 0.0) {
+                            discard;
+                        }
+                    }
+                }
+
+
+                @vertex 
+                fn main(@builtin(vertex_index) i: u32) -> VertexOut {
+                    let pos = array(
+                        vec2f(-1, -1),
+                        vec2f(1, -1),
+                        vec2f(1, 1),
+                        vec2f(1, 1),
+                        vec2f(-1, 1),
+                        vec2f(-1, -1)
+                    );
+
+                    var out: VertexOut;
+                    out.ndc = vec4f(pos[i], 0.0, 1.0);
+                    out.pos = vec3f(pos[i], 0.0);
+                    out.uv = vec2f((pos[i].x + 1.0) / 2.0, 1.0 - (pos[i].y + 1.0) / 2.0);
+                    return out;
+                }
+            `,
         });
         const postFragmentShader = this.device.createShaderModule({
-            label: `post fragment shader: ${postShader}`,
-            code: await this.assets.loadShader(postShader).then(s => s.code),
+            label: `post fragment shader: ${postShader.path}`,
+            code: postShader.code,
         });
 
         const postPipeline = this.device.createRenderPipeline({
@@ -403,7 +538,7 @@ export class Resources {
     }
 
     /** create post uniforms and bindgroup at group 0 */
-    async createPostUniformBuffers(postUniforms: Uniforms, postPipeline: GPURenderPipeline): Promise<[GPUBuffer, GPUBuffer, GPUBindGroup]> {
+    createPostUniformBuffers(postUniforms: Uniforms, postPipeline: GPURenderPipeline): [GPUBuffer, GPUBuffer, GPUBindGroup] {
         const postBaseUniformLength = new PostUniforms().size();
         const postBaseUniformBuffer = this.device.createBuffer({
             label: `post base uniform buffer`,

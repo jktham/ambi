@@ -4,7 +4,7 @@ import { Input } from "./input";
 import { Scene } from "./scene";
 import { Gui } from "./gui";
 import { Uniforms } from "./uniforms";
-import { Assets, type FragShaderPath, type MaterialPath, type MaterialTextureLabel, type MeshPath, type ShaderPath, type TexturePath } from "./assets";
+import { Assets, type MaterialPath, type MeshPath, type ShaderPath, type TexturePath } from "./assets";
 import { scenes } from "./presets";
 import type { Vec2 } from "./vec";
 import { Profiler } from "./profiler";
@@ -37,7 +37,7 @@ export class Engine {
 		this.input = new Input(canvas);
 		this.player = new Player();
 		this.scene = new Scene();
-		this.renderer = new Renderer(canvas, this.assets, this.profiler);
+		this.renderer = new Renderer(canvas, this.profiler);
 
 		this.gui = new Gui(this); // needs some things to be constructed already
 	}
@@ -65,6 +65,14 @@ export class Engine {
 			this.scene = new Scene();
 		}
 
+		this.renderer.setResolution(this.scene.resolution); // just for black screen during load
+
+        console.log(`preloading assets`);
+		await this.preloadAssets(this.scene);
+
+        console.log(`initializing scene`);
+		await this.scene.init(this.assets);
+
 		this.renderer.postShaderOverride = undefined;
 		this.renderer.postFragUniformsOverride = undefined;
 		this.renderer.postTexturesOverride = undefined;
@@ -74,18 +82,9 @@ export class Engine {
 		this.player.rotation = this.scene.spawnRot;
 
 		this.gui.updateScene(this.scene.name);
-		this.gui.updatePost("scene", this.scene.postShader, this.scene.postUniforms, this.scene.postTextures);
+		this.gui.updatePost("scene", this.scene.postShader.path, this.scene.postUniforms, this.scene.postTextures.map(t => t.path));
 		this.gui.updateCameraMode(this.scene.cameraMode);
 		this.gui.updateResolution(this.scene.resolution);
-
-		this.renderer.setResolution(this.scene.resolution); // just for black screen during load
-
-        console.log(`initializing scene`);
-		await this.scene.generateAssets(this.assets);
-		this.scene.init();
-
-        console.log(`preloading assets`);
-		await this.preloadAssets(this.scene);
 
         // load bboxes
         for (let obj of this.scene.objects) {
@@ -103,22 +102,6 @@ export class Engine {
             }
         }
 
-        // resolve material labels
-        for (let obj of this.scene.objects) {
-            if (obj.mtl) {
-                let mtl_textures = await this.assets.loadMaterial(obj.mtl);
-                for (let i=0; i<obj.textures.length; i++) {
-                    if (obj.textures[i].startsWith("@")) {
-                        let label = obj.textures[i] as MaterialTextureLabel;
-                        if (!mtl_textures.has(label)) {
-                            throw new Error(`label ${label} not defined in material`);
-                        }
-                        obj.textures[i] = mtl_textures.get(label)!;
-                    }
-                }
-            }
-        }
-
         console.log(`loading scene`);
 		await this.renderer.loadScene(this.scene, this.gui);
 		await this.player.loadColliders(this.assets, this.scene.objects);
@@ -127,23 +110,25 @@ export class Engine {
 		this.loop();
 	}
 
-	async setPost(path: FragShaderPath | "scene", uniforms: Uniforms, textures: TexturePath[]) {
+	async setPost(shaderPath: ShaderPath | "scene", uniforms: Uniforms, texturePaths: TexturePath[]) {
 		cancelAnimationFrame(this.scheduledFrameHandle);
 		this.deltaHist = [];
-		console.log(`loading post: ${path}`);
-		this.gui.updateInfo(`loading post: ${path}`);
+		console.log(`loading post: ${shaderPath}`);
+		this.gui.updateInfo(`loading post: ${shaderPath}`);
 
-		if (path == "scene") { // use scene default
+		let textures = await Promise.all(texturePaths.map(async path => await this.assets.loadTexture(path)));
+
+		if (shaderPath == "scene") { // use scene default
 			this.renderer.postShaderOverride = undefined;
 			this.renderer.postFragUniformsOverride = undefined;
-			this.renderer.postTexturesOverride = textures?.length > 0 ? textures : undefined;
-			this.gui.updatePost(path, this.scene.postShader, this.scene.postUniforms, this.renderer.postTexturesOverride ?? this.scene.postTextures);
+			this.renderer.postTexturesOverride = textures.length > 0 ? textures : undefined;
+			this.gui.updatePost(shaderPath, this.scene.postShader.path, this.scene.postUniforms, (this.renderer.postTexturesOverride ?? this.scene.postTextures).map(t => t.path));
 
 		} else {
-			this.renderer.postShaderOverride = path;
+			this.renderer.postShaderOverride = await this.assets.loadShader(shaderPath);
 			this.renderer.postFragUniformsOverride = uniforms;
 			this.renderer.postTexturesOverride = textures;
-			this.gui.updatePost(path, this.scene.postShader, this.renderer.postFragUniformsOverride, this.renderer.postTexturesOverride);
+			this.gui.updatePost(shaderPath, this.scene.postShader.path, this.renderer.postFragUniformsOverride, this.renderer.postTexturesOverride.map(t => t.path));
 		}
 		await this.renderer.loadPost(this.scene);
 
@@ -177,7 +162,7 @@ export class Engine {
 		// ---- scene ----
 		this.profiler.start("  updateScene");
 
-		this.scene.update(time, deltaTime, this.player);
+		await this.scene.update(time, deltaTime, this.player, this.assets);
 		this.player.updateCamera(); // in case position changed by update
 
 		for (let trigger of this.scene.triggers) {
@@ -185,7 +170,7 @@ export class Engine {
 		}
 
 		if (this.input.activeActions.has("interact")) {
-			this.scene.interact(time, this.player);
+			await this.scene.interact(time, this.player, this.assets);
 			this.input.activeActions.delete("interact"); // only trigger once per press
 		}
 
@@ -260,20 +245,13 @@ export class Engine {
 		let bboxes = new Set<MeshPath>();
 		let mtls = new Set<MaterialPath>();
 
-		for (let obj of scene.objects) {
-			shaders.add(obj.vertShader);
-			shaders.add(obj.fragShader);
-			meshes.add(obj.mesh);
-			obj.textures.filter(t => !(t.startsWith("@") || t.startsWith("$"))).map(t => textures.add(t));
-			if (obj.collider) colliders.add(obj.collider);
-			if (obj.bbox?.mesh) bboxes.add(obj.bbox.mesh);
-			if (obj.mtl) mtls.add(obj.mtl);
-		}
-		for (let trigger of scene.triggers) {
-			if (trigger.bbox?.mesh) bboxes.add(trigger.bbox.mesh);
-		}
+		scene.preload.shaders.map(p => shaders.add(p));
+		scene.preload.meshes.map(p => meshes.add(p));
+		scene.preload.textures.map(p => textures.add(p));
+		scene.preload.colliders.map(p => colliders.add(p));
+
 		shaders.add("post/quad.vert.wgsl");
-		shaders.add(scene.postShader);
+		shaders.add(scene.postShader.path);
 
 		let totalAssets = [...shaders, ...meshes, ...textures, ...colliders, ...bboxes, ...mtls].length;
 

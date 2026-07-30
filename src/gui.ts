@@ -3,7 +3,7 @@ import { postShaders, resolutionPresets, scenes } from "./presets";
 import type { Engine } from "./engine";
 import { Uniforms } from "./uniforms";
 import { Vec2 } from "./vec";
-import type { FragShaderPath, TexturePath } from "./assets";
+import type { FragShaderPath, ShaderPath, TexturePath } from "./assets";
 
 /** </3 */
 export class Gui {
@@ -42,7 +42,7 @@ export class Gui {
 		}
 		this.postSelect.addEventListener("change", async (e) => {
 			let value = (e.target as HTMLSelectElement).value as FragShaderPath | "scene";
-			await engine.setPost(value, new (postShaders.get(value)?.[0] ?? Uniforms), postShaders.get(value)?.[1] ?? []);
+			await engine.setPost(value, new (postShaders.get(value)?.[0] ?? Uniforms), postShaders.get(value)?.[1] ?? []); // TODO
 		});
 		this.postSelect.addEventListener("keydown", (e) => {
 			if (e.key.length == 1 && !e.ctrlKey) {
@@ -153,12 +153,12 @@ export class Gui {
 		this.sceneSelect.value = name;
 	}
 
-	updatePost(currentShader: FragShaderPath | "scene", sceneShader: FragShaderPath, uniforms: Uniforms, textures: TexturePath[]) {
-		this.postSelect.value = currentShader;
-		if (currentShader == "scene") {
+	updatePost(currentShaderPath: ShaderPath | "scene", sceneShader: ShaderPath, uniforms: Uniforms, texturePaths: TexturePath[]) {
+		this.postSelect.value = currentShaderPath;
+		if (currentShaderPath == "scene") {
 			this.postSelect.options[0].label = `scene (${sceneShader})`;
 		}
-		this.initUniformConfig(currentShader, uniforms, textures);
+		this.initUniformConfig(currentShaderPath, uniforms, texturePaths);
 	}
 
 	updateCameraMode(cameraMode: CameraMode) {
@@ -178,10 +178,10 @@ export class Gui {
 	}
 
 	// todo: this is awful i'll improve it at some point i hope
-	private initUniformConfig(shader: FragShaderPath | "scene", uniforms: Uniforms, textures: TexturePath[]) {
+	private initUniformConfig(shaderPath: ShaderPath | "scene", uniforms: Uniforms, texturePaths: TexturePath[]) {
 		this.uniformSizes.clear();
 		this.uniformConfig.textContent = "";
-		if (uniforms.size() == 0 && textures.length == 0) {
+		if (uniforms.size() == 0 && texturePaths.length == 0) {
 			return;
 		}
 
@@ -288,8 +288,8 @@ export class Gui {
 			this.uniformConfig.appendChild(row);
 		}
 
-		this.uniformSizes.set("textures", textures.length);
-		if (textures.length > 0) {
+		this.uniformSizes.set("textures", texturePaths.length);
+		if (texturePaths.length > 0) {
 			let row = document.createElement("div");
 			let label = document.createElement("span");
 			let input = document.createElement("input");
@@ -297,10 +297,10 @@ export class Gui {
 
 			label.textContent = `textures: string[${this.uniformSizes.get("textures")}]`;
 			input.type = "text";
-			input.value = textures.join(";");
+			input.value = texturePaths.join(";");
 			input.addEventListener("change", async e => {
 				let value = (e.target as HTMLInputElement).value.split(";").filter(s => s != "").concat(new Array(this.uniformSizes.get("textures")).fill("house.jpg")).slice(0, this.uniformSizes.get("textures"));
-				await this.engine.setPost(shader, uniforms, value as TexturePath[]);
+				await this.engine.setPost(shaderPath, uniforms, value as TexturePath[]);
 			});
 				
 			row.appendChild(label);

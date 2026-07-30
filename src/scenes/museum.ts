@@ -40,7 +40,6 @@ export class MuseumScene extends Scene {
 		this.resolution = new Vec2(1920, 1080);
 		this.spawnPos = new Vec3(0.001, 2, 0.001);
 
-		this.postShader = "post/outline.frag.wgsl";	
 		let postUniforms = new PostOutlineUniforms();
 		postUniforms.scale.fill(2);
 		postUniforms.mode.fill(1);
@@ -63,43 +62,51 @@ export class MuseumScene extends Scene {
 			this.roomSlots[i] = rooms[index];
 			rooms = rooms.filter(v => v != rooms[index]);
 		}
+
+		this.preload = {
+			shaders: ["post/outline.frag.wgsl", "world/rainbow.frag.wgsl", "world/glitch.vert.wgsl", "world/explode.vert.wgsl", "world/phong.frag.wgsl", "world/rayspheres.frag.wgsl", "world/wireframe.frag.wgsl", "world/skybox.frag.wgsl", "world/px_rainbow.frag.wgsl", "world/pulse.frag.wgsl", "world/base.frag.wgsl", "world/ripple.vert.wgsl", "world/noise.frag.wgsl", "world/instanced.vert.wgsl"],
+			textures: ["white.png", "test_trans.png", "test_trans2.png", "error.png", "brick_diffuse.jpg", "fonts/noto_outline.png", "skybox/pure_clouds.jpg", "skybox/pure_cloudy.jpg", "skybox/pure_stars.jpg", "skybox/desert_stars.jpg"],
+			meshes: ["museum/monke_lod0.obj", "museum/monke_lod1.obj", "museum/monke_lod2.obj", "museum/monke_lod3.obj", "museum/monke_lod4.obj", "museum/monke_lod5.obj", "museum/monke_lod6.obj", "monke.obj", "museum/tree.obj", "cube.obj", "quad_vertical.obj", "sphere.obj", "cone.obj", "torus.obj", "cylinder.obj", "quad.obj", "grid.obj", "error.obj", "museum/room.obj", "museum/tunnel.obj", "museum/pillar.obj", "museum/portal_h.obj", "museum/portal_frame.obj"],
+			colliders: ["cube.obj", "museum/room.obj", "museum/tunnel.obj", "museum/pillar.obj", "museum/portal_frame.obj"],
+			fonts: ["noto_outline.fnt"],
+		};
 	}
-	
-	async generateAssets(assets: Assets) {
+
+	async init(assets: Assets) {
+		this.postShader = await assets.loadShader("post/outline.frag.wgsl");
+
 		for (let scene of this.portalScenes.flat()) {
 			let scale = scene.length < 8 ? 0.5 : 0.4;
 			assets.addDynamicMesh(`:text_${scene}`, await assets.generateTextMesh("noto_outline.fnt", `${scene}`, scale, "center"));
 		}
-	}
 
-	init() {
 		// room 0: portals
 		let r = 0;
-		let o = this.createRoomBase();
+		let o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 		
-		let [o2, t] = this.createPortals(this.portalScenes);
+		let [o2, t] = await this.createPortals(assets, this.portalScenes);
 		this.roomObjects[r].push(...o2);
 		this.roomTriggers[r].push(...t);
 
-		o = this.createWindows();
+		o = await this.createWindows(assets);
 		this.roomObjects[r].push(...o);
 
 
 		// room 1: shaky monke
 		r = 1;
-		o = this.createRoomBase();
+		o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 
 		for (let i=0; i<7; i++) {
 			let obj = new Object();
 			obj.tags = [`lod${i}`, "lookatplayersmooth"];
 			obj.model = Mat4.transform(new Vec3(0, 5, 0), new Vec3(0, 0, 0), 3);
-			obj.mesh = `museum/monke_lod${i}.obj`;
-			obj.textures[0] = "white.png";
+			obj.mesh = await assets.loadMesh(`museum/monke_lod${i}.obj`);
+			obj.textures[0] = await assets.loadTexture("white.png");
 			obj.mask = 0;
-			obj.fragShader = "world/rainbow.frag.wgsl";
-			obj.vertShader = "world/glitch.vert.wgsl";
+			obj.fragShader = await assets.loadShader("world/rainbow.frag.wgsl");
+			obj.vertShader = await assets.loadShader("world/glitch.vert.wgsl");
 			this.roomObjects[r].push(obj);
 		}
 
@@ -107,11 +114,11 @@ export class MuseumScene extends Scene {
 			let obj = new Object();
 			obj.tags = ["rotate", "explode"];
 			obj.model = Mat4.transform(rndvec3(new Vec3(-16, 1, -16), new Vec3(16, 18, 16)), rndvec3().mul(Math.PI), rnd(0.4, 0.8));
-			obj.mesh = `monke.obj`;
-			obj.textures[0] = "white.png";
+			obj.mesh = await assets.loadMesh(`monke.obj`);
+			obj.textures[0] = await assets.loadTexture("white.png");
 			obj.mask = 0;
-			obj.fragShader = "world/rainbow.frag.wgsl";
-			obj.vertShader = "world/explode.vert.wgsl";
+			obj.fragShader = await assets.loadShader("world/rainbow.frag.wgsl");
+			obj.vertShader = await assets.loadShader("world/explode.vert.wgsl");
 			obj.vertConfig.x = 1.0; // explode scale
 			this.roomObjects[r].push(obj);
 		}
@@ -119,28 +126,28 @@ export class MuseumScene extends Scene {
 
 		// room 2: tree orbs
 		r = 2;
-		o = this.createRoomBase();
+		o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 
 		let obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 1, 0), new Vec3(0, 0, 0), 0.9);
-		obj.mesh = "museum/tree.obj";
+		obj.mesh = await assets.loadMesh("museum/tree.obj");
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "white.png";
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 4, 0), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.z = 0.001;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "white.png";
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
-		obj.fragShader = "world/rayspheres.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/rayspheres.frag.wgsl");
 		let rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
 		rayspheresUniforms.spheres = [{
@@ -158,12 +165,12 @@ export class MuseumScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 2, 0), new Vec3(0, rad(-90), 0), 1);
-		obj.mesh = "quad_vertical.obj";
+		obj.mesh = await assets.loadMesh("quad_vertical.obj");
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "white.png";
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
-		obj.fragShader = "world/rayspheres.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/rayspheres.frag.wgsl");
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
 		rayspheresUniforms.spheres = [{
@@ -181,12 +188,12 @@ export class MuseumScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 2, 0), new Vec3(0, rad(90), 0), 1);
-		obj.mesh = "quad_vertical.obj";
+		obj.mesh = await assets.loadMesh("quad_vertical.obj");
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "white.png";
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
-		obj.fragShader = "world/rayspheres.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/rayspheres.frag.wgsl");
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
 		rayspheresUniforms.spheres = [{
@@ -204,12 +211,12 @@ export class MuseumScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 2, -10), new Vec3(0, rad(180), 0), 1);
-		obj.mesh = "quad_vertical.obj";
+		obj.mesh = await assets.loadMesh("quad_vertical.obj");
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "white.png";
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
-		obj.fragShader = "world/rayspheres.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/rayspheres.frag.wgsl");
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
 		rayspheresUniforms.spheres = [{
@@ -227,12 +234,12 @@ export class MuseumScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 2, 10), new Vec3(0, rad(0), 0), 1);
-		obj.mesh = "quad_vertical.obj";
+		obj.mesh = await assets.loadMesh("quad_vertical.obj");
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "white.png";
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
-		obj.fragShader = "world/rayspheres.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/rayspheres.frag.wgsl");
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 1;
 		rayspheresUniforms.spheres = [{
@@ -251,83 +258,83 @@ export class MuseumScene extends Scene {
 
 		// room 3: trans cubes
 		r = 3;
-		o = this.createRoomBase();
+		o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 2, 0), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(0, 0.2, 1, 0.4);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "white.png";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = 0;
 		obj.cull = 1.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 		
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 2, 0), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(1, 0, 0.86, 0.0001);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "test_trans.png";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("test_trans.png");
 		obj.mask = 0;
 		obj.cull = 0.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 		
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 2, 0), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(0, 0, 1, 1);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "test_trans2.png";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("test_trans2.png");
 		obj.mask = 0;
 		obj.cull = 0.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 		
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 2, 10), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(0, 0, 0, 0.1);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "white.png";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = 0;
 		obj.cull = -1.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 		
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 2, -10), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(0, 0, 0, 1);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "white.png";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_NONE;
 		obj.cull = 0.0;
-		obj.fragShader = "world/wireframe.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/wireframe.frag.wgsl");
 		obj.fragConfig.x = 4.0; // line width
 		this.roomObjects[r].push(obj);
 
 
 		// room 4: rayspheres
 		r = 4;
-		o = this.createRoomBase();
+		o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
 		obj.tags = ["spheres"];
 		obj.model = Mat4.transform(new Vec3(0, 5, 0), new Vec3(0, 0, 0), new Vec3(4, 4, 4));
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.textures[0] = "white.png";
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
-		obj.fragShader = "world/rayspheres.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/rayspheres.frag.wgsl");
 		rayspheresUniforms = new RayspheresUniforms();
 		rayspheresUniforms.sphere_count = 16;
 		rayspheresUniforms.spheres = new Array(rayspheresUniforms.sphere_count).fill(0).map((_, i) => {
@@ -348,142 +355,142 @@ export class MuseumScene extends Scene {
 
 		// room 5: sky orb
 		r = 5;
-		o = this.createRoomBase();
+		o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
 		obj.tags = ["pulse"];
 		obj.model = Mat4.transform(new Vec3(0, 10, 0), new Vec3(0, 0, 0), 7);
-		obj.mesh = "sphere.obj";
-		obj.fragShader = "world/skybox.frag.wgsl";
+		obj.mesh = await assets.loadMesh("sphere.obj");
+		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		this.roomObjects[r].push(obj);
 
 
 		// room 6: rainbow cube
 		r = 6;
-		o = this.createRoomBase();
+		o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 12, 0), new Vec3(rad(35.26), 0, rad(45)), 4);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(0, 0, 0, 1);
-		obj.textures[0] = "white.png";
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_WHITE;
 		obj.tags = ["rotate-Y"];
 		obj.cull = -1.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 12, 0), rndvec3().mul(Math.PI), 2);
-		obj.mesh = "monke.obj";
-		obj.textures[0] = "white.png";
+		obj.mesh = await assets.loadMesh("monke.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_NONE;
 		obj.tags = ["rotateY"];
-		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/px_rainbow.frag.wgsl");
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 2, -10), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(0, 0, 0, 1);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "white.png";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_WHITE;
 		obj.cull = -1.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 2, -10), rndvec3().mul(Math.PI), 0.5);
-		obj.mesh = "cone.obj";
-		obj.textures[0] = "white.png";
+		obj.mesh = await assets.loadMesh("cone.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_NONE;
 		obj.tags = ["rotateY"];
-		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/px_rainbow.frag.wgsl");
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 2, -10), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(0, 0, 0, 1);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "white.png";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_WHITE;
 		obj.cull = -1.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 2, -10), rndvec3().mul(Math.PI), 0.5);
-		obj.mesh = "torus.obj";
-		obj.textures[0] = "white.png";
+		obj.mesh = await assets.loadMesh("torus.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_NONE;
 		obj.tags = ["rotateY"];
-		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/px_rainbow.frag.wgsl");
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 2, 10), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(0, 0, 0, 1);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "white.png";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_WHITE;
 		obj.cull = -1.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 2, 10), rndvec3().mul(Math.PI), 0.5);
-		obj.mesh = "cylinder.obj";
-		obj.textures[0] = "white.png";
+		obj.mesh = await assets.loadMesh("cylinder.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_NONE;
 		obj.tags = ["rotateY"];
-		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/px_rainbow.frag.wgsl");
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 2, 10), new Vec3(0, 0, 0), 1);
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.color = new Vec4(0, 0, 0, 1);
-		obj.collider = "cube.obj";
-		obj.textures[0] = "white.png";
+		obj.collider = await assets.loadCollider("cube.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_WHITE;
 		obj.cull = -1.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.roomObjects[r].push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 2, 10), rndvec3().mul(Math.PI), 0.5);
-		obj.mesh = "quad.obj";
-		obj.textures[0] = "white.png";
+		obj.mesh = await assets.loadMesh("quad.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = MASK_OUTLINE_NONE;
 		obj.tags = ["rotateY"];
-		obj.fragShader = "world/px_rainbow.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/px_rainbow.frag.wgsl");
 		this.roomObjects[r].push(obj);
 
 
 		// room 7: wave plane
 		r = 7;
-		o = this.createRoomBase();
+		o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 0.01, 0), new Vec3(), 10.0);
-		obj.mesh = "grid.obj";
-		obj.textures = ["brick_diffuse.jpg"];
+		obj.mesh = await assets.loadMesh("grid.obj");
+		obj.textures = [await assets.loadTexture("brick_diffuse.jpg")];
 		obj.mask = 0;
 		obj.uv_scale = 4.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
-		obj.vertShader = "world/ripple.vert.wgsl";
+		obj.vertShader = await assets.loadShader("world/ripple.vert.wgsl");
 		obj.vertConfig.x = 0.05; // ripple amplitude
 		obj.vertConfig.y = 0.25; // ripple speed
 		obj.vertConfig.z = 0.5; // ripple scale
@@ -492,16 +499,16 @@ export class MuseumScene extends Scene {
 
 		// room 8: error
 		r = 8;
-		o = this.createRoomBase();
+		o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
 		obj.tags = ["lookatplayer", "scalewithplayer"]
 		obj.model = Mat4.transform(new Vec3(0, 1.95, 0), new Vec3(), 1.0);
-		obj.mesh = "error.obj";
-		obj.textures = ["error.png"];
+		obj.mesh = await assets.loadMesh("error.obj");
+		obj.textures = [await assets.loadTexture("error.png")];
 		obj.mask = MASK_OUTLINE_EXT_ONLY;
-		obj.fragShader = "world/pulse.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/pulse.frag.wgsl");
 		obj.fragConfig.x = 2.0; // speed
 		obj.fragConfig.y = 0.5; // min
 		obj.fragConfig.z = 1.0; // max
@@ -510,14 +517,14 @@ export class MuseumScene extends Scene {
 
 		// room 9: framebuffer
 		r = 9;
-		o = this.createRoomBase();
+		o = await this.createRoomBase(assets);
 		this.roomObjects[r].push(...o);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 2, 0), new Vec3(), new Vec3(16/9, 1, 16/9));
-		obj.mesh = "cube.obj";
+		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.textures = ["$framebuffer"];
-		obj.fragShader = "world/base.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/base.frag.wgsl");
 		this.roomObjects[r].push(obj);
 
 
@@ -529,12 +536,12 @@ export class MuseumScene extends Scene {
 		// outer rooms
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
-		obj.mesh = "museum/room.obj";
-		obj.textures[0] = "white.png";
+		obj.mesh = await assets.loadMesh("museum/room.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = 0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
-		obj.vertShader = "world/instanced.vert.wgsl";
+		obj.vertShader = await assets.loadShader("world/instanced.vert.wgsl");
 		let uniforms = new InstancedUniforms();
 		uniforms.instanceCount = 4;
 		uniforms.models = [
@@ -548,7 +555,7 @@ export class MuseumScene extends Scene {
 		this.objects.push(obj);
 	}
 
-	update(time: number, deltaTime: number, player: Player) {
+	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		if (player.position.z < -22) {
 			player.position.z += 44;
 			this.playerPosSmooth = player.position;
@@ -663,7 +670,7 @@ export class MuseumScene extends Scene {
 		}
 	}
 
-	interact(time: number, player: Player) {
+	async interact(time: number, player: Player, assets: Assets) {
 		
 	}
 
@@ -723,17 +730,17 @@ export class MuseumScene extends Scene {
 		}
 	}
 
-	createRoomBase(): Object[] {
+	async createRoomBase(assets: Assets): Promise<Object[]> {
 		let objects: Object[] = [];
 
 		let obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
-		obj.mesh = "museum/room.obj";
-		obj.collider = "museum/room.obj";
-		obj.textures[0] = "white.png";
+		obj.mesh = await assets.loadMesh("museum/room.obj");
+		obj.collider = await assets.loadCollider("museum/room.obj");
+		obj.textures[0] = await assets.loadTexture("white.png");
 		obj.mask = 1;
 		obj.z = 1000.0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		objects.push(obj);
 		
@@ -752,12 +759,12 @@ export class MuseumScene extends Scene {
 		for (let i=0; i<4; i++) {
 			let obj = new Object();
 			obj.model = Mat4.transform(positions[i], rotations[i], 1);
-			obj.mesh = `museum/tunnel.obj`;
-			obj.collider = `museum/tunnel.obj`;
-			obj.textures[0] = "white.png";
+			obj.mesh = await assets.loadMesh("museum/tunnel.obj");
+			obj.collider = await assets.loadCollider("museum/tunnel.obj");
+			obj.textures[0] = await assets.loadTexture("white.png");
 			obj.mask = 2;
 			obj.z = 1000.0;
-			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 			obj.fragUniforms = this.phong;
 			objects.push(obj);
 		}
@@ -771,12 +778,12 @@ export class MuseumScene extends Scene {
 		for (let i=0; i<4; i++) {
 			let obj = new Object();
 			obj.model = Mat4.translate(positions[i]);
-			obj.mesh = `museum/pillar.obj`;
-			obj.collider = `museum/pillar.obj`;
-			obj.textures[0] = "white.png";
+			obj.mesh = await assets.loadMesh("museum/pillar.obj");
+			obj.collider = await assets.loadCollider("museum/pillar.obj");
+			obj.textures[0] = await assets.loadTexture("white.png");
 			obj.mask = 3;
 			obj.z = 1000.0;
-			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 			obj.fragUniforms = this.phong;
 			objects.push(obj);
 		}
@@ -784,7 +791,7 @@ export class MuseumScene extends Scene {
 		return objects;
 	}
 
-	createPortals(scenes: string[][]): [Object[], Trigger[]] {
+	async createPortals(assets: Assets, scenes: string[][]): Promise<[Object[], Trigger[]]> {
 		let objects: Object[] = [];
 		let triggers: Trigger[] = [];
 
@@ -808,34 +815,34 @@ export class MuseumScene extends Scene {
 
 				let obj = new Object();
 				obj.model = Mat4.transform(positions[i][j], rotations[i], 1);
-				obj.mesh = `museum/portal_h.obj`;
-				obj.textures[0] = "white.png";
-				obj.fragShader = "world/noise.frag.wgsl";
+				obj.mesh = await assets.loadMesh("museum/portal_h.obj");
+				obj.textures[0] = await assets.loadTexture("white.png");
+				obj.fragShader = await assets.loadShader("world/noise.frag.wgsl");
 				obj.mask = 1;
 				objects.push(obj);
 
 				obj = new Object();
 				obj.model = Mat4.transform(positions[i][j], rotations[i], 1);
-				obj.mesh = `museum/portal_frame.obj`;
-				obj.collider = `museum/portal_frame.obj`;
-				obj.textures[0] = "white.png";
+				obj.mesh = await assets.loadMesh("museum/portal_frame.obj");
+				obj.collider = await assets.loadCollider("museum/portal_frame.obj");
+				obj.textures[0] = await assets.loadTexture("white.png");
 				obj.mask = 2;
-				obj.fragShader = "world/phong.frag.wgsl";
+				obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 				obj.fragUniforms = this.phong;
 				objects.push(obj);
 
 				obj = new Object();
 				obj.model = Mat4.transform(positions[i][j], rotations[i], 1).mul(Mat4.translate(new Vec3(0, 3.75, 0.25)));
-				obj.mesh = `:text_${scenes[i][j]}`;
-				obj.textures[0] = "fonts/noto_outline.png";
+				obj.mesh = await assets.loadMesh(`:text_${scenes[i][j]}`);
+				obj.textures[0] = await assets.loadTexture("fonts/noto_outline.png");
 				obj.mask = 3;
-				obj.fragShader = "world/rainbow.frag.wgsl";
-				obj.vertShader = "world/glitch.vert.wgsl";
+				obj.fragShader = await assets.loadShader("world/rainbow.frag.wgsl");
+				obj.vertShader = await assets.loadShader("world/glitch.vert.wgsl");
 				obj.vertConfig.x = 0.03;
 				objects.push(obj);
 
 				let t = new Trigger();
-				t.bbox = new Bbox(`museum/portal_${["h", "v", "h", "v"][i]}.obj`);
+				t.bbox = new Bbox(`museum/portal_${["h", "v", "h", "v"][i]}.obj` as any);
 				t.bbox.model = Mat4.translate(positions[i][j]);
 				t.onEnter = async () => await engine.setScene(scenes[i][j]);
 				triggers.push(t);
@@ -844,7 +851,7 @@ export class MuseumScene extends Scene {
 		return [objects, triggers];
 	}
 
-	createWindows(): Object[] {
+	async createWindows(assets: Assets): Promise<Object[]> {
 		let objects: Object[] = [];
 		let textures: TexturePath[][] = [
 			new Array(8).fill("").map(() => rndarr(["skybox/pure_clouds.jpg", "skybox/pure_cloudy.jpg", "skybox/pure_stars.jpg"])),
@@ -906,11 +913,11 @@ export class MuseumScene extends Scene {
 		
 		for (let [texture, models] of instances) {
 			let obj = new Object();
-			obj.mesh = `museum/portal_h.obj`;
-			obj.textures[0] = texture;
-			obj.fragShader = "world/skybox.frag.wgsl";
+			obj.mesh = await assets.loadMesh("museum/portal_h.obj");
+			obj.textures[0] = await assets.loadTexture(texture);
+			obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 			obj.mask = 1;
-			obj.vertShader = "world/instanced.vert.wgsl";
+			obj.vertShader = await assets.loadShader("world/instanced.vert.wgsl");
 			obj.vertUniforms = new InstancedUniforms();
 			(obj.vertUniforms as InstancedUniforms).instanceCount = models.length;
 			(obj.vertUniforms as InstancedUniforms).models = models;
@@ -918,12 +925,12 @@ export class MuseumScene extends Scene {
 			objects.push(obj);
 
 			obj = new Object();
-			obj.mesh = `museum/portal_frame.obj`;
-			obj.textures[0] = "white.png";
+			obj.mesh = await assets.loadMesh("museum/portal_frame.obj");
+			obj.textures[0] = await assets.loadTexture("white.png");
 			obj.mask = 2;
-			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 			obj.fragUniforms = this.phong;
-			obj.vertShader = "world/instanced.vert.wgsl";
+			obj.vertShader = await assets.loadShader("world/instanced.vert.wgsl");
 			obj.vertUniforms = new InstancedUniforms();
 			(obj.vertUniforms as InstancedUniforms).instanceCount = models.length;
 			(obj.vertUniforms as InstancedUniforms).models = models;

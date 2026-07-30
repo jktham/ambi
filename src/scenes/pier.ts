@@ -4,6 +4,7 @@ import { Object } from "../object";
 import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import { rad, rndvec3 } from "../utils";
+import type { Assets } from "../assets";
 
 export class PierScene extends Scene {
 	constructor() {
@@ -15,53 +16,62 @@ export class PierScene extends Scene {
 		this.spawnPos = new Vec3(8, 1.8, -0.5);
 		this.spawnRot = new Vec3(0, rad(90), 0);
 
-		this.postShader = "post/psx_fog.frag.wgsl";
 		let postUniforms = new PostPsxUniforms();
 		postUniforms.fog_start = -2.0;
 		postUniforms.fog_end = 10.0;
 		postUniforms.fog_color = new Vec4(0.60, 0.60, 0.60, 1.0);
 		this.postUniforms = postUniforms;
+
+		this.preload = {
+			shaders: ["post/psx_fog.frag.wgsl", "world/psx.frag.wgsl", "world/psx.vert.wgsl", "world/skybox.frag.wgsl", "world/psx_instanced.vert.wgsl"],
+			textures: ["wood.jpg", "snow.jpg", "ground.jpg", "test.png", "white.png", "cracked.jpg", "metal.jpg"],
+			meshes: ["pier/pier.obj", "pier/water.obj", "pier/ground.obj", "cube.obj", "pier/snow.obj", "pier/lantern_post.obj", "pier/lantern.obj", "pier/lantern_holder.obj", "pier/lantern_chain.obj"],
+			colliders: ["pier/collider.obj"],
+			fonts: [],
+		};
 	}
 
-	init() {
+	async init(assets: Assets) {
+		this.postShader = await assets.loadShader("post/psx_fog.frag.wgsl");
+
 		let pier = new Object();
-		pier.mesh = "pier/pier.obj";
-		pier.collider = "pier/collider.obj";
-		pier.textures = ["wood.jpg"];
-		pier.fragShader = "world/psx.frag.wgsl";
-		pier.vertShader = "world/psx.vert.wgsl";
+		pier.mesh = await assets.loadMesh("pier/pier.obj");
+		pier.collider = await assets.loadCollider("pier/collider.obj");
+		pier.textures = [await assets.loadTexture("wood.jpg")];
+		pier.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+		pier.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 		this.objects.push(pier);
 
 		let water = new Object();
-		water.mesh = "pier/water.obj";
-		water.textures = ["snow.jpg"];
-		water.fragShader = "world/psx.frag.wgsl";
-		water.vertShader = "world/psx.vert.wgsl";
+		water.mesh = await assets.loadMesh("pier/water.obj");
+		water.textures = [await assets.loadTexture("snow.jpg")];
+		water.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+		water.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 		this.objects.push(water);
 
 		let ground = new Object();
-		ground.mesh = "pier/ground.obj";
-		ground.textures = ["ground.jpg"];
-		ground.fragShader = "world/psx.frag.wgsl";
-		ground.vertShader = "world/psx.vert.wgsl";
+		ground.mesh = await assets.loadMesh("pier/ground.obj");
+		ground.textures = [await assets.loadTexture("ground.jpg")];
+		ground.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+		ground.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 		this.objects.push(ground);
 
 		let sky = new Object();
 		sky.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
-		sky.mesh = "cube.obj";
-		sky.textures = ["test.png"];
-		sky.fragShader = "world/skybox.frag.wgsl";
+		sky.mesh = await assets.loadMesh("cube.obj");
+		sky.textures = [await assets.loadTexture("test.png")];
+		sky.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		sky.color = new Vec4(0.1, 0.1, 0.1, 1.0);
 		this.objects.push(sky);
 
 		let snow = new Object();
 		snow.tags = ["snow"];
 		snow.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
-		snow.mesh = "pier/snow.obj";
-		snow.textures = ["white.png"];
+		snow.mesh = await assets.loadMesh("pier/snow.obj");
+		snow.textures = [await assets.loadTexture("white.png")];
 		snow.color = new Vec4(0.9, 0.9, 0.9, 1.0);
-		snow.fragShader = "world/psx.frag.wgsl";
-		snow.vertShader = "world/psx_instanced.vert.wgsl";
+		snow.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+		snow.vertShader = await assets.loadShader("world/psx_instanced.vert.wgsl");
 		
 		let snowUniforms = new InstancedUniforms();
 		snowUniforms.instanceCount = 1000;
@@ -85,46 +95,46 @@ export class PierScene extends Scene {
 		]) {
 			let lantern_post = new Object();
 			lantern_post.model = Mat4.translate(post_pos);
-			lantern_post.mesh = "pier/lantern_post.obj";
-			lantern_post.textures = ["wood.jpg"];
-			lantern_post.fragShader = "world/psx.frag.wgsl";
-			lantern_post.vertShader = "world/psx.vert.wgsl";
+			lantern_post.mesh = await assets.loadMesh("pier/lantern_post.obj");
+			lantern_post.textures = [await assets.loadTexture("wood.jpg")];
+			lantern_post.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+			lantern_post.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 			this.objects.push(lantern_post);
 
 			let lantern = new Object();
 			lantern.model = Mat4.translate(lamp_pos);
 			lantern.tags = ["sway"];
-			lantern.mesh = "pier/lantern.obj";
-			lantern.textures = ["cracked.jpg"];
+			lantern.mesh = await assets.loadMesh("pier/lantern.obj");
+			lantern.textures = [await assets.loadTexture("cracked.jpg")];
 			lantern.color = new Vec4(1.0, 0.9, 0.0, 1.0);
 			lantern.mask = 255;
-			lantern.fragShader = "world/psx.frag.wgsl";
-			lantern.vertShader = "world/psx.vert.wgsl";
+			lantern.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+			lantern.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 			this.objects.push(lantern);
 
 			let lantern_holder = new Object();
 			lantern_holder.model = Mat4.translate(lamp_pos);
 			lantern_holder.tags = ["sway"];
-			lantern_holder.mesh = "pier/lantern_holder.obj";
-			lantern_holder.textures = ["metal.jpg"];
+			lantern_holder.mesh = await assets.loadMesh("pier/lantern_holder.obj");
+			lantern_holder.textures = [await assets.loadTexture("metal.jpg")];
 			lantern_holder.color = new Vec4(0.2, 0.2, 0.2, 1.0);
-			lantern_holder.fragShader = "world/psx.frag.wgsl";
-			lantern_holder.vertShader = "world/psx.vert.wgsl";
+			lantern_holder.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+			lantern_holder.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 			this.objects.push(lantern_holder);
 
 			let lantern_chain = new Object();
 			lantern_chain.model = Mat4.translate(lamp_pos);
 			lantern_chain.tags = ["sway"];
-			lantern_chain.mesh = "pier/lantern_chain.obj";
-			lantern_chain.textures = ["metal.jpg"];
+			lantern_chain.mesh = await assets.loadMesh("pier/lantern_chain.obj");
+			lantern_chain.textures = [await assets.loadTexture("metal.jpg")];
 			lantern_chain.color = new Vec4(0.4, 0.4, 0.4, 1.0);
-			lantern_chain.fragShader = "world/psx.frag.wgsl";
-			lantern_chain.vertShader = "world/psx.vert.wgsl";
+			lantern_chain.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+			lantern_chain.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 			this.objects.push(lantern_chain);
 		}
 	}
 
-	update(time: number, deltaTime: number, player: Player) {
+	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		let snow = this.getObject("snow")!;
 		let snowUniforms = snow.vertUniforms as InstancedUniforms;
 		for (let i=0; i<snowUniforms.instanceCount; i++) {

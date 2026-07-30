@@ -3,6 +3,7 @@ import { Object } from "../object";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
+import type { Assets } from "../assets";
 import { clamp, rad } from "../utils";
 
 export class DebugRotationScene extends Scene {
@@ -15,67 +16,75 @@ export class DebugRotationScene extends Scene {
 		this.spawnPos = new Vec3(0, 0, 5);
 
 		this.phong.light.pos = new Vec3(0, 10, 0);
+
+		this.preload = {
+			shaders: ["world/skybox.frag.wgsl", "world/phong.frag.wgsl"],
+			textures: ["white.png", "test.png"],
+			meshes: ["gimbal.obj", "cube.obj", "quad.obj"],
+			colliders: [],
+			fonts: [],
+		};
 	}
 	
-	init() {
+	async init(assets: Assets) {
 		let obj = new Object();
 		obj.tags = ["static"];
 		obj.model = Mat4.transform(new Vec3(-6, 0, 0), new Vec3(), 1.0);
-		obj.mesh = "gimbal.obj";
-		obj.textures = ["white.png"];
+		obj.mesh = await assets.loadMesh("gimbal.obj");
+		obj.textures = [await assets.loadTexture("white.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["intrinsic"];
 		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1.0);
-		obj.mesh = "gimbal.obj";
-		obj.textures = ["white.png"];
+		obj.mesh = await assets.loadMesh("gimbal.obj");
+		obj.textures = [await assets.loadTexture("white.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["extrinsic"];
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1.0);
-		obj.mesh = "gimbal.obj";
-		obj.textures = ["white.png"];
+		obj.mesh = await assets.loadMesh("gimbal.obj");
+		obj.textures = [await assets.loadTexture("white.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["heading"];
 		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(), 1.0);
-		obj.mesh = "gimbal.obj";
-		obj.textures = ["white.png"];
+		obj.mesh = await assets.loadMesh("gimbal.obj");
+		obj.textures = [await assets.loadTexture("white.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["lookat"];
 		obj.model = Mat4.transform(new Vec3(6, 0, 0), new Vec3(), 1.0);
-		obj.mesh = "gimbal.obj";
-		obj.textures = ["white.png"];
+		obj.mesh = await assets.loadMesh("gimbal.obj");
+		obj.textures = [await assets.loadTexture("white.png")];
 		this.objects.push(obj);
 
 		// skybox
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 100);
-		obj.mesh = "cube.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("cube.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
-		obj.fragShader = "world/skybox.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		obj.z = 1000.0;
 		this.objects.push(obj);
 
 		// floor
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
-		obj.mesh = "quad.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("quad.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
 		this.objects.push(obj);
 	}
 
-	update(time: number, deltaTime: number, player: Player) {
+	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		let projectiles = this.getObjects("projectile");
 		for (let obj of projectiles) {
 			obj.model = obj.model.mul(Mat4.translate(new Vec3(0, 0, -1).mul(30.0 * deltaTime)));
@@ -107,13 +116,13 @@ export class DebugRotationScene extends Scene {
 
 	}
 
-	interact(time: number, player: Player) {
+	async interact(time: number, player: Player, assets: Assets) {
 		let obj = new Object();
 		obj.tags = ["projectile"];
 		obj.lifetime = 3.0;
 		obj.model = player.camera.model.mul(Mat4.transform(new Vec3(0, 0, -2), new Vec3(), 0.5));
-		obj.mesh = "gimbal.obj";
-		obj.textures = ["white.png"];
+		obj.mesh = await assets.loadMesh("gimbal.obj");
+		obj.textures = [await assets.loadTexture("white.png")];
 		this.objects.push(obj);
 		
 	}

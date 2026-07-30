@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
 import type { Profiler } from "./profiler";
-import { Assets as Assets, MESH_STRIDE, type FragShaderPath, type TexturePath } from "./assets";
+import { MESH_STRIDE, type Shader, type Texture } from "./assets";
 import type { Scene } from "./scene";
 import type { Object } from "./object";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
@@ -15,23 +15,21 @@ export class Renderer {
     private device!: GPUDevice; // async init
     private presentationFormat!: GPUTextureFormat; // async init
     
-    private assets: Assets;
     private profiler: Profiler;
     resources!: Resources; // async init
 
     private scenePortalsCount = 0;;
 
     resolution: Vec2 = new Vec2(960, 540);
-	postShaderOverride?: FragShaderPath;
+	postShaderOverride?: Shader;
 	postFragUniformsOverride?: Uniforms;
-	postTexturesOverride?: TexturePath[];
+	postTexturesOverride?: Texture[];
 
-    constructor(canvas: HTMLCanvasElement, assets: Assets, profiler: Profiler) {
+    constructor(canvas: HTMLCanvasElement, profiler: Profiler) {
         canvas.width = this.resolution.x;
         canvas.height = this.resolution.y;
 
 		this.canvas = canvas;
-        this.assets = assets;
         this.profiler = profiler;
         // async parts in init() due to navigator.gpu request
     }
@@ -39,7 +37,7 @@ export class Renderer {
     async init() {
         this.device = await this.getGPUDevice();
         [this.context, this.presentationFormat] = this.getContext();
-        this.resources = new Resources(this.device, this.assets, this.resolution, this.scenePortalsCount, this.context.getCurrentTexture());
+        this.resources = new Resources(this.device, this.resolution, this.scenePortalsCount, this.context.getCurrentTexture());
     }
 
     // ---- webgpu housekeeping ----
@@ -116,50 +114,48 @@ export class Renderer {
         }
 
         // pipeline, turns out we have to make one per object due to layout auto bindgroup constraints
-        const pipeline = await this.resources.createObjectPipeline(obj.vertShader, obj.fragShader);
+        const pipeline = this.resources.createObjectPipeline(obj.vertShader, obj.fragShader);
 
         // uniforms, uniform bindgroup
-        const [baseUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindgroup] = await this.resources.createObjectUniformBuffers(obj.vertUniforms, obj.fragUniforms, pipeline);
+        const [baseUniformBuffer, vertUniformBuffer, fragUniformBuffer, uniformBindgroup] = this.resources.createObjectUniformBuffers(obj.vertUniforms, obj.fragUniforms, pipeline);
 
         // vertex asset buffer
-        if (!this.resources.vertexBuffers.has(obj.mesh)) {
-            const vertexBuffer = await this.resources.createVertexBuffer(obj.mesh);
-            this.resources.vertexBuffers.set(obj.mesh, vertexBuffer);
+        if (!this.resources.vertexBuffers.has(obj.mesh.path)) {
+            const vertexBuffer = this.resources.createVertexBuffer(obj.mesh);
+            this.resources.vertexBuffers.set(obj.mesh.path, vertexBuffer);
         }
 
         // texture asset buffers
         for (let texture of obj.textures) {
-            if (!(texture.startsWith("$") || texture.startsWith("@"))) { // concrete path
-                if (!this.resources.textureBuffers.has(texture)) {
-                    const textureBuffer = await this.resources.createTextureBuffer(texture);
-                    this.resources.textureBuffers.set(texture, textureBuffer);
+            if (!(typeof texture == "string")) { // concrete path
+                if (!this.resources.textureBuffers.has(texture.path)) {
+                    const textureBuffer = this.resources.createTextureBuffer(texture);
+                    this.resources.textureBuffers.set(texture.path, textureBuffer);
                 }
             }
         }
 
         // texture bindgroup
         const textureBuffers = obj.textures.map(texture => {
-            if (texture == "$shadowmap") {
-                return this.resources.shadowmapFramebuffer;
-            } else if (texture == "$framebuffer") {
-                return this.resources.finalFramebuffer;
-            } else if (texture.startsWith("$portal")) {
-                let i = parseFloat(texture.split("_")[1]);
-                return this.resources.portalFramebuffers[i];
+            if (typeof texture == "string") {
+                if (texture == "$shadowmap") {
+                    return this.resources.shadowmapFramebuffer;
+                } else if (texture == "$framebuffer") {
+                    return this.resources.finalFramebuffer;
+                } else if (texture.startsWith("$portal")) {
+                    let i = parseFloat(texture.split("_")[1]);
+                    return this.resources.portalFramebuffers[i];
+                } else {
+                    throw new Error(`unknown texture label ${texture}`);
+                }
             } else {
-                if (texture.startsWith("@")) {
-                    throw new Error(`material texture label ${texture} not resolved`);
+                if (!this.resources.textureBuffers.has(texture.path)) {
+                    throw new Error(`texture buffer ${texture.path} not available`);
                 }
-                if (texture.startsWith("$")) {
-                    throw new Error(`builtin texture label ${texture} not handled`);
-                }
-                if (!this.resources.textureBuffers.has(texture)) {
-                    throw new Error(`texture buffer ${texture} not available`);
-                }
-                return this.resources.textureBuffers.get(texture)!;
+                return this.resources.textureBuffers.get(texture.path)!;
             }
         });
-        const textureBindgroup = await this.resources.createTextureBindgroup(textureBuffers, pipeline);
+        const textureBindgroup = this.resources.createTextureBindgroup(textureBuffers, pipeline);
 
 
         let objectResources: ObjectResources = {
@@ -177,7 +173,7 @@ export class Renderer {
         this.resources.destroyPostBuffers();
 
         // post pipeline
-        this.resources.postPipeline = await this.resources.createPostPipeline(this.postShaderOverride ?? scene.postShader, this.presentationFormat);
+        this.resources.postPipeline = this.resources.createPostPipeline(this.postShaderOverride ?? scene.postShader, this.presentationFormat);
 
         // post uniforms
         [this.resources.postBaseUniformBuffer, this.resources.postFragUniformBuffer, this.resources.postUniformBindgroup] = await this.resources.createPostUniformBuffers(this.postFragUniformsOverride ?? scene.postUniforms, this.resources.postPipeline);
@@ -187,13 +183,13 @@ export class Renderer {
 
         // post textures
         for (let texture of this.postTexturesOverride ?? scene.postTextures) {
-            if (!this.resources.postTextureBuffers.has(texture)) {
-                const textureBuffer = await this.resources.createTextureBuffer(texture);
-                this.resources.postTextureBuffers.set(texture, textureBuffer);
+            if (!this.resources.postTextureBuffers.has(texture.path)) {
+                const textureBuffer = this.resources.createTextureBuffer(texture);
+                this.resources.postTextureBuffers.set(texture.path, textureBuffer);
             }
         }
-        const textureBuffers = (this.postTexturesOverride ?? scene.postTextures).map(texture => this.resources.postTextureBuffers.get(texture)!);
-        const textureBindgroup = await this.resources.createTextureBindgroup(textureBuffers, this.resources.postPipeline);
+        const textureBuffers = (this.postTexturesOverride ?? scene.postTextures).map(texture => this.resources.postTextureBuffers.get(texture.path)!);
+        const textureBindgroup = this.resources.createTextureBindgroup(textureBuffers, this.resources.postPipeline);
         this.resources.postTextureBindgroup = textureBindgroup;
     }
 
@@ -203,7 +199,7 @@ export class Renderer {
         // initialize new objects
         for (let obj of scene.objects) {
             if (!this.resources.objectResources.has(obj.id) ||
-                obj.textures.find(p => p.startsWith("$"))) { // always recreate bindgroups if using builtins, in case framebuffers were resized
+                obj.textures.find(p => typeof p == "string" && p.startsWith("$"))) { // always recreate bindgroups if using builtins, in case framebuffers were resized
                 await this.loadObject(obj);
             }
         }
@@ -363,7 +359,7 @@ export class Renderer {
             }
 
             const pipeline = this.resources.objectResources.get(obj.id)?.pipeline;
-            const vertexBuffer = this.resources.vertexBuffers.get(obj.mesh);
+            const vertexBuffer = this.resources.vertexBuffers.get(obj.mesh.path);
             const uniformBindgroup = this.resources.objectResources.get(obj.id)?.uniformBindgroup;
             const textureBindgroup = this.resources.objectResources.get(obj.id)?.textureBindgroup;
             if (!pipeline || !vertexBuffer || !uniformBindgroup || !textureBindgroup) {

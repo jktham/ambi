@@ -5,6 +5,7 @@ import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import { Trigger } from "../trigger";
 import { Bbox } from "../bbox";
+import type { Assets } from "../assets";
 
 export class DebugTriggerScene extends Scene {
 	phong = new PhongUniforms();
@@ -16,17 +17,25 @@ export class DebugTriggerScene extends Scene {
 		this.spawnPos = new Vec3(0, 0, 5);
 
 		this.phong.light.pos = new Vec3(0, 10, 0);
+
+		this.preload = {
+			shaders: ["world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
+			textures: ["test.png"],
+			meshes: ["cube.obj", "monke.obj", "quad.obj"],
+			colliders: [],
+			fonts: [],
+		};
 	}
 	
-	init() {
+	async init(assets: Assets) {
 		// simple cube, manual bbox
 		let obj = new Object();
 		obj.tags = ["1"];
 		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
-		obj.mesh = "cube.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("cube.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.z_sort = true;
 		this.objects.push(obj);
@@ -49,16 +58,16 @@ export class DebugTriggerScene extends Scene {
 		obj = new Object();
 		obj.tags = ["2"];
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1);
-		obj.mesh = "monke.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("monke.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.z_sort = true;
 		this.objects.push(obj);
 
 		trg = new Trigger();
-		trg.bbox = new Bbox(obj.mesh);
+		trg.bbox = new Bbox(obj.mesh.path);
 		trg.bbox.model = obj.model;
 		trg.onEnter = () => {
 			let target = this.getObject("2")!;
@@ -76,16 +85,16 @@ export class DebugTriggerScene extends Scene {
 		obj = new Object();
 		obj.tags = ["3"];
 		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(Math.PI / 4.0, Math.PI / 4.0, Math.PI / 4.0), 0.6);
-		obj.mesh = "cube.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("cube.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.z_sort = true;
 		this.objects.push(obj);
 
 		trg = new Trigger();
-		trg.bbox = new Bbox(obj.mesh);
+		trg.bbox = new Bbox(obj.mesh.path);
 		trg.bbox.model = obj.model;
 		trg.onEnter = () => {
 			let target = this.getObject("3")!;
@@ -103,16 +112,16 @@ export class DebugTriggerScene extends Scene {
 		obj = new Object();
 		obj.tags = ["4"];
 		obj.model = Mat4.transform(new Vec3(0, 0, -5), new Vec3(), 1);
-		obj.mesh = "cube.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("cube.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.z_sort = true;
 		this.objects.push(obj);
 
 		trg = new Trigger();
-		trg.bbox = new Bbox(obj.mesh);
+		trg.bbox = new Bbox(obj.mesh.path);
 		trg.bbox.model = obj.model;
 		trg.onEnter = () => {
 			let target = this.getObject("4")!;
@@ -129,26 +138,26 @@ export class DebugTriggerScene extends Scene {
 		// skybox
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
-		obj.mesh = "cube.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("cube.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
-		obj.fragShader = "world/skybox.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		obj.z = 1000.0;
 		this.objects.push(obj);
 
 		// floor
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
-		obj.mesh = "quad.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("quad.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
 		this.objects.push(obj);
 	}
 
-	update(time: number, deltaTime: number, player: Player) {
+	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		// move 4
 		let obj4 = this.getObject("4")!;
 		let origin = Mat4.transform(new Vec3(0, 0, -5), new Vec3(0, 0, Math.PI / 4.0), 1);

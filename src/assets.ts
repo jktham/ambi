@@ -13,7 +13,7 @@ export type VertShaderPath = `${string}.vert.${ShaderTypes}`;
 export type FragShaderPath = `${string}.frag.${ShaderTypes}`;
 
 
-/** dynamic assets added to cache by scene.generateAssets, not loaded from a file */
+/** dynamic assets added to cache by scene, not loaded from a file */
 export type DynamicAssetLabel = `:${string}`;
 
 /** supported mesh filetypes */
@@ -28,14 +28,11 @@ export type MeshPath = `${string}.${MeshTypes}` | DynamicAssetLabel;
 const textureTypes = ["png", "jpg", "json"] as const;
 type TextureTypes = typeof textureTypes[number];
 
-/** special labels from mtl that are resolved before asset load */
-export type MaterialTextureLabel = `@${"diffuse" | "normal" | "roughness" | "specular"}`;
-
 /** special labels from renderer that are intercepted before asset load */
 export type BuiltinTextureLabel = `$${"shadowmap" | "framebuffer" | `portal_${number}`}`;
 
-/** path relative to public/textures/ or material/builtin/dynamic label */
-export type TexturePath = `${string}.${TextureTypes}` | MaterialTextureLabel | BuiltinTextureLabel | DynamicAssetLabel;
+/** path relative to public/textures/ or dynamic/builtin label */
+export type TexturePath = `${string}.${TextureTypes}` | DynamicAssetLabel | BuiltinTextureLabel;
 
 
 /** supported material filetypes, wavefront mtl with pbr extensions */
@@ -87,7 +84,7 @@ export type Collider = {
 };
 
 /** map of mtl map label to concrete texture path */
-export type Material = Map<MaterialTextureLabel, TexturePath>;
+export type Material = Map<string, TexturePath>;
 
 /** 
  * bmf font descriptor, used to generate text quads. image data held in separate texture atlas
@@ -568,7 +565,7 @@ export class Assets {
 
 	/** parse .mtl and return map of found texture labels to texture paths */
 	private parseMTL(path: MaterialPath, file: string): Material {
-		let maps = new Map<MaterialTextureLabel, TexturePath>();
+		let maps = new Map<string, TexturePath>();
 		for (let line of file.split(/\r?\n/)) {
 			let words = line.split(" ");
 			switch (words[0].toLowerCase()) {

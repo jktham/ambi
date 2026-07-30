@@ -3,7 +3,7 @@ import { Scene } from "../scene";
 import { Object } from "../object";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
-import type { MeshPath } from "../assets";
+import type { Assets, MeshPath } from "../assets";
 
 export class BrutalScene extends Scene {
 	phong = new PhongUniforms();
@@ -14,15 +14,24 @@ export class BrutalScene extends Scene {
 		this.name = "brutal";
 		this.cameraMode = "walk";
 		this.spawnPos = new Vec3(0, 2, 0);
-		this.postShader = "post/noise.frag.wgsl";
 		
 		this.phong.light.pos = new Vec3(100, 300, 200);
 		this.phong.light.diffuse = new Vec3(1.0, 0.2, 0.2);
 		this.phong.light.specular = Vec3.splat(0.0);
 		this.phong.material.specular = Vec3.splat(0.0);
+
+		this.preload = {
+			shaders: ["post/noise.frag.wgsl", "world/phong.frag.wgsl", "world/instanced.vert.wgsl"],
+			textures: ["concrete.jpg", "white.png"],
+			meshes: ["brutal/tiles/path_straight.obj", "brutal/tiles/path_cross.obj", "brutal/tiles/path_fork.obj", "brutal/tiles/path_end.obj", "brutal/tiles/path_turn.obj", "brutal/tiles/tower.obj", "sphere.obj"],
+			colliders: ["brutal/tiles/path_straight.obj", "brutal/tiles/path_cross.obj", "brutal/tiles/path_fork.obj", "brutal/tiles/path_end.obj", "brutal/tiles/path_turn.obj", "brutal/tiles/tower.obj"],
+			fonts: [],
+		};
 	}
 
-	init() {
+	async init(assets: Assets) {
+		this.postShader = await assets.loadShader("post/noise.frag.wgsl");
+
 		const size = 21;
 		const scale = 20.0;
 		let tiles = getTiles();
@@ -41,7 +50,7 @@ export class BrutalScene extends Scene {
 				let colliderObj = new Object();
 				colliderObj.visible = false;
 				colliderObj.model = Mat4.transform(new Vec3(i - Math.floor(size/2), 0.0, j - Math.floor(size/2)).mul(scale), new Vec3(0, tile.rotation*Math.PI/2.0, 0), scale / 10.0);
-				colliderObj.collider = tile.mesh;
+				colliderObj.collider = await assets.loadCollider(tile.mesh);
 				colliderObj.bbox = new Bbox([colliderObj.model.mulVec(new Vec3()).sub(scale/2), colliderObj.model.mulVec(new Vec3()).add(scale/2)]);
 				this.objects.push(colliderObj);
 
@@ -56,19 +65,19 @@ export class BrutalScene extends Scene {
 			u.instanceCount = models.length;
 
 			let tileObj = new Object();
-			tileObj.mesh = mesh;
-			tileObj.textures = ["concrete.jpg"];
-			tileObj.fragShader = "world/phong.frag.wgsl";
+			tileObj.mesh = await assets.loadMesh(mesh);
+			tileObj.textures = [await assets.loadTexture("concrete.jpg")];
+			tileObj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 			tileObj.fragUniforms = this.phong;
-			tileObj.vertShader = "world/instanced.vert.wgsl";
+			tileObj.vertShader = await assets.loadShader("world/instanced.vert.wgsl");
 			tileObj.vertUniforms = u;
 			this.objects.push(tileObj);
 		}
 
 		let sun = new Object();
 		sun.model = Mat4.transform(this.phong.light.pos, new Vec3(), 20.0);
-		sun.mesh = "sphere.obj";
-		sun.textures = ["white.png"];
+		sun.mesh = await assets.loadMesh("sphere.obj");
+		sun.textures = [await assets.loadTexture("white.png")];
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);
 		this.objects.push(sun);
 	}

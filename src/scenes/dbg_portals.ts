@@ -4,7 +4,7 @@ import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Camera } from "../camera";
-import type { FragShaderPath } from "../assets";
+import type { Assets } from "../assets";
 import { rnd, rndvec3 } from "../utils";
 
 export class DebugPortalsScene extends Scene {
@@ -17,7 +17,6 @@ export class DebugPortalsScene extends Scene {
 		this.name = "dbg_portals";
 		this.spawnPos = new Vec3(0, 2, 6);
 
-		this.postShader = "post/outline.frag.wgsl" as FragShaderPath;
 		let postUniforms = new PostOutlineUniforms();
 		postUniforms.mode[0] = 1; // self edges
 		postUniforms.mode[1] = 0;
@@ -29,36 +28,46 @@ export class DebugPortalsScene extends Scene {
 		this.portalCameras = [new Camera(), new Camera()];
 
 		this.phong.light.pos = new Vec3(0, 10, 0);
+
+		this.preload = {
+			shaders: ["post/outline.frag.wgsl", "world/portal.frag.wgsl", "world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
+			textures: ["white.png", "test.png"],
+			meshes: ["quad_vertical.obj", "monke.obj", "cube.obj", "quad.obj"],
+			colliders: [],
+			fonts: [],
+		};
 	}
 
-	init() {
+	async init(assets: Assets) {
+		this.postShader = await assets.loadShader("post/outline.frag.wgsl");
+
 		let obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
-		obj.mesh = "quad_vertical.obj";
+		obj.mesh = await assets.loadMesh("quad_vertical.obj");
 		obj.textures = ["$portal_0"];
 		obj.portal_visible = [true, false];
 		obj.mask = 0;
-		obj.fragShader = "world/portal.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/portal.frag.wgsl");
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
-		obj.mesh = "quad_vertical.obj";
+		obj.mesh = await assets.loadMesh("quad_vertical.obj");
 		obj.textures = ["$portal_1"];
 		obj.portal_visible = [false, true];
 		obj.mask = 0;
-		obj.fragShader = "world/portal.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/portal.frag.wgsl");
 		this.objects.push(obj);
 
 
 		obj = new Object();
 		obj.tags = ["check_backside"];
 		obj.model = Mat4.transform(new Vec3(-10, 2, -5), new Vec3(), 1);
-		obj.mesh = "monke.obj";
-		obj.textures = ["white.png"];
+		obj.mesh = await assets.loadMesh("monke.obj");
+		obj.textures = [await assets.loadTexture("white.png")];
 		obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
 		obj.mask = 1;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
@@ -69,11 +78,11 @@ export class DebugPortalsScene extends Scene {
 			obj = new Object();
 			obj.tags = ["check_backside"];
 			obj.model = Mat4.transform(offset, new Vec3(), rnd(0.2, 0.6));
-			obj.mesh = "cube.obj";
-			obj.textures = ["white.png"];
+			obj.mesh = await assets.loadMesh("cube.obj");
+			obj.textures = [await assets.loadTexture("white.png")];
 			obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
 			obj.mask = 1;
-			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 			obj.fragUniforms = this.phong;
 			this.objects.push(obj);
 		}
@@ -81,11 +90,11 @@ export class DebugPortalsScene extends Scene {
 		obj = new Object();
 		obj.tags = ["check_backside"];
 		obj.model = Mat4.transform(new Vec3(10, 2, -5), new Vec3(), 1);
-		obj.mesh = "monke.obj";
-		obj.textures = ["white.png"];
+		obj.mesh = await assets.loadMesh("monke.obj");
+		obj.textures = [await assets.loadTexture("white.png")];
 		obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
 		obj.mask = 1;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
@@ -96,11 +105,11 @@ export class DebugPortalsScene extends Scene {
 			obj = new Object();
 			obj.tags = ["check_backside"];
 			obj.model = Mat4.transform(offset, new Vec3(), rnd(0.2, 0.6));
-			obj.mesh = "cube.obj";
-			obj.textures = ["white.png"];
+			obj.mesh = await assets.loadMesh("cube.obj");
+			obj.textures = [await assets.loadTexture("white.png")];
 			obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
 			obj.mask = 1;
-			obj.fragShader = "world/phong.frag.wgsl";
+			obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 			obj.fragUniforms = this.phong;
 			this.objects.push(obj);
 		}
@@ -108,22 +117,22 @@ export class DebugPortalsScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 0, 0), new Vec3(), 10);
-		obj.mesh = "quad.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("quad.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
 		obj.mask = 0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 0, 0), new Vec3(), 10);
-		obj.mesh = "quad.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("quad.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
 		obj.mask = 0;
-		obj.fragShader = "world/phong.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.z = 900.0;
 		this.objects.push(obj);
@@ -131,16 +140,16 @@ export class DebugPortalsScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 200);
-		obj.mesh = "cube.obj";
-		obj.textures = ["test.png"];
+		obj.mesh = await assets.loadMesh("cube.obj");
+		obj.textures = [await assets.loadTexture("test.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.mask = 2;
-		obj.fragShader = "world/skybox.frag.wgsl";
+		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		obj.z = 1000.0;
 		this.objects.push(obj);
 	}
 
-	update(time: number, deltaTime: number, player: Player) {
+	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		if (player.position.x > -13 && player.position.x < -7 &&
 			player.position.y > 0 && player.position.y < 4 &&
 			player.position.z * this.prevPos.z < 0
