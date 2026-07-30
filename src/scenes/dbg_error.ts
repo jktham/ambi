@@ -21,7 +21,6 @@ export class DebugErrorScene extends Scene {
 			textures: ["test.png", "err_texture.png"],
 			meshes: ["cube.obj", "err_mesh.obj", "quad.obj"],
 			colliders: ["err_collider.obj"],
-			fonts: [],
 		};
 	}
 	
@@ -29,7 +28,7 @@ export class DebugErrorScene extends Scene {
 		let obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-9, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("$framebuffer")]; // unintercepted
+		obj.textures = [await assets.loadTexture("$framebuffer" as any)]; // unintercepted
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
@@ -52,7 +51,7 @@ export class DebugErrorScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
-		obj.mesh = await assets.loadMesh(":err_dynamic"); // does not exist
+		obj.mesh = await assets.loadMesh(":err_dynamic" as any); // does not exist
 		obj.textures = [await assets.loadTexture("test.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;

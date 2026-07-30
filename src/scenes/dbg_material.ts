@@ -16,8 +16,6 @@ export class DebugMaterialScene extends Scene {
 			shaders: ["world/phong_material.frag.wgsl", "world/skybox.frag.wgsl", "world/phong.frag.wgsl"],
 			textures: ["brick_diffuse.jpg", "blue.png", "gray.png", "brick_normal.jpg", "brick_roughness.jpg", "brick_specular.jpg", "house.jpg", "test_roughness.png", "test_specular.png", "test.png"],
 			meshes: ["test_mat.obj", "cube.obj", "quad.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 	

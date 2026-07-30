@@ -25,7 +25,6 @@ export class BrutalScene extends Scene {
 			textures: ["concrete.jpg", "white.png"],
 			meshes: ["brutal/tiles/path_straight.obj", "brutal/tiles/path_cross.obj", "brutal/tiles/path_fork.obj", "brutal/tiles/path_end.obj", "brutal/tiles/path_turn.obj", "brutal/tiles/tower.obj", "sphere.obj"],
 			colliders: ["brutal/tiles/path_straight.obj", "brutal/tiles/path_cross.obj", "brutal/tiles/path_fork.obj", "brutal/tiles/path_end.obj", "brutal/tiles/path_turn.obj", "brutal/tiles/tower.obj"],
-			fonts: [],
 		};
 	}
 

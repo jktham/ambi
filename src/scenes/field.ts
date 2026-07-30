@@ -35,8 +35,6 @@ export class FieldScene extends Scene {
 			shaders: ["post/psx_fog.frag.wgsl", "world/psx.frag.wgsl", "world/psx.vert.wgsl", "world/skybox.frag.wgsl", "world/psx_instanced.vert.wgsl"],
 			textures: ["ground.jpg", "test.png", "leaves.jpg"],
 			meshes: ["field/ground.obj", "cube.obj", "field/grass.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 

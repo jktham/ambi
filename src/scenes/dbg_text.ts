@@ -4,6 +4,7 @@ import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import type { Assets } from "../assets";
+import { generateTextMesh } from "../parse";
 
 export class DebugTextScene extends Scene {
 	phong = new PhongUniforms();
@@ -19,16 +20,20 @@ export class DebugTextScene extends Scene {
 		this.preload = {
 			shaders: ["world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
 			textures: ["test.png", "fonts/arial.png", "fonts/arial_outline.png", "fonts/noto_outline.png"],
-			meshes: ["quad_vertical.obj", "cube.obj", "quad.obj"],
-			colliders: [],
+			meshes: ["quad_vertical.obj", "cube.obj", "quad.obj", ":abc.obj"],
 			fonts: ["arial.fnt", "arial_outline.fnt", "noto_outline.fnt"],
 		};
 	}
 	
 	async init(assets: Assets) {
-		assets.addDynamicMesh(":text1", await assets.generateTextMesh("arial.fnt", "abc\ndef-_ Y,X,\n+!?<>:)\nXYZ", 1, "left"));
-		assets.addDynamicMesh(":text2", await assets.generateTextMesh("arial_outline.fnt", "abc\ndef-_ Y,X,\n+!?<>:)\nXYZ", 1, "center"));
-		assets.addDynamicMesh(":text3", await assets.generateTextMesh("noto_outline.fnt", "abc\ndef-_ Y,X,\n+!?<>:)\nXYZ", 1, "right"));
+		let arial = await assets.loadFont("arial.fnt");
+		let text1 = generateTextMesh(":text1.obj", arial, "abc\ndef-_ Y,X,\n+!?<>:)\nXYZ", 1, "left");
+
+		let arial_outline = await assets.loadFont("arial_outline.fnt");
+		let text2 = generateTextMesh(":text2.obj", arial_outline, "abc\ndef-_ Y,X,\n+!?<>:)\nXYZ", 1, "center");
+
+		let noto_outline = await assets.loadFont("noto_outline.fnt");
+		let text3 = generateTextMesh(":text3.obj", noto_outline, "abc\ndef-_ Y,X,\n+!?<>:)\nXYZ", 1, "right");
 
 		let obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-7.5, 0, -5), new Vec3(), 2);
@@ -41,7 +46,7 @@ export class DebugTextScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-9.5, 2, -4.99), new Vec3(), 1);
-		obj.mesh = await assets.loadMesh(":text1");
+		obj.mesh = text1;
 		obj.textures = [await assets.loadTexture("test.png")];
 		this.objects.push(obj);
 
@@ -62,7 +67,7 @@ export class DebugTextScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-4.5, 2, -4.99), new Vec3(), 1);
-		obj.mesh = await assets.loadMesh(":text1");
+		obj.mesh = text1;
 		obj.textures = [await assets.loadTexture("fonts/arial.png")];
 		this.objects.push(obj);
 
@@ -83,7 +88,7 @@ export class DebugTextScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(2.5, 2, -4.99), new Vec3(), 1);
-		obj.mesh = await assets.loadMesh(":text2");
+		obj.mesh = text2;
 		obj.textures = [await assets.loadTexture("fonts/arial_outline.png")];
 		this.objects.push(obj);
 
@@ -104,7 +109,7 @@ export class DebugTextScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(9.5, 2, -4.99), new Vec3(), 1);
-		obj.mesh = await assets.loadMesh(":text3");
+		obj.mesh = text3;
 		obj.textures = [await assets.loadTexture("fonts/noto_outline.png")];
 		this.objects.push(obj);
 

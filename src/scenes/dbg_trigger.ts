@@ -22,8 +22,7 @@ export class DebugTriggerScene extends Scene {
 			shaders: ["world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
 			textures: ["test.png"],
 			meshes: ["cube.obj", "monke.obj", "quad.obj"],
-			colliders: [],
-			fonts: [],
+			bboxes: ["cube.obj", "monke.obj"],
 		};
 	}
 	
@@ -67,7 +66,7 @@ export class DebugTriggerScene extends Scene {
 		this.objects.push(obj);
 
 		trg = new Trigger();
-		trg.bbox = new Bbox(obj.mesh.path);
+		trg.bbox = new Bbox("monke.obj");
 		trg.bbox.model = obj.model;
 		trg.onEnter = () => {
 			let target = this.getObject("2")!;

@@ -21,8 +21,6 @@ export class DebugDitherScene extends Scene {
 			shaders: ["post/dither.frag.wgsl", "world/phong.frag.wgsl"],
 			textures: ["noise/blue_0.png", "test.png"],
 			meshes: ["monke.obj", "cube.obj", "quad.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 	

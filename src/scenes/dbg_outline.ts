@@ -31,8 +31,6 @@ export class DebugOutlineScene extends Scene {
 			shaders: ["post/outline.frag.wgsl", "world/phong.frag.wgsl"],
 			textures: ["test.png"],
 			meshes: ["monke.obj", "cube.obj", "quad.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 	

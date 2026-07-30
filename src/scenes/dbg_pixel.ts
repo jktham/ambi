@@ -13,10 +13,7 @@ export class DebugPixelScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/px_frame.frag.wgsl"],
-			textures: [],
 			meshes: ["quad.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 	

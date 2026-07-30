@@ -4,7 +4,7 @@ import type { Trigger } from "./trigger";
 import { Uniforms } from "./uniforms";
 import { Vec2, Vec3, Vec4 } from "./vec";
 import type { Camera } from "./camera";
-import type { Assets, FontPath, MeshPath, Shader, ShaderPath, Texture, TexturePath } from "./assets";
+import type { Assets, FontPath, MaterialPath, MeshPath, Shader, ShaderPath, Texture, TexturePath } from "./assets";
 
 const defaultPostShader: Shader = {
 	path: "post/fb_color.frag.wgsl",
@@ -178,16 +178,20 @@ export class Scene {
 
 	/** list of assets to preload before scene init */
 	preload: {
-		shaders: ShaderPath[],
-		textures: TexturePath[],
-		meshes: MeshPath[],
-		colliders: MeshPath[],
-		fonts: FontPath[],
+		shaders?: ShaderPath[],
+		textures?: TexturePath[],
+		meshes?: MeshPath[],
+		colliders?: MeshPath[],
+		bboxes?: MeshPath[],
+		materials?: MaterialPath[],
+		fonts?: FontPath[],
 	} = {
 		shaders: [],
 		textures: [],
 		meshes: [],
 		colliders: [],
+		bboxes: [],
+		materials: [],
 		fonts: [],
 	}
 

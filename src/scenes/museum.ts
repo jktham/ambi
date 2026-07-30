@@ -8,6 +8,7 @@ import { clamp, rad, rnd, rndarr, rndint, rndseed, rndvec3, rndvec4 } from "../u
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import { engine } from "../main";
 import type { Assets, TexturePath } from "../assets";
+import { generateTextMesh } from "../parse";
 
 const MASK_OUTLINE_NONE = 13;
 const MASK_OUTLINE_EXT_ONLY = 14;
@@ -68,17 +69,13 @@ export class MuseumScene extends Scene {
 			textures: ["white.png", "test_trans.png", "test_trans2.png", "error.png", "brick_diffuse.jpg", "fonts/noto_outline.png", "skybox/pure_clouds.jpg", "skybox/pure_cloudy.jpg", "skybox/pure_stars.jpg", "skybox/desert_stars.jpg"],
 			meshes: ["museum/monke_lod0.obj", "museum/monke_lod1.obj", "museum/monke_lod2.obj", "museum/monke_lod3.obj", "museum/monke_lod4.obj", "museum/monke_lod5.obj", "museum/monke_lod6.obj", "monke.obj", "museum/tree.obj", "cube.obj", "quad_vertical.obj", "sphere.obj", "cone.obj", "torus.obj", "cylinder.obj", "quad.obj", "grid.obj", "error.obj", "museum/room.obj", "museum/tunnel.obj", "museum/pillar.obj", "museum/portal_h.obj", "museum/portal_frame.obj"],
 			colliders: ["cube.obj", "museum/room.obj", "museum/tunnel.obj", "museum/pillar.obj", "museum/portal_frame.obj"],
+			bboxes: ["museum/portal_h.obj", "museum/portal_v.obj"],
 			fonts: ["noto_outline.fnt"],
 		};
 	}
 
 	async init(assets: Assets) {
 		this.postShader = await assets.loadShader("post/outline.frag.wgsl");
-
-		for (let scene of this.portalScenes.flat()) {
-			let scale = scene.length < 8 ? 0.5 : 0.4;
-			assets.addDynamicMesh(`:text_${scene}`, await assets.generateTextMesh("noto_outline.fnt", `${scene}`, scale, "center"));
-		}
 
 		// room 0: portals
 		let r = 0;
@@ -831,9 +828,14 @@ export class MuseumScene extends Scene {
 				obj.fragUniforms = this.phong;
 				objects.push(obj);
 
+
+				let scale = scenes[i][j].length < 8 ? 0.5 : 0.4;
+				let font = await assets.loadFont("noto_outline.fnt");
+				let text = generateTextMesh(`:text_${scenes[i][j]}.obj`, font, `${scenes[i][j]}`, scale, "center");
+
 				obj = new Object();
 				obj.model = Mat4.transform(positions[i][j], rotations[i], 1).mul(Mat4.translate(new Vec3(0, 3.75, 0.25)));
-				obj.mesh = await assets.loadMesh(`:text_${scenes[i][j]}`);
+				obj.mesh = text;
 				obj.textures[0] = await assets.loadTexture("fonts/noto_outline.png");
 				obj.mask = 3;
 				obj.fragShader = await assets.loadShader("world/rainbow.frag.wgsl");
@@ -842,7 +844,7 @@ export class MuseumScene extends Scene {
 				objects.push(obj);
 
 				let t = new Trigger();
-				t.bbox = new Bbox(`museum/portal_${["h", "v", "h", "v"][i]}.obj` as any);
+				t.bbox = new Bbox(`museum/portal_${["h", "v", "h", "v"][i]}.obj`);
 				t.bbox.model = Mat4.translate(positions[i][j]);
 				t.onEnter = async () => await engine.setScene(scenes[i][j]);
 				triggers.push(t);

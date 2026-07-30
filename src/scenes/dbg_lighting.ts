@@ -16,8 +16,6 @@ export class DebugLightingScene extends Scene {
 			shaders: ["world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
 			textures: ["test.png"],
 			meshes: ["cube.obj", "quad.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 	

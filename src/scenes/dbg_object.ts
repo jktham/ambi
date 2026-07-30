@@ -20,7 +20,7 @@ export class DebugObjectScene extends Scene {
 			textures: ["test.png", "house.jpg"],
 			meshes: ["monke.obj", "quad.json"],
 			colliders: ["monke.obj"],
-			fonts: [],
+			bboxes: ["monke.obj"],
 		};
 	}
 	

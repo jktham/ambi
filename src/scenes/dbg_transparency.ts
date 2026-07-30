@@ -20,8 +20,6 @@ export class DebugTransparencyScene extends Scene {
 			shaders: ["world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
 			textures: ["test.png", "test_trans.png"],
 			meshes: ["monke.obj", "sphere.obj", "cube.obj", "quad.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 	

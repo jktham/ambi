@@ -42,7 +42,8 @@ silly engine for cool scenes and per object shader stages c:
     - [ ] shadow mapping, with dedicated depth-only pipeline and decoupled shadowmap resolution
     - [x] asset path type safety
     - [x] procedural assets
-    - [ ] text mesh generation
+    - [x] text mesh generation
+    - [x] dynamic asset objects
     - [ ] renderer overhaul, abstract render passes and standardize bindgroup layouts
     - [ ] declare render passes in scene?
     - [ ] performance optimization

@@ -243,17 +243,19 @@ export class Engine {
 		let textures = new Set<TexturePath>();
 		let colliders = new Set<MeshPath>();
 		let bboxes = new Set<MeshPath>();
-		let mtls = new Set<MaterialPath>();
+		let materials = new Set<MaterialPath>();
 
-		scene.preload.shaders.map(p => shaders.add(p));
-		scene.preload.meshes.map(p => meshes.add(p));
-		scene.preload.textures.map(p => textures.add(p));
-		scene.preload.colliders.map(p => colliders.add(p));
+		scene.preload.shaders?.filter(p => !p.startsWith(":")).map(p => shaders.add(p));
+		scene.preload.meshes?.filter(p => !p.startsWith(":")).map(p => meshes.add(p));
+		scene.preload.textures?.filter(p => !p.startsWith(":")).map(p => textures.add(p));
+		scene.preload.colliders?.filter(p => !p.startsWith(":")).map(p => colliders.add(p));
+		scene.preload.bboxes?.filter(p => !p.startsWith(":")).map(p => bboxes.add(p));
+		scene.preload.materials?.filter(p => !p.startsWith(":")).map(p => materials.add(p));
 
 		shaders.add("post/quad.vert.wgsl");
 		shaders.add(scene.postShader.path);
 
-		let totalAssets = [...shaders, ...meshes, ...textures, ...colliders, ...bboxes, ...mtls].length;
+		let totalAssets = [...shaders, ...meshes, ...textures, ...colliders, ...bboxes, ...materials].length;
 
 		let loaded: string[] = [];
 		let errors: string[] = [];
@@ -274,7 +276,7 @@ export class Engine {
 		promises.push(...[...textures].map((p) => wrapInfo(this.assets.loadTexture, p)));
 		promises.push(...[...colliders].map((p) => wrapInfo(this.assets.loadCollider, p)));
 		promises.push(...[...bboxes].map((p) => wrapInfo(this.assets.loadBbox, p)));
-		promises.push(...[...mtls].map((p) => wrapInfo(this.assets.loadMaterial, p)));
+		promises.push(...[...materials].map((p) => wrapInfo(this.assets.loadMaterial, p)));
 		await Promise.allSettled(promises);
 
 		if (errors.length > 0) this.gui.updateInfo(`${errors.length} error${errors.length > 1 ? "s" : ""}: ${errors.join(", ")}`);

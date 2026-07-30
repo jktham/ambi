@@ -22,8 +22,6 @@ export class DebugEchoScene extends Scene {
 			shaders: ["post/echo.frag.wgsl", "world/phong.frag.wgsl", "world/instanced.vert.wgsl"],
 			textures: ["white.png"],
 			meshes: ["quad.obj", "monke.obj", "sphere.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 

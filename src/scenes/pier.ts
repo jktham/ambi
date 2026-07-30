@@ -27,7 +27,6 @@ export class PierScene extends Scene {
 			textures: ["wood.jpg", "snow.jpg", "ground.jpg", "test.png", "white.png", "cracked.jpg", "metal.jpg"],
 			meshes: ["pier/pier.obj", "pier/water.obj", "pier/ground.obj", "cube.obj", "pier/snow.obj", "pier/lantern_post.obj", "pier/lantern.obj", "pier/lantern_holder.obj", "pier/lantern_chain.obj"],
 			colliders: ["pier/collider.obj"],
-			fonts: [],
 		};
 	}
 

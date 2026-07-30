@@ -21,8 +21,6 @@ export class DebugRotationScene extends Scene {
 			shaders: ["world/skybox.frag.wgsl", "world/phong.frag.wgsl"],
 			textures: ["white.png", "test.png"],
 			meshes: ["gimbal.obj", "cube.obj", "quad.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 	

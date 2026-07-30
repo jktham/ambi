@@ -25,8 +25,6 @@ export class DebugShadowsScene extends Scene {
 			shaders: ["world/phong_shadow.frag.wgsl", "world/skybox.frag.wgsl"],
 			textures: ["test_trans2.png", "test.png"],
 			meshes: ["cube.obj", "monke.obj", "quad.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 

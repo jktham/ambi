@@ -33,8 +33,6 @@ export class DebugPortalsScene extends Scene {
 			shaders: ["post/outline.frag.wgsl", "world/portal.frag.wgsl", "world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
 			textures: ["white.png", "test.png"],
 			meshes: ["quad_vertical.obj", "monke.obj", "cube.obj", "quad.obj"],
-			colliders: [],
-			fonts: [],
 		};
 	}
 

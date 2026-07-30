@@ -3,7 +3,8 @@ import { Object } from "../object";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
-import type { Assets } from "../assets";
+import { MESH_STRIDE, type Assets, type Mesh, type Texture } from "../assets";
+import { parseCollider } from "../parse";
 
 export class DebugDynamicScene extends Scene {
 	phong = new PhongUniforms();
@@ -21,26 +22,37 @@ export class DebugDynamicScene extends Scene {
 			textures: ["test.png"],
 			meshes: ["quad_vertical.obj", "cube.obj", "quad.obj"],
 			colliders: ["quad_vertical.obj"],
-			fonts: [],
 		};
 	}
 	
 	async init(assets: Assets) {
-		let dynMesh = [ // pos, normal, color, uv, tangent
+		let dynMeshData = [ // pos, normal, color, uv, tangent
 			[ 1.0,  1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0, 1.0], [1.0, 1.0], [0.0, 0.0, 0.0],
-		    [-1.0, -1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0], [0.0, 0.0, 0.0],
+			[-1.0, -1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0], [0.0, 0.0, 0.0],
 			[ 1.0, -1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0, 1.0], [1.0, 0.0], [0.0, 0.0, 0.0],
-		    [ 1.0,  1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0, 1.0], [1.0, 1.0], [0.0, 0.0, 0.0],
+			[ 1.0,  1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0, 1.0], [1.0, 1.0], [0.0, 0.0, 0.0],
 			[-1.0,  1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0, 1.0], [0.0, 1.0], [0.0, 0.0, 0.0],
 			[-1.0, -1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0], [0.0, 0.0, 0.0],
 		].flat();
-		assets.addDynamicMesh(":dynMesh", new Float32Array(dynMesh));
 
-		let dynTexture = [
+		let dynMesh: Mesh = {
+			path: ":dyn.obj",
+			data: new Float32Array(dynMeshData),
+			size: dynMeshData.length / MESH_STRIDE,
+			stride: MESH_STRIDE,
+		};
+
+		let dynTextureData = [
 			[1.0, 1.0, 1.0, 1.0], [0.8, 0.8, 0.8, 1.0],
 			[0.8, 0.8, 0.8, 1.0], [1.0, 1.0, 1.0, 0.5],
 		].flat().map(f => Math.floor(f*255));
-		assets.addDynamicTexture(":dynTexture", new Uint8ClampedArray(dynTexture), 2, 2);
+
+		let dynTexture: Texture = {
+			path: ":dyn.png",
+			data: new Uint8ClampedArray(dynTextureData),
+			width: 2,
+			height: 2,
+		}
 
 		let obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-3, 0, -5), new Vec3(), 1);
@@ -53,8 +65,8 @@ export class DebugDynamicScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 0, -5), new Vec3(), 1);
-		obj.mesh = await assets.loadMesh(":dynMesh");
-		obj.collider = await assets.loadCollider(":dynMesh");
+		obj.mesh = dynMesh;
+		obj.collider = parseCollider(":dyn.obj", dynMesh.data);
 		obj.textures = [await assets.loadTexture("test.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
@@ -62,9 +74,9 @@ export class DebugDynamicScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(3, 0, -5), new Vec3(), 1);
-		obj.mesh = await assets.loadMesh(":dynMesh");
-		obj.collider = await assets.loadCollider(":dynMesh");
-		obj.textures = [await assets.loadTexture(":dynTexture")];
+		obj.mesh = dynMesh;
+		obj.collider = parseCollider(":dyn.obj", dynMesh.data);
+		obj.textures = [dynTexture];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
