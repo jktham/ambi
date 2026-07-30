@@ -1,8 +1,10 @@
 import { Bbox } from "./bbox";
-import { Vec3 } from "./vec";
+import { Mat4, Vec3 } from "./vec";
 
 export class Trigger {
-	/** trigger area */
+	/** world space transform for bbox */
+	model: Mat4 = new Mat4();
+	/** trigger area (local space) */
 	bbox: Bbox = new Bbox();
 	enabled: boolean = true;
 	active: boolean = false; // true while player in trigger
@@ -10,7 +12,7 @@ export class Trigger {
 	onLeave?: Function;
 
 	async test(pos: Vec3) {
-		if (this.bbox.intersectsPoint(pos)) {
+		if (this.bbox.intersectsPoint(this.model, pos)) {
 			if (!this.active) {
 				await this.onEnter?.();
 				this.active = true;

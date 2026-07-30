@@ -1,4 +1,3 @@
-import { Bbox } from "../bbox";
 import { Scene } from "../scene";
 import { Object } from "../object";
 import { Trigger } from "../trigger";
@@ -43,10 +42,6 @@ export class DebugObjectScene extends Scene {
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		obj.mask = 200;
-		
-		let monkeBbox = await assets.loadBbox("monke.obj");
-		monkeBbox.model = obj.model;
-		obj.bbox = monkeBbox;
 
 		this.objects.push(obj);
 
@@ -80,7 +75,7 @@ export class DebugObjectScene extends Scene {
 
 		this.triggers = [];
 		let t = new Trigger();
-		t.bbox = monkeBbox;
+		t.bbox = await assets.loadBbox("monke.obj");
 		t.onEnter = () => console.log("enter");
 		t.onLeave = () => console.log("leave");
 		this.triggers.push(t);
@@ -114,7 +109,6 @@ export class DebugObjectScene extends Scene {
 			obj.model = Mat4.transform(new Vec3(-5, -5, -10), new Vec3(), 1);
 			obj.mesh = await assets.loadMesh("monke.obj");
 			obj.collider = await assets.loadCollider("monke.obj");
-			obj.bbox = new Bbox([obj.model.mulVec(new Vec3()).sub(2), obj.model.mulVec(new Vec3()).add(2)]);
 			obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 			obj.fragUniforms = this.phong;
 			this.objects.push(obj);

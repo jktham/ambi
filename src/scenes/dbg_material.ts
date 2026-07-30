@@ -16,6 +16,7 @@ export class DebugMaterialScene extends Scene {
 			shaders: ["world/phong_material.frag.wgsl", "world/skybox.frag.wgsl", "world/phong.frag.wgsl"],
 			textures: ["brick_diffuse.jpg", "blue.png", "gray.png", "brick_normal.jpg", "brick_roughness.jpg", "brick_specular.jpg", "house.jpg", "test_roughness.png", "test_specular.png", "test.png"],
 			meshes: ["test_mat.obj", "cube.obj", "quad.obj"],
+			materials: ["test_mat.mtl"],
 		};
 	}
 	
@@ -50,15 +51,17 @@ export class DebugMaterialScene extends Scene {
 		(obj.fragUniforms as PhongUniforms).material.specular = Vec3.splat(0.6);
 		this.objects.push(obj);
 
+		let material = await assets.loadMaterial("test_mat.mtl");
+
 		obj = new Object();
 		obj.tags = ["circleLight"];
 		obj.model = Mat4.transform(new Vec3(1.5, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("test_mat.obj");
 		obj.textures = [
-			await assets.loadTexture("brick_diffuse.jpg"), 
-			await assets.loadTexture("brick_normal.jpg"), 
-			await assets.loadTexture("brick_roughness.jpg"), 
-			await assets.loadTexture("brick_specular.jpg")
+			await assets.loadTexture(material.diffuse_map!), 
+			await assets.loadTexture(material.normal_map!), 
+			await assets.loadTexture(material.roughness_map!), 
+			await assets.loadTexture(material.specular_map!)
 		];
 		obj.fragShader = await assets.loadShader("world/phong_material.frag.wgsl");
 		obj.fragUniforms = new PhongUniforms();

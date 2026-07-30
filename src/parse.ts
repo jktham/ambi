@@ -157,6 +157,7 @@ export function parseCollider(path: MeshPath, mesh: Float32Array): Collider {
     }
     let collider: Collider = {
         path,
+        bbox: parseBbox(mesh),
         triangles: data,
         size: data.length,
     };
@@ -164,7 +165,7 @@ export function parseCollider(path: MeshPath, mesh: Float32Array): Collider {
 }
 
 /** returns min/max of vertex positions */
-export function parseBbox(path: MeshPath, mesh: Float32Array): Bbox {
+export function parseBbox(mesh: Float32Array): Bbox {
     let min = new Vec3(Infinity, Infinity, Infinity);
     let max = new Vec3(-Infinity, -Infinity, -Infinity);
 

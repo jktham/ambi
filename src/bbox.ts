@@ -1,29 +1,28 @@
-import type { MeshPath } from "./assets";
 import { Mat4, Vec3 } from "./vec";
 
 /** oriented bounding box */
 export class Bbox {
-	min: Vec3 = new Vec3(Infinity, Infinity, Infinity); // init never intersects
+	min: Vec3 = new Vec3(Infinity, Infinity, Infinity);
 	max: Vec3 = new Vec3(-Infinity, -Infinity, -Infinity);
-	/** transform to world space, user responsible for keeping in sync with parent! */
-	model: Mat4 = new Mat4();
-	/** overrides min and max on asset load */
-	readonly mesh?: MeshPath;
 
-	/** either initialize concrete bounds, or use mesh path and init later at asset load */
-	constructor(bounds?: [Vec3, Vec3] | MeshPath) {
+	/** defaults to [inf, -inf] (never intersects) */
+	constructor(bounds?: [Vec3, Vec3]) {
 		if (bounds) {
-			if (typeof bounds == "string") {
-				this.mesh = bounds;
-			} else if (bounds[0] && bounds[1]) {
-				this.min = new Vec3(Math.min(bounds[0].x, bounds[1].x), Math.min(bounds[0].y, bounds[1].y), Math.min(bounds[0].z, bounds[1].z));
-				this.max = new Vec3(Math.max(bounds[0].x, bounds[1].x), Math.max(bounds[0].y, bounds[1].y), Math.max(bounds[0].z, bounds[1].z));
+			if (bounds.length != 2) {
+				throw new Error("invalid bbox initializer length");
 			}
+			this.min = new Vec3(Math.min(bounds[0].x, bounds[1].x), Math.min(bounds[0].y, bounds[1].y), Math.min(bounds[0].z, bounds[1].z));
+			this.max = new Vec3(Math.max(bounds[0].x, bounds[1].x), Math.max(bounds[0].y, bounds[1].y), Math.max(bounds[0].z, bounds[1].z));
 		}
 	}
 
-	intersectsPoint(pos: Vec3): boolean {
-		pos = this.model.inverse().mulVec(pos);
+	/** returns new bbox with increased margins */
+	widen(margin: number): Bbox {
+		return new Bbox([this.min.sub(margin), this.max.add(margin)]);
+	}
+
+	intersectsPoint(model: Mat4, pos: Vec3): boolean {
+		pos = model.inverse().mulVec(pos);
 		return (
 			pos.x >= this.min.x && pos.x <= this.max.x &&
 			pos.y >= this.min.y && pos.y <= this.max.y &&
@@ -32,10 +31,10 @@ export class Bbox {
 	}
 
 	// todo: implement model transforms correctly lol
-	intersectsBbox(bbox: Bbox): boolean {
-		let tf = this.model.inverse().mul(bbox.model);
-		let min = tf.mulVec(bbox.min);
-		let max = tf.mulVec(bbox.max);
+	intersectsBbox(model: Mat4, other_model: Mat4, other_bbox: Bbox): boolean {
+		let tf = model.inverse().mul(other_model);
+		let min = tf.mulVec(other_bbox.min);
+		let max = tf.mulVec(other_bbox.max);
 		return (
 			max.x >= this.min.x && min.x <= this.max.x &&
 			max.y >= this.min.y && min.y <= this.max.y &&

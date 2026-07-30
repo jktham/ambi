@@ -1,4 +1,3 @@
-import { Bbox } from "../bbox";
 import type { Player } from "../player";
 import { Scene } from "../scene";
 import { Object } from "../object";
@@ -699,8 +698,8 @@ export class MuseumScene extends Scene {
 				obj.changed = true;
 			}
 			for (let t of this.roomTriggers[r]) {
-				let [translation, rotation, scale] = t.bbox.model.decompose();
-				t.bbox.model = Mat4.transform(translation.add(offset), rotation, scale);
+				let [translation, rotation, scale] = t.model.decompose();
+				t.model = Mat4.transform(translation.add(offset), rotation, scale);
 				t.enabled = this.roomSlots[0] == r;
 			}
 		}
@@ -844,8 +843,8 @@ export class MuseumScene extends Scene {
 				objects.push(obj);
 
 				let t = new Trigger();
-				t.bbox = new Bbox(`museum/portal_${["h", "v", "h", "v"][i]}.obj`);
-				t.bbox.model = Mat4.translate(positions[i][j]);
+				t.bbox = await assets.loadBbox(`museum/portal_${["h", "v", "h", "v"][i]}.obj`);
+				t.model = Mat4.translate(positions[i][j]);
 				t.onEnter = async () => await engine.setScene(scenes[i][j]);
 				triggers.push(t);
 			}

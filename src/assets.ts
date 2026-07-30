@@ -75,7 +75,9 @@ export type Texture = {
 
 export type Collider = {
 	readonly path: MeshPath;
-	/** array of triangle vertices */
+	/** bounding box (local space) */
+	bbox: Bbox;
+	/** array of triangle vertices (local space) */
 	triangles: [Vec3, Vec3, Vec3][];
 	/** number of triangles */
 	size: number;
@@ -280,14 +282,14 @@ export class Assets {
 		return collider;
 	}
 
-	/** returns new bbox based on .obj or .json mesh, only populates min/max */
+	/** returns new bbox based on .obj or .json mesh */
 	async loadBbox(path: MeshPath): Promise<Bbox> {
 		if (this.bboxes.has(path)) {
 			return this.bboxes.get(path)!;
 		}
 
 		let mesh = await this.loadMesh(path);
-		let bbox = parseBbox(path, mesh.data);
+		let bbox = parseBbox(mesh.data);
 		this.bboxes.set(path, bbox);
 		return bbox;
 	}

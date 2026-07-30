@@ -1,5 +1,3 @@
-import type { Assets, Collider } from "./assets";
-import { Bbox } from "./bbox";
 import { Camera } from "./camera";
 import type { Object } from "./object";
 import type { Action } from "./input";
@@ -33,7 +31,6 @@ export class Player {
 	up: Vec3 = new Vec3();
 
 	private objects: Object[] = [];
-	private colliders: Map<string, Collider> = new Map();
 
 	/** update position based on action input */
 	updatePosition(actions: Set<Action>, deltaTime: number) {
@@ -109,15 +106,9 @@ export class Player {
 		this.camera.updateMatrices();
 	}
 	
-	/** load collision data (concrete vertices) from entity assets */
-	async loadColliders(assets: Assets, entities: Object[]) {
-		this.objects = entities;
-		for (let object of this.objects) {
-			if (object.collider && !this.colliders.has(object.collider.path)) {
-				const collider = object.collider;
-				this.colliders.set(object.collider.path, collider);
-			}
-		}
+	/** load objects from scene */
+	loadObjects(objects: Object[]) {
+		this.objects = objects;
 	}
 
 	/** apply collisions to desired player velocity and deflect accordingly */
@@ -147,47 +138,44 @@ export class Player {
 	/** get collisions at new desired position */
 	private getCollisions(position: Vec3, velocity: Vec3): Collision[] {
 		let collisions: Collision[] = [];
-		let cameraBbox = new Bbox([position.sub(velocity.length()*2), position.add(velocity.length()*2)]);
 
-		for (let object of this.objects) {
-			if (object.collider && object.collidable) {
-				if (object.bbox) {
-					if (!object.bbox.intersectsBbox(cameraBbox)) continue;
-				}
+		for (let obj of this.objects) {
+			if (obj.collider && obj.collidable) {
+				// increase margins to make sure we hit bbox before collider
+				let widened_bbox = obj.collider.bbox.widen(0.5 + velocity.length()*2);
+				if (!widened_bbox.intersectsPoint(obj.model, this.position)) continue;
 
-				let collider = this.colliders.get(object.collider.path);
-				if (collider) {
-					let transformed = collider.triangles.map(face => face.map(vert => object.model.mulVec(vert)));
-					
-					for (let face of transformed) {
-						let [v0, v1, v2] = face;
-						let u = v1.sub(v0);
-						let v = v2.sub(v0);
-						let normal = u.cross(v).normalize();
+				// todo: do calculations in inverse player transform, so we dont have to do this expensive map
+				let transformed = obj.collider.triangles.map(face => face.map(vert => obj.model.mulVec(vert)));
+				
+				for (let face of transformed) {
+					let [v0, v1, v2] = face;
+					let u = v1.sub(v0);
+					let v = v2.sub(v0);
+					let normal = u.cross(v).normalize();
 
-						let dist = v0.sub(position).dot(normal) / velocity.normalize().dot(normal);
-						if (isNaN(dist)) dist = -1;
-						let intersect = position.add(velocity.normalize().mul(dist));
+					let dist = v0.sub(position).dot(normal) / velocity.normalize().dot(normal);
+					if (isNaN(dist)) dist = -1;
+					let intersect = position.add(velocity.normalize().mul(dist));
 
-						if (dist >= 0.0 && dist <= velocity.length()) {
-							let signs = [0, 0, 0];
-							for (let i=0; i<3; i++) {
-								let p = intersect.sub(face[i]);
-								let u = face[(i+1) % 3].sub(face[i]);
-								let v = face[(i+2) % 3].sub(face[i]);
-								let s = p.cross(u).dot(p.cross(v));
-								signs[i] = s;
-							}
-							if (signs.every(s => s < 0)) {
-								let c: Collision = {
-									position: position,
-									velocity: velocity,
-									intersect: intersect,
-									dist: dist,
-									normal: normal,
-								};
-								collisions.push(c);
-							}
+					if (dist >= 0.0 && dist <= velocity.length()) {
+						let signs = [0, 0, 0];
+						for (let i=0; i<3; i++) {
+							let p = intersect.sub(face[i]);
+							let u = face[(i+1) % 3].sub(face[i]);
+							let v = face[(i+2) % 3].sub(face[i]);
+							let s = p.cross(u).dot(p.cross(v));
+							signs[i] = s;
+						}
+						if (signs.every(s => s < 0)) {
+							let c: Collision = {
+								position: position,
+								velocity: velocity,
+								intersect: intersect,
+								dist: dist,
+								normal: normal,
+							};
+							collisions.push(c);
 						}
 					}
 				}

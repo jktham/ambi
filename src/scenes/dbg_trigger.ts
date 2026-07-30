@@ -66,8 +66,8 @@ export class DebugTriggerScene extends Scene {
 		this.objects.push(obj);
 
 		trg = new Trigger();
-		trg.bbox = new Bbox("monke.obj");
-		trg.bbox.model = obj.model;
+		trg.bbox = await assets.loadBbox("monke.obj");
+		trg.model = obj.model;
 		trg.onEnter = () => {
 			let target = this.getObject("2")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
@@ -93,8 +93,8 @@ export class DebugTriggerScene extends Scene {
 		this.objects.push(obj);
 
 		trg = new Trigger();
-		trg.bbox = new Bbox(obj.mesh.path);
-		trg.bbox.model = obj.model;
+		trg.bbox = await assets.loadBbox(obj.mesh.path);
+		trg.model = obj.model;
 		trg.onEnter = () => {
 			let target = this.getObject("3")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
@@ -120,8 +120,8 @@ export class DebugTriggerScene extends Scene {
 		this.objects.push(obj);
 
 		trg = new Trigger();
-		trg.bbox = new Bbox(obj.mesh.path);
-		trg.bbox.model = obj.model;
+		trg.bbox = await assets.loadBbox(obj.mesh.path);
+		trg.model = obj.model;
 		trg.onEnter = () => {
 			let target = this.getObject("4")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);

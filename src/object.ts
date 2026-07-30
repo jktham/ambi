@@ -1,5 +1,4 @@
 import { type Mesh, type Texture, type BuiltinTextureLabel, type Shader, type Collider } from "./assets";
-import type { Bbox } from "./bbox";
 import { defaultMesh, defaultTexture, defaultVertShader, defaultFragShader } from "./defaults";
 import { Uniforms } from "./uniforms";
 import { Mat4, Vec4 } from "./vec";
@@ -45,8 +44,6 @@ export class Object {
     
     /** collider mesh, used for fine collision detection */
     collider?: Collider = undefined;
-    /** bounding box used to skip fine collision if present */
-    bbox?: Bbox = undefined;
 
     /** world vertex shader */
     vertShader: Shader = defaultVertShader;

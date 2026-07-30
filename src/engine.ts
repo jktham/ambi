@@ -80,31 +80,15 @@ export class Engine {
 		this.player.mode = this.scene.cameraMode;
 		this.player.position = this.scene.spawnPos;
 		this.player.rotation = this.scene.spawnRot;
+		this.player.loadObjects(this.scene.objects);
 
 		this.gui.updateScene(this.scene.name);
 		this.gui.updatePost("scene", this.scene.postShader.path, this.scene.postUniforms, this.scene.postTextures.map(t => t.path));
 		this.gui.updateCameraMode(this.scene.cameraMode);
 		this.gui.updateResolution(this.scene.resolution);
 
-        // load bboxes
-        for (let obj of this.scene.objects) {
-            if (obj.bbox && obj.bbox.mesh !== undefined) {
-                let bbox = await this.assets.loadBbox(obj.bbox.mesh);
-                obj.bbox.min = bbox.min;
-                obj.bbox.max = bbox.max;
-            }
-        }
-        for (let trigger of this.scene.triggers) {
-            if (trigger.bbox && trigger.bbox.mesh !== undefined) {
-                let bbox = await this.assets.loadBbox(trigger.bbox.mesh);
-                trigger.bbox.min = bbox.min;
-                trigger.bbox.max = bbox.max;
-            }
-        }
-
         console.log(`loading scene`);
 		await this.renderer.loadScene(this.scene, this.gui);
-		await this.player.loadColliders(this.assets, this.scene.objects);
 
         console.log(`done`);
 		this.loop();
