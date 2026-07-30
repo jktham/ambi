@@ -146,7 +146,7 @@ export const defaultTexture: Texture = {
     height: defaultPixels.length,
 };
 
-const libData = `
+export const libDataShader = `
     struct VertexIn {
         @location(0) pos: vec3f, // object space
         @location(1) normal: vec3f,
@@ -270,7 +270,7 @@ const libData = `
 
 export const defaultVertShader: Shader = {
     path: "world/base.vert.wgsl",
-    code: libData + `
+    code: libDataShader + `
         @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
         @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
@@ -293,11 +293,12 @@ export const defaultVertShader: Shader = {
             return out;
         }
     `,
+    stage: "vert",
 };
 
 export const defaultFragShader: Shader = {
     path: "world/base.frag.wgsl",
-    code: libData + `
+    code: libDataShader + `
         @group(0) @binding(0) var<uniform> u_global: GlobalUniforms;
         @group(0) @binding(1) var<uniform> u_object: ObjectUniforms;
 
@@ -320,11 +321,12 @@ export const defaultFragShader: Shader = {
             return encodeFbData(data);
         }
     `,
+    stage: "frag",
 };
 
 export const defaultPostShader: Shader = {
 	path: "post/fb_color.frag.wgsl",
-	code: libData + `
+	code: libDataShader + `
 		@group(0) @binding(0) var<uniform> u_post: PostUniforms;
 
 		@group(1) @binding(0) var t_sampler: sampler;
@@ -344,4 +346,5 @@ export const defaultPostShader: Shader = {
 			return data.color;
 		}
 	`,
+    stage: "post",
 };

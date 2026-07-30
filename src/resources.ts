@@ -1,4 +1,5 @@
 import { MESH_STRIDE, type Mesh, type MeshPath, type Shader, type Texture, type TexturePath, type VertShaderPath } from "./assets";
+import { libDataShader } from "./defaults";
 import type { oid } from "./object";
 import { GlobalUniforms, ObjectUniforms, PostUniforms, Uniforms } from "./uniforms";
 import type { Vec2 } from "./vec";
@@ -172,6 +173,13 @@ export class Resources {
     }
 
     createObjectPipeline(vertShader: Shader, fragShader: Shader): GPURenderPipeline {
+        if (vertShader.stage != "vert") {
+            throw new Error(`shader ${vertShader.path} is not a vert shader`);
+        }
+        if (fragShader.stage != "frag") {
+            throw new Error(`shader ${fragShader.path} is not a frag shader`);
+        }
+
         const vertexShader = this.device.createShaderModule({
             label: `vertex shader: ${vertShader}`,
             code: vertShader.code,
@@ -367,131 +375,14 @@ export class Resources {
     // ---- post resources ----
 
     createPostPipeline(postShader: Shader, presentationFormat: GPUTextureFormat): GPURenderPipeline {
+        if (postShader.stage != "post") {
+            throw new Error(`shader ${postShader.path} is not a post shader`);
+        }
+
         let vertShader: VertShaderPath = "post/quad.vert.wgsl";
         const postVertexShader = this.device.createShaderModule({
             label: `post vertex shader: ${vertShader}`,
-            code: `
-                struct VertexIn {
-                    @location(0) pos: vec3f, // object space
-                    @location(1) normal: vec3f,
-                    @location(2) color: vec4f,
-                    @location(3) uv: vec2f,
-                    @location(4) tangent: vec3f, // GL tangent
-                };
-
-                struct VertexOut {
-                    @builtin(position) ndc: vec4f, // -1..1
-                    @location(0) pos: vec3f, // world space
-                    @location(1) normal: vec3f,
-                    @location(2) color: vec4f,
-                    @location(3) uv: vec2f,
-                    @location(4) tangent: vec3f, // GL tangent
-                    @location(5) bary: vec3f, // barycentric triangle coords, 0..1
-                    @location(6) shadow_space: vec4f, // -1..1
-                };
-
-                struct FragmentIn {
-                    @builtin(position) screen: vec4f, // 0..res
-                    @location(0) pos: vec3f, // world space
-                    @location(1) normal: vec3f,
-                    @location(2) color: vec4f,
-                    @location(3) uv: vec2f,
-                    @location(4) tangent: vec3f, // GL tangent
-                    @location(5) bary: vec3f, // barycentric triangle coords, 0..1
-                    @location(6) shadow_space: vec4f, // -1..1
-                };
-
-                struct FragmentOut {
-                    @location(0) color: vec4f,
-                    @location(1) pos_depth: vec4f,
-                    @location(2) normal_mask: vec4f,
-                };
-
-                /// world frag shader output
-                struct FbData {
-                    color: vec4f,
-                    pos: vec3f,
-                    depth: f32,
-                    normal: vec3f,
-                    mask: u32,
-                };
-
-                /// global world pass uniforms
-                struct GlobalUniforms {
-                    time: f32,
-                    frame: f32,
-                    fov: f32,
-                    resolution: vec2f,
-                    view_pos: vec3f,
-                    view: mat4x4f,
-                    view_inv: mat4x4f,
-                    projection: mat4x4f,
-                    shadow_transform: mat4x4f,
-                };
-
-                /// per object world pass uniforms
-                struct ObjectUniforms {
-                    mask: f32,
-                    cull: f32,
-                    id: f32,
-                    uv_scale: f32,
-                    color: vec4f,
-                    vert_config: vec4f,
-                    frag_config: vec4f,
-                    model: mat4x4f,
-                    normal: mat4x4f,
-                };
-
-                /// base post pass uniforms
-                struct PostUniforms {
-                    time: f32,
-                    frame: f32,
-                    resolution: vec2f,
-                    post_config: vec4f,
-                    view: mat4x4f,
-                    projection: mat4x4f,
-                };
-
-                /// encode world pass output data into framebuffers
-                fn encodeFbData(data: FbData) -> FragmentOut {
-                    var out: FragmentOut;
-                    out.color = data.color;
-                    out.pos_depth = vec4f(data.pos, data.depth);
-                    out.normal_mask = vec4f((data.normal + 1.0) / 2.0, f32(data.mask) / 255.0);
-                    return out;
-                }
-
-                /// decode post pass input framebuffers back into data
-                fn decodeFbData(pixel: vec2i, fb_color: texture_storage_2d<rgba8unorm, read>, fb_pos_depth: texture_storage_2d<rgba32float, read>, fb_normal_mask: texture_storage_2d<rgba8unorm, read>) -> FbData {
-                    var data: FbData;
-                    let color = textureLoad(fb_color, pixel);
-                    let pd = textureLoad(fb_pos_depth, pixel);
-                    let nm = textureLoad(fb_normal_mask, pixel);
-
-                    data.color = color;
-                    data.pos = pd.xyz;
-                    data.depth = pd.w;
-                    data.normal = nm.xyz * 2.0 - 1.0;
-                    data.mask = u32(nm.w * 255.0);
-
-                    return data;
-                }
-
-                fn decideDiscard(color: vec4f, pos: vec3f, normal: vec3f, view_pos: vec3f, cull: f32) {
-                    if (color.a == 0.0) {
-                        discard;
-                    }
-
-                    if (cull != 0.0) {
-                        let view_dir = normalize(view_pos - pos);
-                        let face = dot(normalize(normal), view_dir);
-                        if (face * cull < 0.0) {
-                            discard;
-                        }
-                    }
-                }
-
-
+            code: libDataShader + `
                 @vertex 
                 fn main(@builtin(vertex_index) i: u32) -> VertexOut {
                     let pos = array(

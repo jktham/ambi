@@ -1,6 +1,24 @@
-import { MESH_STRIDE, type MeshPath, Vertex, type MaterialPath, type Material, type TexturePath, type FontPath, type Font, type Collider, type Mesh, type Texture } from "./assets";
+import { MESH_STRIDE, type MeshPath, Vertex, type MaterialPath, type Material, type TexturePath, type FontPath, type Font, type Collider, type Mesh, type Texture, type ShaderPath, type Shader } from "./assets";
 import { Bbox } from "./bbox";
 import { Vec3, Vec4, Vec2 } from "./vec";
+
+export function parseShader(path: ShaderPath, file: string): Shader {
+    let type: "vert" | "frag" | "post" | "any" = "any";
+    if (path.includes("world/") && path.includes(".vert")) {
+        type = "vert";
+    } else if (path.includes("world/") && path.includes(".frag")) {
+        type = "frag";
+    } else if (path.includes("post/")) {
+        type = "post";
+    }
+
+    let shader: Shader = {
+        path,
+        code: file,
+        stage: type,
+    };
+    return shader;
+}
 
 /** parses .obj file as string, returns flat f32 array of triangulates vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz) */
 export function parseMeshOBJ(path: MeshPath, file: string): Mesh {
@@ -186,6 +204,11 @@ export function parseBbox(mesh: Float32Array): Bbox {
 export function parseMaterialMTL(path: MaterialPath, file: string): Material {
     let material: Material = {
         path,
+        ambient: new Vec3(1, 1, 1),
+        diffuse: new Vec3(1, 1, 1),
+        specular: new Vec3(1, 1, 1),
+        specular_exponent: 0,
+        alpha: 1,
         diffuse_map: undefined,
         normal_map: undefined,
         roughness_map: undefined,
@@ -194,6 +217,31 @@ export function parseMaterialMTL(path: MaterialPath, file: string): Material {
     for (let line of file.split(/\r?\n/)) {
         let words = line.split(" ");
         switch (words[0].toLowerCase()) {
+            case "ka": {
+                let col = new Vec3(...words.slice(1, 4).map(parseFloat));
+                material.ambient = col;
+                break;
+            }
+            case "kd": {
+                let col = new Vec3(...words.slice(1, 4).map(parseFloat));
+                material.diffuse = col;
+                break;
+            }
+            case "ks": {
+                let col = new Vec3(...words.slice(1, 4).map(parseFloat));
+                material.specular = col;
+                break;
+            }
+            case "ns": {
+                let val = parseFloat(words[1]);
+                material.specular_exponent = val;
+                break;
+            }
+            case "d": {
+                let val = parseFloat(words[1]);
+                material.alpha = val;
+                break;
+            }
             case "map_kd": {
                 let abs = words[1];
                 if (!abs.includes("textures/")) {

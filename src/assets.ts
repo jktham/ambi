@@ -1,5 +1,5 @@
 import { Bbox } from "./bbox";
-import { parseMeshOBJ, parseCollider, parseBbox, parseMaterialMTL, parseFontFNT, parseMeshJSON, parseTextureJSON, parseTexturePNGJPG } from "./parse";
+import { parseMeshOBJ, parseCollider, parseBbox, parseMaterialMTL, parseFontFNT, parseMeshJSON, parseTextureJSON, parseTexturePNGJPG, parseShader } from "./parse";
 import { Vec2, Vec3, Vec4 } from "./vec";
 
 /** supported shader filetypes */
@@ -37,7 +37,7 @@ export type TexturePath = `${string}.${TextureTypes}`;
 const materialTypes = ["mtl"] as const;
 type MaterialTypes = typeof materialTypes[number];
 
-/** path relative to public/meshes/ */
+/** path relative to public/meshes/ (since they are usually exported next to the mesh) */
 export type MaterialPath = `${string}.${MaterialTypes}`;
 
 
@@ -50,13 +50,15 @@ export type FontPath = `${string}.${FontTypes}`;
 
 
 export type Shader = {
-	readonly path: ShaderPath;
+	path: ShaderPath;
 	/** shader code */
 	code: string;
+	/** shader stage */
+	stage: "vert" | "frag" | "post" | "any";
 };
 
 export type Mesh = {
-	readonly path: MeshPath;
+	path: MeshPath;
 	/** packed f32 array with length size\*stride, triangulated vertices (pos xyz, normal xyz, color rgba, texcoord uv, tangent xyz) */
 	data: Float32Array;
 	/** number of vertices */
@@ -66,7 +68,7 @@ export type Mesh = {
 };
 
 export type Texture = {
-	readonly path: TexturePath;
+	path: TexturePath;
 	/** packed u8 array with length width\*height\*4 */
 	data: Uint8ClampedArray;
 	width: number;
@@ -74,7 +76,7 @@ export type Texture = {
 };
 
 export type Collider = {
-	readonly path: MeshPath;
+	path: MeshPath;
 	/** bounding box (local space) */
 	bbox: Bbox;
 	/** array of triangle vertices (local space) */
@@ -85,7 +87,12 @@ export type Collider = {
 
 /** map of mtl map label to concrete texture path */
 export type Material = {
-	readonly path: MaterialPath;
+	path: MaterialPath;
+	ambient: Vec3;
+	diffuse: Vec3;
+	specular: Vec3;
+	specular_exponent: number;
+	alpha: number,
 	diffuse_map?: TexturePath;
 	normal_map?: TexturePath;
 	roughness_map?: TexturePath;
@@ -97,7 +104,7 @@ export type Material = {
  * https://www.angelcode.com/products/bmfont/doc/file_format.html
  */
 export type Font = {
-	readonly path: FontPath;
+	path: FontPath;
 	resolution: Vec2;
 	line_height: number;
 	base: number;
@@ -180,12 +187,10 @@ export class Assets {
 		}
 		
 		let file = await this.fetchFile(`/shaders/${path}`);
-		let code = await this.preprocessShader(`/shaders/${path}`, file);
+		let shader = parseShader(path, file);
+
+		shader = await this.preprocessShader(shader);
 		
-		let shader: Shader = {
-			path,
-			code: code,
-		};
 		this.shaders.set(path, shader);
 		return shader;
 	}
@@ -371,18 +376,19 @@ export class Assets {
 	}
 
 	/** resolve #import in shaders relative to its path */
-	private async preprocessShader(path: ShaderPath, file: string): Promise<string> {
+	private async preprocessShader(shader: Shader): Promise<Shader> {
 		let out = "";
-		for (let line of file.split(/\r?\n/)) {
+		for (let line of shader.code.split(/\r?\n/)) {
 			if (line.startsWith("#import ")) {
-				let currentPath = path.split("/").slice(0, -1).join("/").replace("/shaders/", "") + "/";
+				let currentPath = shader.path.split("/").slice(0, -1).join("/").replace("/shaders/", "") + "/";
 				let relPath = line.replace(/#import\s+/, "").replace(/"/g, "");
 				let absPath = currentPath + relPath;
 				line = await this.loadShader(absPath as ShaderPath).then(s => s.code);
 			}
 			out += line + "\n";
 		}
-		return out;
+		shader.code = out;
+		return shader;
 	}
 
 	clear() {
