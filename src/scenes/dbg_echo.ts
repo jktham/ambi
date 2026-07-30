@@ -20,8 +20,8 @@ export class DebugEchoScene extends Scene {
 
 		this.preload = {
 			shaders: ["post/echo.frag.wgsl", "world/phong.frag.wgsl", "world/instanced.vert.wgsl"],
-			textures: ["white.png"],
-			meshes: ["quad.obj", "monke.obj", "sphere.obj"],
+			textures: ["colors/white.png"],
+			meshes: ["quad.obj", "monke.obj", "uvsphere.obj"],
 		};
 	}
 
@@ -55,8 +55,8 @@ export class DebugEchoScene extends Scene {
 
 		obj = new Object();
 		obj.tags = ["pulse_source"];
-		obj.mesh = await assets.loadMesh("sphere.obj");
-		obj.textures = [await assets.loadTexture("white.png")];
+		obj.mesh = await assets.loadMesh("uvsphere.obj");
+		obj.textures = [await assets.loadTexture("colors/white.png")];
 		obj.model = Mat4.transform(new Vec3(0, 10, 0), new Vec3(), 1);
 		this.objects.push(obj);
 	}

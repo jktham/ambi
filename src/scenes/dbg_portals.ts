@@ -31,8 +31,8 @@ export class DebugPortalsScene extends Scene {
 
 		this.preload = {
 			shaders: ["post/outline.frag.wgsl", "world/portal.frag.wgsl", "world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
-			textures: ["white.png", "test.png"],
-			meshes: ["quad_vertical.obj", "monke.obj", "cube.obj", "quad.obj"],
+			textures: ["colors/white.png", "default.png"],
+			meshes: ["quad_v.obj", "monke.obj", "cube.obj", "quad.obj"],
 		};
 	}
 
@@ -41,7 +41,7 @@ export class DebugPortalsScene extends Scene {
 
 		let obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
-		obj.mesh = await assets.loadMesh("quad_vertical.obj");
+		obj.mesh = await assets.loadMesh("quad_v.obj");
 		obj.textures = ["$portal_0"];
 		obj.portal_visible = [true, false];
 		obj.mask = 0;
@@ -50,7 +50,7 @@ export class DebugPortalsScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
-		obj.mesh = await assets.loadMesh("quad_vertical.obj");
+		obj.mesh = await assets.loadMesh("quad_v.obj");
 		obj.textures = ["$portal_1"];
 		obj.portal_visible = [false, true];
 		obj.mask = 0;
@@ -62,7 +62,7 @@ export class DebugPortalsScene extends Scene {
 		obj.tags = ["check_backside"];
 		obj.model = Mat4.transform(new Vec3(-10, 2, -5), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("monke.obj");
-		obj.textures = [await assets.loadTexture("white.png")];
+		obj.textures = [await assets.loadTexture("colors/white.png")];
 		obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
 		obj.mask = 1;
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -77,7 +77,7 @@ export class DebugPortalsScene extends Scene {
 			obj.tags = ["check_backside"];
 			obj.model = Mat4.transform(offset, new Vec3(), rnd(0.2, 0.6));
 			obj.mesh = await assets.loadMesh("cube.obj");
-			obj.textures = [await assets.loadTexture("white.png")];
+			obj.textures = [await assets.loadTexture("colors/white.png")];
 			obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
 			obj.mask = 1;
 			obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -89,7 +89,7 @@ export class DebugPortalsScene extends Scene {
 		obj.tags = ["check_backside"];
 		obj.model = Mat4.transform(new Vec3(10, 2, -5), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("monke.obj");
-		obj.textures = [await assets.loadTexture("white.png")];
+		obj.textures = [await assets.loadTexture("colors/white.png")];
 		obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
 		obj.mask = 1;
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -104,7 +104,7 @@ export class DebugPortalsScene extends Scene {
 			obj.tags = ["check_backside"];
 			obj.model = Mat4.transform(offset, new Vec3(), rnd(0.2, 0.6));
 			obj.mesh = await assets.loadMesh("cube.obj");
-			obj.textures = [await assets.loadTexture("white.png")];
+			obj.textures = [await assets.loadTexture("colors/white.png")];
 			obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
 			obj.mask = 1;
 			obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -116,7 +116,7 @@ export class DebugPortalsScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-10, 0, 0), new Vec3(), 10);
 		obj.mesh = await assets.loadMesh("quad.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(1.0, 0.6, 0.6, 1.0);
 		obj.mask = 0;
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -127,7 +127,7 @@ export class DebugPortalsScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 0, 0), new Vec3(), 10);
 		obj.mesh = await assets.loadMesh("quad.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.6, 0.6, 1.0, 1.0);
 		obj.mask = 0;
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -139,7 +139,7 @@ export class DebugPortalsScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 200);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.mask = 2;
 		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");

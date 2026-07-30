@@ -14,7 +14,7 @@ export class DebugMaterialScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/phong_material.frag.wgsl", "world/skybox.frag.wgsl", "world/phong.frag.wgsl"],
-			textures: ["brick_diffuse.jpg", "blue.png", "gray.png", "brick_normal.jpg", "brick_roughness.jpg", "brick_specular.jpg", "house.jpg", "test_roughness.png", "test_specular.png", "test.png"],
+			textures: ["materials/brick.jpg", "colors/blue.png", "colors/gray.png", "materials/brick_normal.jpg", "materials/brick_roughness.jpg", "materials/brick_specular.jpg", "house.jpg", "test_roughness.png", "test_specular.png", "default.png"],
 			meshes: ["test_mat.obj", "cube.obj", "quad.obj"],
 			materials: ["test_mat.mtl"],
 		};
@@ -26,10 +26,10 @@ export class DebugMaterialScene extends Scene {
 		obj.model = Mat4.transform(new Vec3(-4.5, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("test_mat.obj");
 		obj.textures = [
-			await assets.loadTexture("brick_diffuse.jpg"), 
-			await assets.loadTexture("blue.png"), 
-			await assets.loadTexture("gray.png"), 
-			await assets.loadTexture("gray.png")
+			await assets.loadTexture("materials/brick.jpg"), 
+			await assets.loadTexture("colors/blue.png"), 
+			await assets.loadTexture("colors/gray.png"), 
+			await assets.loadTexture("colors/gray.png")
 		];
 		obj.fragShader = await assets.loadShader("world/phong_material.frag.wgsl");
 		obj.fragUniforms = new PhongUniforms();
@@ -41,10 +41,10 @@ export class DebugMaterialScene extends Scene {
 		obj.model = Mat4.transform(new Vec3(-1.5, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("test_mat.obj");
 		obj.textures = [
-			await assets.loadTexture("brick_diffuse.jpg"), 
-			await assets.loadTexture("brick_normal.jpg"), 
-			await assets.loadTexture("gray.png"), 
-			await assets.loadTexture("gray.png")
+			await assets.loadTexture("materials/brick.jpg"), 
+			await assets.loadTexture("materials/brick_normal.jpg"), 
+			await assets.loadTexture("colors/gray.png"), 
+			await assets.loadTexture("colors/gray.png")
 		];
 		obj.fragShader = await assets.loadShader("world/phong_material.frag.wgsl");
 		obj.fragUniforms = new PhongUniforms();
@@ -74,7 +74,7 @@ export class DebugMaterialScene extends Scene {
 		obj.mesh = await assets.loadMesh("test_mat.obj");
 		obj.textures = [
 			await assets.loadTexture("house.jpg"), 
-			await assets.loadTexture("brick_normal.jpg"), 
+			await assets.loadTexture("materials/brick_normal.jpg"), 
 			await assets.loadTexture("test_roughness.png"), 
 			await assets.loadTexture("test_specular.png")
 		];
@@ -87,7 +87,7 @@ export class DebugMaterialScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		obj.z = 1000.0;
@@ -96,7 +96,7 @@ export class DebugMaterialScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = await assets.loadMesh("quad.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = new PhongUniforms();

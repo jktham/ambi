@@ -29,7 +29,7 @@ export class DebugOutlineScene extends Scene {
 
 		this.preload = {
 			shaders: ["post/outline.frag.wgsl", "world/phong.frag.wgsl"],
-			textures: ["test.png"],
+			textures: ["default.png"],
 			meshes: ["monke.obj", "cube.obj", "quad.obj"],
 		};
 	}
@@ -40,7 +40,7 @@ export class DebugOutlineScene extends Scene {
 		let obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("monke.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.mask = 1;
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -50,7 +50,7 @@ export class DebugOutlineScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("monke.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.mask = 2;
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -60,7 +60,7 @@ export class DebugOutlineScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("monke.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.mask = 3;
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -71,7 +71,7 @@ export class DebugOutlineScene extends Scene {
 		obj.tags = ["rotate"];
 		obj.model = Mat4.transform(new Vec3(0, 3, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("monke.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 0.0);
 		obj.mask = 4;
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
@@ -81,7 +81,7 @@ export class DebugOutlineScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
@@ -90,7 +90,7 @@ export class DebugOutlineScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = await assets.loadMesh("quad.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.5, 0.5, 0.5, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;

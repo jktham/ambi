@@ -24,7 +24,7 @@ export class PierScene extends Scene {
 
 		this.preload = {
 			shaders: ["post/psx_fog.frag.wgsl", "world/psx.frag.wgsl", "world/psx.vert.wgsl", "world/skybox.frag.wgsl", "world/psx_instanced.vert.wgsl"],
-			textures: ["wood.jpg", "snow.jpg", "ground.jpg", "test.png", "white.png", "cracked.jpg", "metal.jpg"],
+			textures: ["materials/wood.jpg", "materials/snow.jpg", "materials/ground.jpg", "default.png", "colors/white.png", "materials/cracked.jpg", "materials/metal.jpg"],
 			meshes: ["pier/pier.obj", "pier/water.obj", "pier/ground.obj", "cube.obj", "pier/snow.obj", "pier/lantern_post.obj", "pier/lantern.obj", "pier/lantern_holder.obj", "pier/lantern_chain.obj"],
 			colliders: ["pier/collider.obj"],
 		};
@@ -36,21 +36,21 @@ export class PierScene extends Scene {
 		let pier = new Object();
 		pier.mesh = await assets.loadMesh("pier/pier.obj");
 		pier.collider = await assets.loadCollider("pier/collider.obj");
-		pier.textures = [await assets.loadTexture("wood.jpg")];
+		pier.textures = [await assets.loadTexture("materials/wood.jpg")];
 		pier.fragShader = await assets.loadShader("world/psx.frag.wgsl");
 		pier.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 		this.objects.push(pier);
 
 		let water = new Object();
 		water.mesh = await assets.loadMesh("pier/water.obj");
-		water.textures = [await assets.loadTexture("snow.jpg")];
+		water.textures = [await assets.loadTexture("materials/snow.jpg")];
 		water.fragShader = await assets.loadShader("world/psx.frag.wgsl");
 		water.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 		this.objects.push(water);
 
 		let ground = new Object();
 		ground.mesh = await assets.loadMesh("pier/ground.obj");
-		ground.textures = [await assets.loadTexture("ground.jpg")];
+		ground.textures = [await assets.loadTexture("materials/ground.jpg")];
 		ground.fragShader = await assets.loadShader("world/psx.frag.wgsl");
 		ground.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 		this.objects.push(ground);
@@ -58,7 +58,7 @@ export class PierScene extends Scene {
 		let sky = new Object();
 		sky.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
 		sky.mesh = await assets.loadMesh("cube.obj");
-		sky.textures = [await assets.loadTexture("test.png")];
+		sky.textures = [await assets.loadTexture("default.png")];
 		sky.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		sky.color = new Vec4(0.1, 0.1, 0.1, 1.0);
 		this.objects.push(sky);
@@ -67,7 +67,7 @@ export class PierScene extends Scene {
 		snow.tags = ["snow"];
 		snow.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 1);
 		snow.mesh = await assets.loadMesh("pier/snow.obj");
-		snow.textures = [await assets.loadTexture("white.png")];
+		snow.textures = [await assets.loadTexture("colors/white.png")];
 		snow.color = new Vec4(0.9, 0.9, 0.9, 1.0);
 		snow.fragShader = await assets.loadShader("world/psx.frag.wgsl");
 		snow.vertShader = await assets.loadShader("world/psx_instanced.vert.wgsl");
@@ -95,7 +95,7 @@ export class PierScene extends Scene {
 			let lantern_post = new Object();
 			lantern_post.model = Mat4.translate(post_pos);
 			lantern_post.mesh = await assets.loadMesh("pier/lantern_post.obj");
-			lantern_post.textures = [await assets.loadTexture("wood.jpg")];
+			lantern_post.textures = [await assets.loadTexture("materials/wood.jpg")];
 			lantern_post.fragShader = await assets.loadShader("world/psx.frag.wgsl");
 			lantern_post.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 			this.objects.push(lantern_post);
@@ -104,7 +104,7 @@ export class PierScene extends Scene {
 			lantern.model = Mat4.translate(lamp_pos);
 			lantern.tags = ["sway"];
 			lantern.mesh = await assets.loadMesh("pier/lantern.obj");
-			lantern.textures = [await assets.loadTexture("cracked.jpg")];
+			lantern.textures = [await assets.loadTexture("materials/cracked.jpg")];
 			lantern.color = new Vec4(1.0, 0.9, 0.0, 1.0);
 			lantern.mask = 255;
 			lantern.fragShader = await assets.loadShader("world/psx.frag.wgsl");
@@ -115,7 +115,7 @@ export class PierScene extends Scene {
 			lantern_holder.model = Mat4.translate(lamp_pos);
 			lantern_holder.tags = ["sway"];
 			lantern_holder.mesh = await assets.loadMesh("pier/lantern_holder.obj");
-			lantern_holder.textures = [await assets.loadTexture("metal.jpg")];
+			lantern_holder.textures = [await assets.loadTexture("materials/metal.jpg")];
 			lantern_holder.color = new Vec4(0.2, 0.2, 0.2, 1.0);
 			lantern_holder.fragShader = await assets.loadShader("world/psx.frag.wgsl");
 			lantern_holder.vertShader = await assets.loadShader("world/psx.vert.wgsl");
@@ -125,7 +125,7 @@ export class PierScene extends Scene {
 			lantern_chain.model = Mat4.translate(lamp_pos);
 			lantern_chain.tags = ["sway"];
 			lantern_chain.mesh = await assets.loadMesh("pier/lantern_chain.obj");
-			lantern_chain.textures = [await assets.loadTexture("metal.jpg")];
+			lantern_chain.textures = [await assets.loadTexture("materials/metal.jpg")];
 			lantern_chain.color = new Vec4(0.4, 0.4, 0.4, 1.0);
 			lantern_chain.fragShader = await assets.loadShader("world/psx.frag.wgsl");
 			lantern_chain.vertShader = await assets.loadShader("world/psx.vert.wgsl");

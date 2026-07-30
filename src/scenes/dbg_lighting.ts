@@ -14,7 +14,7 @@ export class DebugLightingScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
-			textures: ["test.png"],
+			textures: ["default.png"],
 			meshes: ["cube.obj", "quad.obj"],
 		};
 	}
@@ -23,7 +23,7 @@ export class DebugLightingScene extends Scene {
 		let obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-12, 0, 0), new Vec3(), 2.5);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 
 		let phong = new PhongUniforms();
@@ -37,7 +37,7 @@ export class DebugLightingScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-6, 0, 0), new Vec3(), 2.5);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 
 		phong = new PhongUniforms();
@@ -50,7 +50,7 @@ export class DebugLightingScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 2.5);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 
 		phong = new PhongUniforms();
@@ -62,7 +62,7 @@ export class DebugLightingScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(6, 0, 0), new Vec3(), 2.5);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 
 		phong = new PhongUniforms();
@@ -74,7 +74,7 @@ export class DebugLightingScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(12, 0, 0), new Vec3(), 2.5);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 
 		phong = new PhongUniforms();
@@ -87,7 +87,7 @@ export class DebugLightingScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		obj.z = 1000.0;
@@ -96,7 +96,7 @@ export class DebugLightingScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = await assets.loadMesh("quad.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = new PhongUniforms();

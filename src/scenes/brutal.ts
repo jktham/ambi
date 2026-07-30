@@ -21,8 +21,8 @@ export class BrutalScene extends Scene {
 
 		this.preload = {
 			shaders: ["post/noise.frag.wgsl", "world/phong.frag.wgsl", "world/instanced.vert.wgsl"],
-			textures: ["concrete.jpg", "white.png"],
-			meshes: ["brutal/tiles/path_straight.obj", "brutal/tiles/path_cross.obj", "brutal/tiles/path_fork.obj", "brutal/tiles/path_end.obj", "brutal/tiles/path_turn.obj", "brutal/tiles/tower.obj", "sphere.obj"],
+			textures: ["materials/concrete.jpg", "colors/white.png"],
+			meshes: ["brutal/tiles/path_straight.obj", "brutal/tiles/path_cross.obj", "brutal/tiles/path_fork.obj", "brutal/tiles/path_end.obj", "brutal/tiles/path_turn.obj", "brutal/tiles/tower.obj", "uvsphere.obj"],
 			colliders: ["brutal/tiles/path_straight.obj", "brutal/tiles/path_cross.obj", "brutal/tiles/path_fork.obj", "brutal/tiles/path_end.obj", "brutal/tiles/path_turn.obj", "brutal/tiles/tower.obj"],
 		};
 	}
@@ -63,7 +63,7 @@ export class BrutalScene extends Scene {
 
 			let tileObj = new Object();
 			tileObj.mesh = await assets.loadMesh(mesh);
-			tileObj.textures = [await assets.loadTexture("concrete.jpg")];
+			tileObj.textures = [await assets.loadTexture("materials/concrete.jpg")];
 			tileObj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 			tileObj.fragUniforms = this.phong;
 			tileObj.vertShader = await assets.loadShader("world/instanced.vert.wgsl");
@@ -73,8 +73,8 @@ export class BrutalScene extends Scene {
 
 		let sun = new Object();
 		sun.model = Mat4.transform(this.phong.light.pos, new Vec3(), 20.0);
-		sun.mesh = await assets.loadMesh("sphere.obj");
-		sun.textures = [await assets.loadTexture("white.png")];
+		sun.mesh = await assets.loadMesh("uvsphere.obj");
+		sun.textures = [await assets.loadTexture("colors/white.png")];
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);
 		this.objects.push(sun);
 	}

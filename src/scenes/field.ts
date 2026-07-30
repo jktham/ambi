@@ -33,7 +33,7 @@ export class FieldScene extends Scene {
 
 		this.preload = {
 			shaders: ["post/psx_fog.frag.wgsl", "world/psx.frag.wgsl", "world/psx.vert.wgsl", "world/skybox.frag.wgsl", "world/psx_instanced.vert.wgsl"],
-			textures: ["ground.jpg", "test.png", "leaves.jpg"],
+			textures: ["materials/ground.jpg", "default.png", "materials/leaves.jpg"],
 			meshes: ["field/ground.obj", "cube.obj", "field/grass.obj"],
 		};
 	}
@@ -44,7 +44,7 @@ export class FieldScene extends Scene {
 		for (let chunkOffset of [new Vec2(-1, -1), new Vec2(-1, 1), new Vec2(1, -1), new Vec2(1, 1)]) {
 			let ground = new Object();;
 			ground.mesh = await assets.loadMesh("field/ground.obj");
-			ground.textures = [await assets.loadTexture("ground.jpg")];
+			ground.textures = [await assets.loadTexture("materials/ground.jpg")];
 			ground.fragShader = await assets.loadShader("world/psx.frag.wgsl");
 			ground.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 			ground.model = Mat4.transform(
@@ -58,7 +58,7 @@ export class FieldScene extends Scene {
 		let sky = new Object();
 		sky.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(0, 0, 0), 100);
 		sky.mesh = await assets.loadMesh("cube.obj");
-		sky.textures = [await assets.loadTexture("test.png")];
+		sky.textures = [await assets.loadTexture("default.png")];
 		sky.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		sky.color = new Vec4(0.1, 0.1, 0.1, 1.0);
 		this.objects.push(sky);
@@ -82,7 +82,7 @@ export class FieldScene extends Scene {
 			grass.model = Mat4.translate(new Vec3(chunkOffset.x * this.CHUNK_SIZE/2, 0, chunkOffset.y * this.CHUNK_SIZE/2));
 			grass.color = new Vec4(0.6, 0.6, 0.6, 1.0);
 			grass.mesh = await assets.loadMesh("field/grass.obj");
-			grass.textures = [await assets.loadTexture("leaves.jpg")];
+			grass.textures = [await assets.loadTexture("materials/leaves.jpg")];
 			grass.fragShader = await assets.loadShader("world/psx.frag.wgsl");
 			grass.vertShader = await assets.loadShader("world/psx_instanced.vert.wgsl");
 

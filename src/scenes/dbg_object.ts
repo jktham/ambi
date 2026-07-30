@@ -16,7 +16,7 @@ export class DebugObjectScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/phong.frag.wgsl", "world/instanced.vert.wgsl"],
-			textures: ["test.png", "house.jpg"],
+			textures: ["default.png", "house.jpg"],
 			meshes: ["monke.obj", "quad.json"],
 			colliders: ["monke.obj"],
 			bboxes: ["monke.obj"],
@@ -37,7 +37,7 @@ export class DebugObjectScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.translate(new Vec3(1, 0, -2));
 		obj.mesh = await assets.loadMesh("monke.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.collider = await assets.loadCollider("monke.obj");
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;

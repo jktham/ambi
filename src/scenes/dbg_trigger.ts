@@ -20,7 +20,7 @@ export class DebugTriggerScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/phong.frag.wgsl", "world/skybox.frag.wgsl"],
-			textures: ["test.png"],
+			textures: ["default.png"],
 			meshes: ["cube.obj", "monke.obj", "quad.obj"],
 			bboxes: ["cube.obj", "monke.obj"],
 		};
@@ -32,7 +32,7 @@ export class DebugTriggerScene extends Scene {
 		obj.tags = ["1"];
 		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
@@ -58,7 +58,7 @@ export class DebugTriggerScene extends Scene {
 		obj.tags = ["2"];
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("monke.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
@@ -85,7 +85,7 @@ export class DebugTriggerScene extends Scene {
 		obj.tags = ["3"];
 		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(Math.PI / 4.0, Math.PI / 4.0, Math.PI / 4.0), 0.6);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
@@ -112,7 +112,7 @@ export class DebugTriggerScene extends Scene {
 		obj.tags = ["4"];
 		obj.model = Mat4.transform(new Vec3(0, 0, -5), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.2, 0.2, 0.8, 0.5);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
@@ -138,7 +138,7 @@ export class DebugTriggerScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		obj.z = 1000.0;
@@ -148,7 +148,7 @@ export class DebugTriggerScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = await assets.loadMesh("quad.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;

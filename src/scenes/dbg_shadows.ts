@@ -23,7 +23,7 @@ export class DebugShadowsScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/phong_shadow.frag.wgsl", "world/skybox.frag.wgsl"],
-			textures: ["test_trans2.png", "test.png"],
+			textures: ["test_trans2.png", "default.png"],
 			meshes: ["cube.obj", "monke.obj", "quad.obj"],
 		};
 	}
@@ -43,7 +43,7 @@ export class DebugShadowsScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -4, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png"), "$shadowmap"];
+		obj.textures = [await assets.loadTexture("default.png"), "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong_shadow.frag.wgsl");
 		obj.fragUniforms = this.phong;
@@ -54,7 +54,7 @@ export class DebugShadowsScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(4, -2, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("monke.obj");
-		obj.textures = [await assets.loadTexture("test.png"), "$shadowmap"];
+		obj.textures = [await assets.loadTexture("default.png"), "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong_shadow.frag.wgsl");
 		obj.fragUniforms = this.phong;
@@ -65,7 +65,7 @@ export class DebugShadowsScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		obj.z = 1000.0;
@@ -75,7 +75,7 @@ export class DebugShadowsScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = await assets.loadMesh("quad.obj");
-		obj.textures = [await assets.loadTexture("test.png"), "$shadowmap"];
+		obj.textures = [await assets.loadTexture("default.png"), "$shadowmap"];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong_shadow.frag.wgsl");
 		obj.fragUniforms = this.phong;

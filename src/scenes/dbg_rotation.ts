@@ -19,7 +19,7 @@ export class DebugRotationScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/skybox.frag.wgsl", "world/phong.frag.wgsl"],
-			textures: ["test.png"],
+			textures: ["default.png"],
 			meshes: ["gimbal.obj", "cube.obj", "quad.obj"],
 		};
 	}
@@ -29,42 +29,42 @@ export class DebugRotationScene extends Scene {
 		obj.tags = ["static"];
 		obj.model = Mat4.transform(new Vec3(-6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["intrinsic"];
 		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["extrinsic"];
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["heading"];
 		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["lookat"];
 		obj.model = Mat4.transform(new Vec3(6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		this.objects.push(obj);
 
 		// skybox
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 100);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		obj.z = 1000.0;
@@ -74,7 +74,7 @@ export class DebugRotationScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = await assets.loadMesh("quad.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
@@ -120,7 +120,7 @@ export class DebugRotationScene extends Scene {
 		obj.lifetime = 3.0;
 		obj.model = player.camera.model.mul(Mat4.transform(new Vec3(0, 0, -2), new Vec3(), 0.5));
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		this.objects.push(obj);
 		
 	}

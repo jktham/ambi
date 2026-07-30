@@ -18,7 +18,7 @@ export class DebugErrorScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/phong.frag.wgsl", "world/skybox.frag.wgsl", "world/err_shader.frag.glsl" as any],
-			textures: ["test.png", "err_texture.png"],
+			textures: ["default.png", "err_texture.png"],
 			meshes: ["cube.obj", "err_mesh.obj", "quad.obj"],
 			colliders: ["err_collider.obj"],
 		};
@@ -44,7 +44,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("err_mesh.obj"); // does not exist
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
@@ -52,7 +52,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh(":err_dynamic" as any); // does not exist
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
@@ -60,7 +60,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
@@ -68,7 +68,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
@@ -77,7 +77,7 @@ export class DebugErrorScene extends Scene {
 		obj.model = Mat4.transform(new Vec3(6, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("cube.obj");
 		obj.collider = await assets.loadCollider("err_collider.obj"); // does not exist
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
@@ -85,7 +85,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(9, 0, 0), new Vec3(), 1);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.fragShader = await assets.loadShader("world/err_shader.frag.glsl" as any); // invalid type, does not exist
 		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
@@ -94,7 +94,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 20);
 		obj.mesh = await assets.loadMesh("cube.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/skybox.frag.wgsl");
 		obj.z = 1000.0;
@@ -103,7 +103,7 @@ export class DebugErrorScene extends Scene {
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(0, -5, 0), new Vec3(), 10);
 		obj.mesh = await assets.loadMesh("quad.obj");
-		obj.textures = [await assets.loadTexture("test.png")];
+		obj.textures = [await assets.loadTexture("default.png")];
 		obj.color = new Vec4(0.8, 0.8, 0.8, 1.0);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
