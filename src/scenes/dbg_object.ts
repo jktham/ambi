@@ -3,7 +3,7 @@ import { Scene } from "../scene";
 import { Object } from "../object";
 import { Trigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
-import { Mat4, Vec3, Vec4 } from "../vec";
+import { Mat4, Vec3 } from "../vec";
 import type { Player } from "../player";
 import type { Assets } from "../assets";
 
@@ -33,9 +33,6 @@ export class DebugObjectScene extends Scene {
 
 		obj = new Object();
 		obj.model = Mat4.translate(new Vec3(-1, 0, -2));
-		obj.color = new Vec4(1.0, 0.0, 0.0, 1.0);
-		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
-		obj.fragUniforms = this.phong;
 		this.objects.push(obj);
 
 		obj = new Object();

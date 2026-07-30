@@ -19,7 +19,7 @@ export class DebugRotationScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/skybox.frag.wgsl", "world/phong.frag.wgsl"],
-			textures: ["white.png", "test.png"],
+			textures: ["test.png"],
 			meshes: ["gimbal.obj", "cube.obj", "quad.obj"],
 		};
 	}
@@ -29,35 +29,35 @@ export class DebugRotationScene extends Scene {
 		obj.tags = ["static"];
 		obj.model = Mat4.transform(new Vec3(-6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("white.png")];
+		obj.textures = [await assets.loadTexture("test.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["intrinsic"];
 		obj.model = Mat4.transform(new Vec3(-3, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("white.png")];
+		obj.textures = [await assets.loadTexture("test.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["extrinsic"];
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("white.png")];
+		obj.textures = [await assets.loadTexture("test.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["heading"];
 		obj.model = Mat4.transform(new Vec3(3, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("white.png")];
+		obj.textures = [await assets.loadTexture("test.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
 		obj.tags = ["lookat"];
 		obj.model = Mat4.transform(new Vec3(6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("white.png")];
+		obj.textures = [await assets.loadTexture("test.png")];
 		this.objects.push(obj);
 
 		// skybox
@@ -120,7 +120,7 @@ export class DebugRotationScene extends Scene {
 		obj.lifetime = 3.0;
 		obj.model = player.camera.model.mul(Mat4.transform(new Vec3(0, 0, -2), new Vec3(), 0.5));
 		obj.mesh = await assets.loadMesh("gimbal.obj");
-		obj.textures = [await assets.loadTexture("white.png")];
+		obj.textures = [await assets.loadTexture("test.png")];
 		this.objects.push(obj);
 		
 	}
