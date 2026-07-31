@@ -201,10 +201,9 @@ export class Renderer {
         for (let obj of scene.objects) {
             if (!this.resources.objectResources.has(obj.id) ||
                 obj.textures.find(p => typeof p == "string" && p.startsWith("$"))) { // always recreate bindgroups if using builtins, in case framebuffers were resized
-                await this.loadObject(obj);
+                obj.reload = true;
             }
         }
-
         for (let obj of scene.objects) {
             if (obj.reload) {
                 await this.loadObject(obj);

@@ -26,6 +26,7 @@ export class Engine {
 	/** framerate limit, 0 to disable */
 	framerate = 60;
 
+	private timeOffset: number = 0;
 	private deltaHist: number[] = [];
 	private deltaAvg: number = 0;
 	private mbMem: number = 0;
@@ -89,6 +90,8 @@ export class Engine {
 
         console.log(`loading scene`);
 		await this.renderer.loadScene(this.scene, this.gui);
+
+		this.timeOffset = performance.now() / 1000; // start time at 0 after done loading scene
 
         console.log(`done`);
 		this.loop();
@@ -212,8 +215,8 @@ export class Engine {
 				}
 				this.deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / this.deltaHist.length;
 
-                await this.update(t / 1000, f, dt);
-                await this.draw(t / 1000, f);
+                await this.update(t / 1000 - this.timeOffset, f, dt);
+                await this.draw(t / 1000 - this.timeOffset, f);
             }
         }
 
