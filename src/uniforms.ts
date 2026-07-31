@@ -248,21 +248,29 @@ export class PostUniforms extends Uniforms {
 	}
 }
 
-export class PostPsxUniforms extends Uniforms {
-	name = "PostPsxUniforms";
+export class PostPsxFogUniforms extends Uniforms {
+	name = "PostPsxFogUniforms";
 
 	fog_start = 0.0;
 	fog_end = 10.0;
 	fog_color = new Vec4(0.6, 0.6, 0.6, 1.0);
+	glow_samples = 8;
+	glow_step = 1;
+	glow_radius = 8.0;
+	glow_strength = 0.4;
 
 	size(): number {
-		return 8;
+		return 12;
 	}
 
 	update(): Float32Array {
 		this.data[0] = this.fog_start;
 		this.data[1] = this.fog_end;
 		this.data.subarray(4, 4+4).set(this.fog_color.data);
+		this.data[8] = this.glow_samples;
+		this.data[9] = this.glow_step;
+		this.data[10] = this.glow_radius;
+		this.data[11] = this.glow_strength;
 		return this.data;
 	}
 }

@@ -8,7 +8,7 @@ import { DebugDitherScene } from "./scenes/dbg_dither";
 import { DebugOutlineScene } from "./scenes/dbg_outline";
 import { DebugTransparencyScene } from "./scenes/dbg_transparency";
 import { EchoScene } from "./scenes/echo";
-import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
+import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxFogUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
 import { DebugPixelScene } from "./scenes/dbg_pixel";
 import { DebugTriggerScene } from "./scenes/dbg_trigger";
 import { DebugShadowsScene } from "./scenes/dbg_shadows";
@@ -48,20 +48,26 @@ export const scenes: Map<string, new () => Scene> = new Map([
 ]);
 
 // <path, [uniforms constructor, textures]>
-export const postShaders: Map<FragShaderPath | "scene", [new () => Uniforms, TexturePath[]]> = new Map([
-	["scene", [Uniforms, []]], // use scene default
-	["post/fb_color.frag.wgsl", [Uniforms, []]],
-	["post/fb_depth.frag.wgsl", [Uniforms, []]],
-	["post/fb_normal.frag.wgsl", [Uniforms, []]],
-	["post/fb_pos.frag.wgsl", [Uniforms, []]],
-	["post/fb_mask.frag.wgsl", [Uniforms, []]],
-	["post/psx_fog.frag.wgsl", [PostPsxUniforms, []]],
-	["post/outline.frag.wgsl", [PostOutlineUniforms, []]],
-	["post/ssao.frag.wgsl", [PostSsaoUniforms, ["noise/blue_0.png"]]],
-	["post/noise.frag.wgsl", [Uniforms, []]],
-	["post/dither.frag.wgsl", [PostDitherUniforms, ["noise/blue_0.png"]]],
-	["post/ascii.frag.wgsl", [PostAsciiUniforms, ["chars/ascii_7x7x8.png"]]],
-	["post/test.frag.wgsl", [Uniforms, ["house.jpg"]]],
+export const postShaders: Map<FragShaderPath | "scene", [Uniforms, TexturePath[]]> = new Map([
+	["scene", [new Uniforms(), []]], // use scene default
+	["post/fb_color.frag.wgsl", [new Uniforms(), []]],
+	["post/fb_depth.frag.wgsl", [new Uniforms(), []]],
+	["post/fb_normal.frag.wgsl", [new Uniforms(), []]],
+	["post/fb_pos.frag.wgsl", [new Uniforms(), []]],
+	["post/fb_mask.frag.wgsl", [new Uniforms(), []]],
+	["post/invert.frag.wgsl", [new Uniforms(), []]],
+	["post/psx_fog.frag.wgsl", [(() => {
+		let u = new PostPsxFogUniforms(); 
+		u.glow_samples = 3; 
+		u.glow_radius = 3; 
+		return u;
+	})(), []]],
+	["post/outline.frag.wgsl", [new PostOutlineUniforms(), []]],
+	["post/ssao.frag.wgsl", [new PostSsaoUniforms(), ["noise/blue_0.png"]]],
+	["post/noise.frag.wgsl", [new Uniforms(), []]],
+	["post/dither.frag.wgsl", [new PostDitherUniforms(), ["noise/blue_0.png"]]],
+	["post/ascii.frag.wgsl", [new PostAsciiUniforms(), ["chars/ascii_7x7x8.png"]]],
+	["post/test.frag.wgsl", [new Uniforms(), ["house.jpg"]]],
 ]);
 
 export const resolutionPresets: Map<string, string> = new Map([

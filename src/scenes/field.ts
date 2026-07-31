@@ -1,7 +1,7 @@
 import type { Player } from "../player";
 import { Scene } from "../scene";
 import { Object } from "../object";
-import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
+import { InstancedUniforms, PostPsxFogUniforms } from "../uniforms";
 import { rad, rnd } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import type { Assets } from "../assets";
@@ -25,10 +25,11 @@ export class FieldScene extends Scene {
 		this.spawnRot = new Vec3(0, rad(90), 0);
 
 		// always initialize postuniforms in constructor, important for override reset
-		let postUniforms = new PostPsxUniforms();
+		let postUniforms = new PostPsxFogUniforms();
 		postUniforms.fog_start = -5.0;
 		postUniforms.fog_end = 12.0;
 		postUniforms.fog_color = new Vec4(0.20, 0.20, 0.20, 1.0);
+		postUniforms.glow_samples = 0;
 		this.postUniforms = postUniforms;
 
 		this.preload = {

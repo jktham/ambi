@@ -42,7 +42,7 @@ export class Gui {
 		}
 		this.postSelect.addEventListener("change", async (e) => {
 			let value = (e.target as HTMLSelectElement).value as FragShaderPath | "scene";
-			await engine.setPost(value, new (postShaders.get(value)?.[0] ?? Uniforms), postShaders.get(value)?.[1] ?? []); // TODO
+			await engine.setPost(value, (postShaders.get(value)?.[0] ?? new Uniforms()), postShaders.get(value)?.[1] ?? []); // TODO
 		});
 		this.postSelect.addEventListener("keydown", (e) => {
 			if (e.key.length == 1 && !e.ctrlKey) {

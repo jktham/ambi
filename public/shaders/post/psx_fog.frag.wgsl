@@ -4,6 +4,10 @@ struct PostPsxUniforms {
 	fog_start: f32,
 	fog_end: f32,
 	fog_color: vec4f,
+	glow_samples: f32,
+	glow_step: f32,
+	glow_radius: f32,
+	glow_strength: f32,
 }
 
 @group(0) @binding(0) var<uniform> u_post: PostUniforms;
@@ -31,10 +35,10 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	}
 	data.color = mix(data.color, u_psx.fog_color, clamp(fog_factor, 0.0, 1.0));
 
-	const GLOW_SAMPLES = 10;
-	const GLOW_STEP = 1;
-	const GLOW_RADIUS = 10.0;
-	const GLOW_STRENGTH = 0.4;
+	let GLOW_SAMPLES = i32(u_psx.glow_samples);
+	let GLOW_STEP = i32(u_psx.glow_step);
+	let GLOW_RADIUS = u_psx.glow_radius;
+	let GLOW_STRENGTH = u_psx.glow_strength;
 	var glow_fog_factor = 0.0;
 	var glow_radius = 0.0;
 	var glow_color = vec4f(0.0);
@@ -60,7 +64,12 @@ fn main(in: FragmentIn) -> @location(0) vec4f {
 	}
 	data.color = mix(data.color, glow_color, clamp(glow_fog_factor, 0.0, 1.0) * glow_radius * GLOW_STRENGTH);
 
-	let dither_matrix = mat4x4f(-4, 2, -3, 3, 0, -2, 1, -1, -3, 3, -4, 2, 1, -1, 0, -2);
+	let dither_matrix = mat4x4f(
+		-4, 2, -3, 3, 
+		0, -2, 1, -1, 
+		-3, 3, -4, 2, 
+		1, -1, 0, -2
+	);
 	let dither_value = dither_matrix[pixel.x % 4][pixel.y % 4];
 	let quantized_color = vec4f(vec4u(data.color * 255.0 + dither_value) / 8) / 31.0;
 	data.color = quantized_color;

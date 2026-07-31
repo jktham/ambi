@@ -1,7 +1,7 @@
 import type { Player } from "../player";
 import { Scene } from "../scene";
 import { Object } from "../object";
-import { InstancedUniforms, PostPsxUniforms } from "../uniforms";
+import { InstancedUniforms, PostPsxFogUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
 import { rad, rndvec3 } from "../utils";
 import type { Assets } from "../assets";
@@ -16,7 +16,7 @@ export class PierScene extends Scene {
 		this.spawnPos = new Vec3(8, 1.8, -0.5);
 		this.spawnRot = new Vec3(0, rad(90), 0);
 
-		let postUniforms = new PostPsxUniforms();
+		let postUniforms = new PostPsxFogUniforms();
 		postUniforms.fog_start = -2.0;
 		postUniforms.fog_end = 10.0;
 		postUniforms.fog_color = new Vec4(0.60, 0.60, 0.60, 1.0);
