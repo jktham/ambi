@@ -4,6 +4,7 @@ import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import type { Assets, MeshPath, ShaderPath, TexturePath } from "../assets";
+import { generateTextMesh } from "../parse";
 
 export class DebugReloadScene extends Scene {
 	phong = new PhongUniforms();
@@ -20,13 +21,21 @@ export class DebugReloadScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/skybox.frag.wgsl", "world/base.frag.wgsl", "world/rainbow.frag.wgsl"],
-			textures: ["default.png", "house.jpg", "materials/brick.jpg", "error.png"],
+			textures: ["default.png", "house.jpg", "materials/brick.jpg", "error.png", "fonts/noto_outline.png"],
 			meshes: ["quad.obj", "cube.obj", "monke.obj", "icosphere.obj"],
+			fonts: ["noto_outline.fnt"]
 		};
 	}
 	
 	async init(assets: Assets) {
 		let obj = new Object();
+		obj.tags = ["lookat"];
+		obj.model = Mat4.transform(new Vec3(0, 2, 0), new Vec3(), 1.0);
+		obj.mesh = generateTextMesh(":text1.obj", await assets.loadFont("noto_outline.fnt"), "[E] to cycle assets", 0.5, "center");
+		obj.textures = [await assets.loadTexture("fonts/noto_outline.png")];
+		this.objects.push(obj);
+
+		obj = new Object();
 		obj.tags = ["reload"];
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("cube.obj");
@@ -56,7 +65,10 @@ export class DebugReloadScene extends Scene {
 	}
 
 	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
-		
+		for (let obj of this.getObjects("lookat")) {
+			obj.model = Mat4.translate(obj.model.translation()).mul(Mat4.rotateLookAt(obj.model.translation().mul(new Vec3(1, 0, 1)).negate(), player.position.mul(new Vec3(1, 0, 1)).negate()));
+			obj.update = true;
+		}
 	}
 
 	async interact(time: number, player: Player, assets: Assets) {

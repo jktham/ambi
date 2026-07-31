@@ -7,7 +7,7 @@ import { DebugObjectScene } from "./scenes/dbg_object";
 import { DebugDitherScene } from "./scenes/dbg_dither";
 import { DebugOutlineScene } from "./scenes/dbg_outline";
 import { DebugTransparencyScene } from "./scenes/dbg_transparency";
-import { DebugEchoScene } from "./scenes/dbg_echo";
+import { EchoScene } from "./scenes/echo";
 import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
 import { DebugPixelScene } from "./scenes/dbg_pixel";
 import { DebugTriggerScene } from "./scenes/dbg_trigger";
@@ -29,11 +29,11 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["pier", PierScene],
 	["brutal", BrutalScene],
 	["field", FieldScene],
+	["echo", EchoScene],
 	["dbg_object", DebugObjectScene],
 	["dbg_dither", DebugDitherScene],
 	["dbg_outline", DebugOutlineScene],
 	["dbg_transparency", DebugTransparencyScene],
-	["dbg_echo", DebugEchoScene],
 	["dbg_pixel", DebugPixelScene],
 	["dbg_trigger", DebugTriggerScene],
 	["dbg_rotation", DebugRotationScene],

@@ -4,14 +4,15 @@ import { InstancedUniforms, PhongUniforms, PostEchoUniforms } from "../uniforms"
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import type { Assets } from "../assets";
+import { generateTextMesh } from "../parse";
 
-export class DebugEchoScene extends Scene {
+export class EchoScene extends Scene {
 	phong = new PhongUniforms();
 
 	constructor() {
 		super();
 
-		this.name = "dbg_echo";
+		this.name = "echo";
 		this.spawnPos = new Vec3(0, 1.8, 0);
 
 		this.postUniforms = new PostEchoUniforms();
@@ -29,6 +30,12 @@ export class DebugEchoScene extends Scene {
 		this.postShader = await assets.loadShader("post/echo.frag.wgsl");
 
 		let obj = new Object();
+		obj.model = Mat4.transform(new Vec3(0, 2, -2), new Vec3(), 1.0);
+		obj.mesh = generateTextMesh(":text1.obj", await assets.loadFont("noto_outline.fnt"), "[E] to fire pulse", 0.5, "center");
+		obj.textures = [await assets.loadTexture("fonts/noto_outline.png")];
+		this.objects.push(obj);
+
+		obj = new Object();
 		obj.mesh = await assets.loadMesh("quad.obj");
 		obj.model = Mat4.transform(new Vec3(), new Vec3(), 20);
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");

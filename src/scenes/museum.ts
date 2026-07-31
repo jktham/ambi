@@ -29,7 +29,7 @@ export class MuseumScene extends Scene {
 		["pier", "field"], 
 		["brutal", "dbg_object"], 
 		["dbg_dither", "dbg_outline"], 
-		["dbg_portals", "dbg_echo"]
+		["dbg_portals", "echo"]
 	];
 
 	constructor() {

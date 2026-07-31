@@ -5,6 +5,7 @@ import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
 import type { Assets } from "../assets";
 import { clamp, rad } from "../utils";
+import { generateTextMesh } from "../parse";
 
 export class DebugRotationScene extends Scene {
 	phong = new PhongUniforms();
@@ -19,17 +20,30 @@ export class DebugRotationScene extends Scene {
 
 		this.preload = {
 			shaders: ["world/skybox.frag.wgsl", "world/phong.frag.wgsl"],
-			textures: ["default.png"],
+			textures: ["default.png", "fonts/noto_outline.png"],
 			meshes: ["gimbal.obj", "cube.obj", "quad.obj"],
+			fonts: ["noto_outline.fnt"],
 		};
 	}
 	
 	async init(assets: Assets) {
 		let obj = new Object();
+		obj.model = Mat4.transform(new Vec3(0, -2, 0), new Vec3(), 1.0);
+		obj.mesh = generateTextMesh(":text1.obj", await assets.loadFont("noto_outline.fnt"), "[E] to shoot projectile", 0.5, "center");
+		obj.textures = [await assets.loadTexture("fonts/noto_outline.png")];
+		this.objects.push(obj);
+
+		obj = new Object();
 		obj.tags = ["static"];
 		obj.model = Mat4.transform(new Vec3(-6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
 		obj.textures = [await assets.loadTexture("default.png")];
+		this.objects.push(obj);
+
+		obj = new Object();
+		obj.model = Mat4.transform(new Vec3(-6, 2, 0), new Vec3(), 1.0);
+		obj.mesh = generateTextMesh(":text2.obj", await assets.loadFont("noto_outline.fnt"), "static", 0.5, "center");
+		obj.textures = [await assets.loadTexture("fonts/noto_outline.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
@@ -40,10 +54,22 @@ export class DebugRotationScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
+		obj.model = Mat4.transform(new Vec3(-3, 2, 0), new Vec3(), 1.0);
+		obj.mesh = generateTextMesh(":text3.obj", await assets.loadFont("noto_outline.fnt"), "intrinsic", 0.5, "center");
+		obj.textures = [await assets.loadTexture("fonts/noto_outline.png")];
+		this.objects.push(obj);
+
+		obj = new Object();
 		obj.tags = ["extrinsic"];
 		obj.model = Mat4.transform(new Vec3(0, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
 		obj.textures = [await assets.loadTexture("default.png")];
+		this.objects.push(obj);
+
+		obj = new Object();
+		obj.model = Mat4.transform(new Vec3(0, 2, 0), new Vec3(), 1.0);
+		obj.mesh = generateTextMesh(":text4.obj", await assets.loadFont("noto_outline.fnt"), "extrinsic", 0.5, "center");
+		obj.textures = [await assets.loadTexture("fonts/noto_outline.png")];
 		this.objects.push(obj);
 
 		obj = new Object();
@@ -54,10 +80,22 @@ export class DebugRotationScene extends Scene {
 		this.objects.push(obj);
 
 		obj = new Object();
+		obj.model = Mat4.transform(new Vec3(3, 2, 0), new Vec3(), 1.0);
+		obj.mesh = generateTextMesh(":text5.obj", await assets.loadFont("noto_outline.fnt"), "heading", 0.5, "center");
+		obj.textures = [await assets.loadTexture("fonts/noto_outline.png")];
+		this.objects.push(obj);
+
+		obj = new Object();
 		obj.tags = ["lookat"];
 		obj.model = Mat4.transform(new Vec3(6, 0, 0), new Vec3(), 1.0);
 		obj.mesh = await assets.loadMesh("gimbal.obj");
 		obj.textures = [await assets.loadTexture("default.png")];
+		this.objects.push(obj);
+
+		obj = new Object();
+		obj.model = Mat4.transform(new Vec3(6, 2, 0), new Vec3(), 1.0);
+		obj.mesh = generateTextMesh(":text6.obj", await assets.loadFont("noto_outline.fnt"), "lookat", 0.5, "center");
+		obj.textures = [await assets.loadTexture("fonts/noto_outline.png")];
 		this.objects.push(obj);
 
 		// skybox
