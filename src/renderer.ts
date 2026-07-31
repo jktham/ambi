@@ -110,8 +110,9 @@ export class Renderer {
             // already loaded, destroy old buffers
             this.resources.destroyObjectBuffers(obj.id);
             this.resources.objectResources.delete(obj.id);
-            obj.changed = true; // reupload buffers after this
         }
+        obj.reload = false;
+        obj.update = true; // always need to update buffers after this
 
         // pipeline, turns out we have to make one per object due to layout auto bindgroup constraints
         const pipeline = this.resources.createObjectPipeline(obj.vertShader, obj.fragShader);
@@ -137,7 +138,7 @@ export class Renderer {
 
         // texture bindgroup
         const textureBuffers = obj.textures.map(texture => {
-            if (typeof texture == "string") {
+            if (typeof texture == "string") { // label
                 if (texture == "$shadowmap") {
                     return this.resources.shadowmapFramebuffer;
                 } else if (texture == "$framebuffer") {
@@ -200,6 +201,12 @@ export class Renderer {
         for (let obj of scene.objects) {
             if (!this.resources.objectResources.has(obj.id) ||
                 obj.textures.find(p => typeof p == "string" && p.startsWith("$"))) { // always recreate bindgroups if using builtins, in case framebuffers were resized
+                await this.loadObject(obj);
+            }
+        }
+
+        for (let obj of scene.objects) {
+            if (obj.reload) {
                 await this.loadObject(obj);
             }
         }
@@ -273,10 +280,10 @@ export class Renderer {
         this.profiler.start("  bufferObjects");
 
         for (let obj of scene.objects) {
-            if (!obj.changed) {
+            if (!obj.update) {
                 continue;
             }
-            obj.changed = false;
+            obj.update = false;
             
             let objectUniforms = new ObjectUniforms();
             objectUniforms.mask = obj.mask;

@@ -601,7 +601,7 @@ export class MuseumScene extends Scene {
 
 		for (let obj of this.getObjects("rotate")) {
 			obj.model = obj.model.mul(Mat4.rotateIntrinsic(new Vec3(0, 0.5 * deltaTime, 0)));
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		for (let obj of this.getObjects("rotateY")) {
@@ -609,7 +609,7 @@ export class MuseumScene extends Scene {
 			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
 			let globalYRot = Mat4.rotateIntrinsic(new Vec3(0, 0.5 * deltaTime, 0));
 			obj.model = Mat4.translate(translation).mul(globalYRot).mul(modelWithoutTranslation);
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		for (let obj of this.getObjects("rotate-Y")) {
@@ -617,13 +617,13 @@ export class MuseumScene extends Scene {
 			let modelWithoutTranslation = Mat4.translate(translation.mul(-1)).mul(obj.model);
 			let globalYRot = Mat4.rotateIntrinsic(new Vec3(0, -0.25 * deltaTime, 0));
 			obj.model = Mat4.translate(translation).mul(globalYRot).mul(modelWithoutTranslation);
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		for (let obj of this.getObjects("explode")) {
 			let dist = obj.model.translation().mul(new Vec3(1, 0.5, 1)).dist(player.position.mul(new Vec3(1, 0.5, 1)));
 			obj.vertConfig.x = clamp((dist - 5.0) / 2.0, 0.0, 10.0);
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		for (let obj of this.getObjects("spheres")) {
@@ -635,34 +635,34 @@ export class MuseumScene extends Scene {
 					uniforms.spheres[i].color = rndvec4(new Vec4(0, 0, 0, 1), new Vec4(1, 1, 1, 1));
 				}
 			}
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		for (let obj of this.getObjects("pulse")) {
 			let pulse = 1.0 + Math.sin(time) * 0.05;
 			let origin = obj.model.translation();
 			obj.model = Mat4.transform(origin, new Vec3(0, 0, 0), 7 * pulse);
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		for (let obj of this.getObjects("lookatplayer")) {
 			let [t, _r, s] = obj.model.decompose();
 			obj.model = Mat4.translate(t).mul(Mat4.rotateLookAt(t.negate(), player.position.negate()).mul(Mat4.scale(s))); // negate so +z towards player
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		for (let obj of this.getObjects("scalewithplayer")) {
 			let [t, r, _s] = obj.model.decompose();
 			let dist = player.position.dist(t);
 			obj.model = Mat4.transform(t, r, dist * 0.1);
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		this.playerPosSmooth = Vec3.lerp(this.playerPosSmooth, player.position, 0.05);
 		for (let obj of this.getObjects("lookatplayersmooth")) {
 			let [t, _r, s] = obj.model.decompose();
 			obj.model = Mat4.translate(t).mul(Mat4.rotateLookAt(t.negate(), this.playerPosSmooth.negate()).mul(Mat4.scale(s))); // negate so +z towards player
-			obj.changed = true;
+			obj.update = true;
 		}
 	}
 
@@ -695,7 +695,7 @@ export class MuseumScene extends Scene {
 				obj.collidable = this.roomSlots[0] == r; // only collidable if in current room
 				obj.z %= 100000.0;
 				obj.z += this.roomSlots[0] == r ? 100000.0 : 0.0; // draw current room first, breaks on negative z!
-				obj.changed = true;
+				obj.update = true;
 			}
 			for (let t of this.roomTriggers[r]) {
 				let [translation, rotation, scale] = t.model.decompose();

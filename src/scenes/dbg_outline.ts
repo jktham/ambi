@@ -101,12 +101,12 @@ export class DebugOutlineScene extends Scene {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		this.phong.light.pos = lightPos;
 		for (let obj of this.objects) {
-			obj.changed = true;
+			obj.update = true;
 		}
 		
 		for (let obj of this.getObjects("rotate")) {
 			obj.model = Mat4.rotateIntrinsic(new Vec3(0, 1, 0).mul(deltaTime)).mul(obj.model);
-			obj.changed = true;
+			obj.update = true;
 		}
 
 	}

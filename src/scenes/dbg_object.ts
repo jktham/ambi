@@ -84,9 +84,9 @@ export class DebugObjectScene extends Scene {
 
 	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		this.objects[0].model = this.objects[0].model.mul(Mat4.rotateIntrinsic(new Vec3(0, 0, deltaTime)));
-		this.objects[0].changed = true;
+		this.objects[0].update = true;
 		this.objects[1].model = Mat4.translate(new Vec3(-1, 0, -2)).mul(Mat4.translate(new Vec3(0, 1, 0).mul(Math.sin(time))));
-		this.objects[1].changed = true;
+		this.objects[1].update = true;
 
 		let monke = this.getObject("monke_instanced")!;
 		let monkeUniforms = monke.vertUniforms as InstancedUniforms;
@@ -95,12 +95,12 @@ export class DebugObjectScene extends Scene {
 			monkeUniforms.models[i] = model;
 			monkeUniforms.normals[i] = model.inverse().transpose();
 		}
-		monke.changed = true;
+		monke.update = true;
 
 		let lightPos = new Vec3(Math.cos(time)*10, 10, Math.sin(time)*10);
 		this.phong.light.pos = lightPos;
 		for (let obj of this.objects) {
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		if (time > 3 && this.getObjects("added_after_init").length == 0) {

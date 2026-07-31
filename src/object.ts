@@ -18,8 +18,10 @@ export class Object {
     shadows: boolean = true;
     /** whether to draw in portal_i pass, should be length of scene portals or undefined */
     portal_visible?: boolean[];
-    /** set true if object has changed since last frame, otherwise skip buffer updates */
-    changed: boolean = true;
+    /** set true to update uniform buffers before next frame, use if uniform relevant object properties changed */
+    update: boolean = true;
+    /** set true to reload object resources before next frame, use if textures or other assets changed */
+    reload: boolean = false;
 
     /** mesh color multiplier, with transparency */
     color: Vec4 = new Vec4(1.0, 1.0, 1.0, 1.0);

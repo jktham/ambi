@@ -109,7 +109,7 @@ export class DebugMaterialScene extends Scene {
 		
 		for (let obj of this.getObjects("circleLight")) {
 			(obj.fragUniforms as PhongUniforms).light.pos = obj.model.translation().add(lightOffset);
-			obj.changed = true;
+			obj.update = true;
 		}
 
 	}

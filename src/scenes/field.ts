@@ -111,7 +111,7 @@ export class FieldScene extends Scene {
 				grassUniforms.models[i] = this.grassModels[i];
 				// grassUniforms.normals[i] = this.grassModels[i].inverse().transpose();
 			}
-			g.changed = true;
+			g.update = true;
 		}
 
 		if (player.position.x > this.CHUNK_SIZE/2) player.position.x -= this.CHUNK_SIZE;

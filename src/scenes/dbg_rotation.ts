@@ -88,24 +88,24 @@ export class DebugRotationScene extends Scene {
 			obj.model = obj.model.mul(Mat4.translate(new Vec3(0, 0, -1).mul(30.0 * deltaTime)));
 			let d = clamp(obj.lifetime!, 0.0, 1.0);
 			obj.color = Vec4.splat(d);
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		let intrinsic = this.getObject("intrinsic")!;
 		intrinsic.model = Mat4.translate(intrinsic.model.translation()).mul(Mat4.rotateIntrinsic(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
-		intrinsic.changed = true;
+		intrinsic.update = true;
 
 		let extrinsic = this.getObject("extrinsic")!;
 		extrinsic.model = Mat4.translate(extrinsic.model.translation()).mul(Mat4.rotateExtrinsic(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
-		extrinsic.changed = true;
+		extrinsic.update = true;
 
 		let heading = this.getObject("heading")!;
 		heading.model = Mat4.translate(heading.model.translation()).mul(Mat4.rotateHeading(new Vec3(rad(45), rad(45*time), rad(Math.sin(time*100)*10))));
-		heading.changed = true;
+		heading.update = true;
 
 		let lookat = this.getObject("lookat")!;
 		lookat.model = Mat4.translate(lookat.model.translation()).mul(Mat4.rotateLookAt(lookat.model.translation(), player.position));
-		lookat.changed = true;
+		lookat.update = true;
 
 		// test decompose identity
 		for (let obj of this.objects) {

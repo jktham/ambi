@@ -81,7 +81,7 @@ export class DebugDitherScene extends Scene {
 		let lightPos = new Vec3(20*Math.cos(time/2), 60, 20*Math.sin(time/2));
 		this.phong.light.pos = lightPos;
 		for (let obj of this.objects) {
-			obj.changed = true;
+			obj.update = true;
 		}
 
 	}

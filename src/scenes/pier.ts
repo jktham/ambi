@@ -157,13 +157,13 @@ export class PierScene extends Scene {
 			snowUniforms.models[i] = model;
 			snowUniforms.normals[i] = model.inverse().transpose();
 		}
-		snow.changed = true;
+		snow.update = true;
 
 		for (let obj of this.getObjects("sway")!) {
 			let origin = obj.model.translation();
 			let sway = new Vec3(Math.sin(time*0.5)*0.08, Math.cos(time*0.2)*0.5, 0);
 			obj.model = Mat4.transform(origin, sway, 1);
-			obj.changed = true;
+			obj.update = true;
 		}
 	}
 }

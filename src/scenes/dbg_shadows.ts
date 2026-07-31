@@ -88,7 +88,7 @@ export class DebugShadowsScene extends Scene {
 		let lightPos = new Vec3(20*Math.cos(time/2), 20, 20*Math.sin(time/2));
 		this.phong.light.pos = lightPos;
 		for (let obj of this.objects) {
-			obj.changed = true;
+			obj.update = true;
 		}
 
 		this.shadowCamera!.model = Mat4.translate(lightPos).mul(Mat4.rotateLookAt(lightPos, new Vec3(0, 0, 0)));

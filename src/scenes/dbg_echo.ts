@@ -65,7 +65,7 @@ export class DebugEchoScene extends Scene {
 	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		let src = this.getObject("pulse_source")!;
 		src.model = Mat4.transform(new Vec3(Math.cos(time)*10, 2, Math.sin(time)*10), new Vec3(), 1);
-		src.changed = true;
+		src.update = true;
 		if (time - this.lastPulseTime > 1.6) {
 			this.sendPulse(src.model.mulVec(new Vec3()), new Vec4(Math.random(), Math.random(), Math.random(), 1), time);
 			this.lastPulseTime = time;

@@ -44,12 +44,12 @@ export class DebugTriggerScene extends Scene {
 		trg.onEnter = () => {
 			let target = this.getObject("1")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
-			target.changed = true;
+			target.update = true;
 		}
 		trg.onLeave = () => {
 			let target = this.getObject("1")!;
 			target.color = new Vec4(0.8, 0.2, 0.2, 0.5);
-			target.changed = true;
+			target.update = true;
 		}
 		this.triggers.push(trg);
 
@@ -71,12 +71,12 @@ export class DebugTriggerScene extends Scene {
 		trg.onEnter = () => {
 			let target = this.getObject("2")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
-			target.changed = true;
+			target.update = true;
 		}
 		trg.onLeave = () => {
 			let target = this.getObject("2")!;
 			target.color = new Vec4(0.8, 0.2, 0.2, 0.5);
-			target.changed = true;
+			target.update = true;
 		}
 		this.triggers.push(trg);
 
@@ -98,12 +98,12 @@ export class DebugTriggerScene extends Scene {
 		trg.onEnter = () => {
 			let target = this.getObject("3")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
-			target.changed = true;
+			target.update = true;
 		}
 		trg.onLeave = () => {
 			let target = this.getObject("3")!;
 			target.color = new Vec4(0.8, 0.2, 0.2, 0.5);
-			target.changed = true;
+			target.update = true;
 		}
 		this.triggers.push(trg);
 
@@ -125,12 +125,12 @@ export class DebugTriggerScene extends Scene {
 		trg.onEnter = () => {
 			let target = this.getObject("4")!;
 			target.color = new Vec4(0.2, 0.8, 0.2, 0.5);
-			target.changed = true;
+			target.update = true;
 		}
 		trg.onLeave = () => {
 			let target = this.getObject("4")!;
 			target.color = new Vec4(0.8, 0.2, 0.2, 0.5);
-			target.changed = true;
+			target.update = true;
 		}
 		this.triggers.push(trg);
 
@@ -162,7 +162,7 @@ export class DebugTriggerScene extends Scene {
 		let origin = Mat4.transform(new Vec3(0, 0, -5), new Vec3(0, 0, Math.PI / 4.0), 1);
 		let offset = Mat4.translate(new Vec3(1, 0, 0).mul(Math.sin(time)*5.0));
 		obj4.model.data = offset.mul(origin).data; // dont change reference, so bbox model gets updated as well
-		obj4.changed = true;
+		obj4.update = true;
 
 	}
 }
