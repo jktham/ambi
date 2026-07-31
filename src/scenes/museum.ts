@@ -67,7 +67,7 @@ export class MuseumScene extends Scene {
 			shaders: ["post/outline.frag.wgsl", "world/rainbow.frag.wgsl", "world/glitch.vert.wgsl", "world/explode.vert.wgsl", "world/phong.frag.wgsl", "world/rayspheres.frag.wgsl", "world/wireframe.frag.wgsl", "world/skybox.frag.wgsl", "world/px_rainbow.frag.wgsl", "world/pulse.frag.wgsl", "world/base.frag.wgsl", "world/ripple.vert.wgsl", "world/noise.frag.wgsl", "world/instanced.vert.wgsl"],
 			textures: ["colors/white.png", "test_trans.png", "test_trans2.png", "error.png", "materials/brick.jpg", "fonts/noto_outline.png", "skybox/pure_clouds.jpg", "skybox/pure_cloudy.jpg", "skybox/pure_stars.jpg", "skybox/desert_stars.jpg"],
 			meshes: ["museum/monke_lod0.obj", "museum/monke_lod1.obj", "museum/monke_lod2.obj", "museum/monke_lod3.obj", "museum/monke_lod4.obj", "museum/monke_lod5.obj", "museum/monke_lod6.obj", "monke.obj", "museum/tree.obj", "cube.obj", "quad_v.obj", "uvsphere.obj", "icosphere.obj", "torus.obj", "cube.obj", "quad.obj", "grid.obj", "error.obj", "museum/room.obj", "museum/tunnel.obj", "museum/pillar.obj", "museum/portal_h.obj", "museum/portal_frame.obj"],
-			colliders: ["cube.obj", "museum/room.obj", "museum/tunnel.obj", "museum/pillar.obj", "museum/portal_frame.obj"],
+			colliders: ["cube.obj", "museum/room.obj", "museum/tunnel.obj", "museum/pillar.obj", "museum/portal_frame.obj", "museum/tree_collider.obj"],
 			bboxes: ["museum/portal_h.obj", "museum/portal_v.obj"],
 			fonts: ["noto_outline.fnt"],
 		};
@@ -130,7 +130,7 @@ export class MuseumScene extends Scene {
 		obj.mesh = await assets.loadMesh("museum/tree.obj");
 		obj.z_sort = true;
 		obj.color = new Vec4(1, 1, 1, 1);
-		obj.collider = await assets.loadCollider("cube.obj");
+		obj.collider = await assets.loadCollider("museum/tree_collider.obj");
 		obj.textures[0] = await assets.loadTexture("colors/white.png");
 		obj.fragShader = await assets.loadShader("world/phong.frag.wgsl");
 		obj.fragUniforms = this.phong;
