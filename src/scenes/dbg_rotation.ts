@@ -142,7 +142,8 @@ export class DebugRotationScene extends Scene {
 		heading.update = true;
 
 		let lookat = this.getObject("lookat")!;
-		lookat.model = Mat4.translate(lookat.model.translation()).mul(Mat4.rotateLookAt(lookat.model.translation(), player.position));
+		let dir = player.position.sub(lookat.model.translation());
+		lookat.model = Mat4.translate(lookat.model.translation()).mul(Mat4.lookIn(dir));
 		lookat.update = true;
 
 		// test decompose identity

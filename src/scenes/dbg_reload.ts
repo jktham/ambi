@@ -66,7 +66,8 @@ export class DebugReloadScene extends Scene {
 
 	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
 		for (let obj of this.getObjects("lookat")) {
-			obj.model = Mat4.translate(obj.model.translation()).mul(Mat4.rotateLookAt(obj.model.translation().mul(new Vec3(1, 0, 1)).negate(), player.position.mul(new Vec3(1, 0, 1)).negate()));
+			let dir = obj.model.translation().mul(new Vec3(1, 0, 1)).sub(player.position.mul(new Vec3(1, 0, 1)));
+			obj.model = Mat4.translate(obj.model.translation()).mul(Mat4.lookIn(dir));
 			obj.update = true;
 		}
 	}

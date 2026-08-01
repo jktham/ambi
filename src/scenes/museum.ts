@@ -647,7 +647,8 @@ export class MuseumScene extends Scene {
 
 		for (let obj of this.getObjects("lookatplayer")) {
 			let [t, _r, s] = obj.model.decompose();
-			obj.model = Mat4.translate(t).mul(Mat4.rotateLookAt(t.negate(), player.position.negate()).mul(Mat4.scale(s))); // negate so +z towards player
+			let dir = t.sub(player.position);
+			obj.model = Mat4.translate(t).mul(Mat4.lookIn(dir).mul(Mat4.scale(s))); // negate so +z towards player
 			obj.update = true;
 		}
 
@@ -661,7 +662,8 @@ export class MuseumScene extends Scene {
 		this.playerPosSmooth = Vec3.lerp(this.playerPosSmooth, player.position, 0.05);
 		for (let obj of this.getObjects("lookatplayersmooth")) {
 			let [t, _r, s] = obj.model.decompose();
-			obj.model = Mat4.translate(t).mul(Mat4.rotateLookAt(t.negate(), this.playerPosSmooth.negate()).mul(Mat4.scale(s))); // negate so +z towards player
+			let dir = t.sub(this.playerPosSmooth);
+			obj.model = Mat4.translate(t).mul(Mat4.lookIn(dir).mul(Mat4.scale(s))); // negate so +z towards player
 			obj.update = true;
 		}
 	}
