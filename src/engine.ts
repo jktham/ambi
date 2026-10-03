@@ -159,6 +159,8 @@ export class Engine {
 		}
 
 		await this.scene.update(time, deltaTime, this.player, this.assets);
+		
+		this.player.updateCamera(); // in case position changed by update
 
 		for (let obj of this.scene.objects.filter(obj => obj.lifetime !== undefined)) {
 			obj.lifetime! -= deltaTime;
