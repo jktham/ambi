@@ -3,7 +3,7 @@ import { Scene } from "../scene";
 import { Object } from "../object";
 import { InstancedUniforms, PostPsxFogUniforms } from "../uniforms";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
-import { rad, rndvec3 } from "../utils";
+import { rad, rnd, rndvec3 } from "../utils";
 import type { Assets } from "../assets";
 
 export class PierScene extends Scene {
@@ -131,6 +131,42 @@ export class PierScene extends Scene {
 			lantern_chain.vertShader = await assets.loadShader("world/psx.vert.wgsl");
 			this.objects.push(lantern_chain);
 		}
+
+		let tree_models = [];
+
+		for (let i=0; i<100; i++) {
+			let offset = new Vec3(30, 1, 0).add(rndvec3().sub(0.5).mul(2).mul(new Vec3(20, 1, 35)));
+			if (Math.abs(offset.z + 3) < 3) continue;
+
+			let model = Mat4.transform(offset, new Vec3(0, Math.PI * Math.random() * 2, 0), rnd(0.9, 1.2));
+			tree_models.push(model);
+		}
+
+		let tree_stem = new Object();
+		tree_stem.mesh = await assets.loadMesh("pier/tree_stem.obj");
+		tree_stem.textures = [await assets.loadTexture("materials/wood.jpg")];
+		tree_stem.color = new Vec4(0.3, 0.3, 0.3, 1.0);
+		tree_stem.uv_scale = 0.4;
+		tree_stem.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+		tree_stem.vertShader = await assets.loadShader("world/psx_instanced.vert.wgsl");
+		tree_stem.vertUniforms = new InstancedUniforms();
+		(tree_stem.vertUniforms as InstancedUniforms).instanceCount = tree_models.length;
+		(tree_stem.vertUniforms as InstancedUniforms).models.push(...tree_models);
+		(tree_stem.vertUniforms as InstancedUniforms).normals.push(...tree_models.map(m => m.inverse().transpose()));
+		this.objects.push(tree_stem);
+
+		let tree_top = new Object();
+		tree_top.mesh = await assets.loadMesh("pier/tree_top.obj");
+		tree_top.textures = [await assets.loadTexture("materials/leaves.jpg")];
+		tree_top.color = new Vec4(0.1, 0.15, 0.1, 1.0);
+		tree_top.uv_scale = 0.4;
+		tree_top.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+		tree_top.vertShader = await assets.loadShader("world/psx_instanced.vert.wgsl");
+		tree_top.vertUniforms = new InstancedUniforms();
+		(tree_top.vertUniforms as InstancedUniforms).instanceCount = tree_models.length;
+		(tree_top.vertUniforms as InstancedUniforms).models.push(...tree_models);
+		(tree_top.vertUniforms as InstancedUniforms).normals.push(...tree_models.map(m => m.inverse().transpose()));
+		this.objects.push(tree_top);
 	}
 
 	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
