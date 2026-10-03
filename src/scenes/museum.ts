@@ -1,7 +1,7 @@
 import type { Player } from "../player";
 import { Scene } from "../scene";
 import { Object } from "../object";
-import { Trigger } from "../trigger";
+import { AreaTrigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms, PostOutlineUniforms, RayspheresUniforms } from "../uniforms";
 import { clamp, rad, rnd, rndarr, rndint, rndseed, rndvec3, rndvec4 } from "../utils";
 import { Mat4, Vec2, Vec3, Vec4 } from "../vec";
@@ -19,7 +19,7 @@ const FIRST_ROOM = 0;
 export class MuseumScene extends Scene {
 	roomSlots: number[] = [0, 1, 2, 3, 4]; // CNESW
 	roomObjects: Object[][] = Array(N_ROOMS).fill(0).map(_ => []); // different [] objects
-	roomTriggers: Trigger[][] = Array(N_ROOMS).fill(0).map(_ => []);
+	roomTriggers: AreaTrigger[][] = Array(N_ROOMS).fill(0).map(_ => []);
 
 	phong = new PhongUniforms();
 
@@ -789,9 +789,9 @@ export class MuseumScene extends Scene {
 		return objects;
 	}
 
-	async createPortals(assets: Assets, scenes: string[][]): Promise<[Object[], Trigger[]]> {
+	async createPortals(assets: Assets, scenes: string[][]): Promise<[Object[], AreaTrigger[]]> {
 		let objects: Object[] = [];
-		let triggers: Trigger[] = [];
+		let triggers: AreaTrigger[] = [];
 
 		let positions = [
 			[new Vec3(-8, -0.05, -20), new Vec3(8, -0.05, -20)],
@@ -844,7 +844,7 @@ export class MuseumScene extends Scene {
 				obj.vertConfig.x = 0.03;
 				objects.push(obj);
 
-				let t = new Trigger();
+				let t = new AreaTrigger();
 				t.bbox = await assets.loadBbox(`museum/portal_${["h", "v", "h", "v"][i]}.obj`);
 				t.model = Mat4.translate(positions[i][j]);
 				t.onEnter = async () => await engine.setScene(scenes[i][j]);

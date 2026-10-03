@@ -5,11 +5,12 @@ import type { Player } from "../player";
 import { PhongUniforms, PostOutlineUniforms } from "../uniforms";
 import { Camera } from "../camera";
 import type { Assets } from "../assets";
-import { rnd, rndvec3 } from "../utils";
+import { rad, rnd, rndvec3 } from "../utils";
+import { PortalTrigger } from "../trigger";
+import { engine } from "../main";
 
 export class DebugPortalsScene extends Scene {
 	phong = new PhongUniforms();
-	prevPos = new Vec3();
 
 	constructor() {
 		super();
@@ -25,7 +26,7 @@ export class DebugPortalsScene extends Scene {
 		postUniforms.color[2] = new Vec4(0.0, 0.0, 0.0, 0.0);
 		this.postUniforms = postUniforms;
 	
-		this.portalCameras = [new Camera(), new Camera()];
+		this.portalCameras = [new Camera(), new Camera(), new Camera()];
 
 		this.phong.light.pos = new Vec3(0, 10, 0);
 
@@ -43,19 +44,65 @@ export class DebugPortalsScene extends Scene {
 		obj.model = Mat4.transform(new Vec3(-10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
 		obj.mesh = await assets.loadMesh("quad_v.obj");
 		obj.textures = ["$portal_0"];
-		obj.portal_visible = [true, false];
+		obj.portal_visible = [true, false, true];
 		obj.mask = 0;
 		obj.fragShader = await assets.loadShader("world/portal.frag.wgsl");
 		this.objects.push(obj);
+
+		let trg = new PortalTrigger();
+		trg.model = obj.model;
+		trg.onEnter = () => {
+			console.log("a enter");
+			engine.player.position.x += 20.0;
+		}
+		trg.onLeave = () => {
+			console.log("a leave");
+			engine.player.position.x += 20.0;
+		}
+		this.triggers.push(trg);
 
 		obj = new Object();
 		obj.model = Mat4.transform(new Vec3(10, 2, 0), new Vec3(), new Vec3(3, 2, 1));
 		obj.mesh = await assets.loadMesh("quad_v.obj");
 		obj.textures = ["$portal_1"];
-		obj.portal_visible = [false, true];
+		obj.portal_visible = [false, true, true];
 		obj.mask = 0;
 		obj.fragShader = await assets.loadShader("world/portal.frag.wgsl");
 		this.objects.push(obj);
+
+		trg = new PortalTrigger();
+		trg.model = obj.model;
+		trg.onEnter = () => {
+			console.log("b enter");
+			engine.player.position.x -= 20.0;
+		}
+		trg.onLeave = () => {
+			console.log("b leave");
+			engine.player.position.x -= 20.0;
+		}
+		this.triggers.push(trg);
+
+		obj = new Object();
+		obj.tags = ["rotate"];
+		obj.model = Mat4.transform(new Vec3(0, 1, 0), new Vec3(rad(45), 0, 0), new Vec3(1, 1, 1));
+		obj.mesh = await assets.loadMesh("quad_v.obj");
+		obj.textures = ["$portal_2"];
+		obj.portal_visible = [true, true, true];
+		obj.mask = 0;
+		obj.fragShader = await assets.loadShader("world/portal.frag.wgsl");
+		this.objects.push(obj);
+
+		trg = new PortalTrigger();
+		trg.model = obj.model;
+		trg.onEnter = () => {
+			console.log("c enter");
+			engine.player.position.y += 20.0;
+		}
+		trg.onLeave = () => {
+			console.log("c leave");
+			engine.player.position.y += 20.0;
+		}
+		this.triggers.push(trg);
 
 
 		obj = new Object();
@@ -148,24 +195,7 @@ export class DebugPortalsScene extends Scene {
 	}
 
 	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
-		if (player.position.x > -13 && player.position.x < -7 &&
-			player.position.y > 0 && player.position.y < 4 &&
-			player.position.z * this.prevPos.z < 0
-		) {
-			console.log("a");
-			player.position.x += 20.0;
-			player.updateCamera();
-
-		} else if (player.position.x > 7 && player.position.x < 13 &&
-			player.position.y > 0 && player.position.y < 4 &&
-			player.position.z * this.prevPos.z < 0
-		) {
-			console.log("b");
-			player.position.x -= 20.0;
-			player.updateCamera();
-		}
-
-		this.prevPos = player.position.copy();
+		player.updateCamera();
 
 		this.portalCameras[0].model = Mat4.translate(new Vec3(20, 0, 0)).mul(player.camera.model);
 		this.portalCameras[0].aspect = player.camera.aspect;
@@ -177,11 +207,21 @@ export class DebugPortalsScene extends Scene {
 		this.portalCameras[1].fov = player.camera.fov;
 		this.portalCameras[1].updateMatrices();
 
+		this.portalCameras[2].model = Mat4.translate(new Vec3(0, 20, 0)).mul(player.camera.model);
+		this.portalCameras[2].aspect = player.camera.aspect;
+		this.portalCameras[2].fov = player.camera.fov;
+		this.portalCameras[2].updateMatrices();
+
 		// hide objects on backside of portal
 		for (let obj of this.getObjects("check_backside")) {
-			obj.portal_visible = [true, true];
+			obj.portal_visible = [true, true, true];
 			obj.portal_visible[0] = this.portalCameras[0].model.translation().z * obj.model.translation().z < 0;
 			obj.portal_visible[1] = this.portalCameras[1].model.translation().z * obj.model.translation().z < 0;
+			obj.portal_visible[2] = true;
+		}
+
+		for (let obj of this.getObjects("rotate")) {
+			obj.model.data = Mat4.rotateIntrinsic(new Vec3(0, rad(30 * deltaTime), 0)).mul(obj.model).data;
 		}
 
 	}

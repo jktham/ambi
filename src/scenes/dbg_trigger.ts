@@ -3,7 +3,7 @@ import { Object } from "../object";
 import { PhongUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Player } from "../player";
-import { Trigger } from "../trigger";
+import { AreaTrigger } from "../trigger";
 import { Bbox } from "../bbox";
 import type { Assets } from "../assets";
 
@@ -39,7 +39,7 @@ export class DebugTriggerScene extends Scene {
 		obj.z_sort = true;
 		this.objects.push(obj);
 
-		let trg = new Trigger();
+		let trg = new AreaTrigger();
 		trg.bbox = new Bbox([new Vec3(-3, 0, 0).sub(new Vec3(1, 1, 1)), new Vec3(-3, 0, 0).add(new Vec3(1, 1, 1))]);
 		trg.onEnter = () => {
 			let target = this.getObject("1")!;
@@ -65,7 +65,7 @@ export class DebugTriggerScene extends Scene {
 		obj.z_sort = true;
 		this.objects.push(obj);
 
-		trg = new Trigger();
+		trg = new AreaTrigger();
 		trg.bbox = await assets.loadBbox("monke.obj");
 		trg.model = obj.model;
 		trg.onEnter = () => {
@@ -92,7 +92,7 @@ export class DebugTriggerScene extends Scene {
 		obj.z_sort = true;
 		this.objects.push(obj);
 
-		trg = new Trigger();
+		trg = new AreaTrigger();
 		trg.bbox = await assets.loadBbox(obj.mesh.path);
 		trg.model = obj.model;
 		trg.onEnter = () => {
@@ -119,7 +119,7 @@ export class DebugTriggerScene extends Scene {
 		obj.z_sort = true;
 		this.objects.push(obj);
 
-		trg = new Trigger();
+		trg = new AreaTrigger();
 		trg.bbox = await assets.loadBbox(obj.mesh.path);
 		trg.model = obj.model;
 		trg.onEnter = () => {

@@ -149,9 +149,6 @@ export class Engine {
 		// ---- scene ----
 		this.profiler.start("  updateScene");
 
-		await this.scene.update(time, deltaTime, this.player, this.assets);
-		this.player.updateCamera(); // in case position changed by update
-
 		for (let trigger of this.scene.triggers) {
 			if (trigger.enabled) await trigger.test(this.player.position);
 		}
@@ -160,6 +157,8 @@ export class Engine {
 			await this.scene.interact(time, this.player, this.assets);
 			this.input.activeActions.delete("interact"); // only trigger once per press
 		}
+
+		await this.scene.update(time, deltaTime, this.player, this.assets);
 
 		for (let obj of this.scene.objects.filter(obj => obj.lifetime !== undefined)) {
 			obj.lifetime! -= deltaTime;

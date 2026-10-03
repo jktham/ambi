@@ -1,6 +1,6 @@
 import { Scene } from "../scene";
 import { Object } from "../object";
-import { Trigger } from "../trigger";
+import { AreaTrigger } from "../trigger";
 import { InstancedUniforms, PhongUniforms } from "../uniforms";
 import { Mat4, Vec3 } from "../vec";
 import type { Player } from "../player";
@@ -74,7 +74,7 @@ export class DebugObjectScene extends Scene {
 		this.objects.push(obj);
 
 		this.triggers = [];
-		let t = new Trigger();
+		let t = new AreaTrigger();
 		t.bbox = await assets.loadBbox("monke.obj");
 		t.onEnter = () => console.log("enter");
 		t.onLeave = () => console.log("leave");
