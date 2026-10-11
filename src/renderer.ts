@@ -252,7 +252,7 @@ export class Renderer {
     }
 
     private updateGlobalBuffers(scene: Scene, camera: Camera, time: number, frame: number) {
-        this.profiler.start("  bufferGlobal");
+        this.profiler.start("    bufferGlobal");
 
         // global uniforms, always update
         let globalUniforms = new GlobalUniforms();
@@ -272,11 +272,11 @@ export class Renderer {
         }
         this.device.queue.writeBuffer(globalUniformBuffer, 0, globalUniforms.update().buffer);
         
-        this.profiler.stop("  bufferGlobal");
+        this.profiler.stop("    bufferGlobal");
     }
 
     private updateObjectBuffers(scene: Scene) {
-        this.profiler.start("  bufferObjects");
+        this.profiler.start("    bufferObjects");
 
         for (let obj of scene.objects) {
             if (!obj.update) {
@@ -311,11 +311,11 @@ export class Renderer {
             }
         }
 
-        this.profiler.stop("  bufferObjects");
+        this.profiler.stop("    bufferObjects");
     }
 
     private updatePostBuffers(scene: Scene, camera: Camera, time: number, frame: number) {
-        this.profiler.start("  bufferPost");
+        this.profiler.start("    bufferPost");
 
         let postBaseUniforms = new PostUniforms();
         postBaseUniforms.time = time;
@@ -339,11 +339,11 @@ export class Renderer {
             this.device.queue.writeBuffer(postFragUniformBuffer, 0, postUniforms.update().buffer);
         }
 
-        this.profiler.stop("  bufferPost");
+        this.profiler.stop("    bufferPost");
     }
 
     private drawObjects(scene: Scene, drawMode: "world" | "shadow" | `portal_${number}`) {
-        this.profiler.start("  drawObjects");
+        this.profiler.start("    drawObjects");
 
         const encoder = this.device.createCommandEncoder({ label: "world render encoder" });
         const pass = encoder.beginRenderPass(this.resources.worldRenderPassDescriptor);
@@ -381,11 +381,11 @@ export class Renderer {
         pass.end();
         this.device.queue.submit([encoder.finish()]);
 
-        this.profiler.stop("  drawObjects");
+        this.profiler.stop("    drawObjects");
     }
 
     private drawPost() {
-        this.profiler.start("  drawPost");
+        this.profiler.start("    drawPost");
 
         (this.resources.postRenderPassDescriptor.colorAttachments as GPURenderPassColorAttachment[])[0].view = this.context.getCurrentTexture().createView();
         const postEncoder = this.device.createCommandEncoder({ label: "post render encoder" });
@@ -407,6 +407,6 @@ export class Renderer {
         postPass.end();
         this.device.queue.submit([postEncoder.finish()]);
 
-        this.profiler.stop("  drawPost");
+        this.profiler.stop("    drawPost");
     }
 }

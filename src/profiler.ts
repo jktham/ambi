@@ -11,7 +11,7 @@ export class Profiler {
     stop(label: string) {
         let startTime = this.startTimes.get(label);
         if (!startTime) {
-            console.warn(`Profiler: no start time for label "${label}"`);
+            console.warn(`profiler: no start time for label "${label}"`);
             return;
         }
         let duration = performance.now() - startTime;
@@ -30,14 +30,14 @@ export class Profiler {
         if (label) {
             let duration = this.durations.get(label);
             if (!duration) {
-                console.warn(`Profiler: no duration for label "${label}"`);
+                console.warn(`profiler: no duration for label "${label}"`);
                 return;
             }
             let total = duration.reduce((a, b) => a + b, 0);
             let average = total / duration.length;
-            console.log(`Profiler:\n  ${label}: ${average.toFixed(3)} ms`);
+            console.log(`profiler:\n  ${label}: ${average.toFixed(3)} ms`);
         } else if (this.durations.size > 0) {
-            let output = "Profiler:\n";
+            let output = "profiler:\n";
             this.durations.forEach((duration, label) => {
                 let total = duration.reduce((a, b) => a + b, 0);
                 let average = total / duration.length;

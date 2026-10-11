@@ -135,19 +135,19 @@ export class Engine {
 	}
 
 	private async update(time: number, frame: number, deltaTime: number) {
-		this.profiler.start("update");
+		this.profiler.start("  update");
 
 		// ---- player ----
-		this.profiler.start("  updatePlayer");
+		this.profiler.start("    updatePlayer");
         this.player.updatePosition(this.input.activeActions, deltaTime);
         this.player.updateRotation(this.input.cursorChange);
         this.input.resetChange();
 		this.player.updateCamera();
-		this.profiler.stop("  updatePlayer");
+		this.profiler.stop("    updatePlayer");
 
 
 		// ---- scene ----
-		this.profiler.start("  updateScene");
+		this.profiler.start("    updateScene");
 
 		for (let trigger of this.scene.triggers) {
 			if (trigger.enabled) await trigger.test(this.player.position);
@@ -175,7 +175,7 @@ export class Engine {
 		})
         this.scene.objects.sort((a, b) => b.z - a.z);
 
-		this.profiler.stop("  updateScene");
+		this.profiler.stop("    updateScene");
 
 
 		// ---- gui ----
@@ -187,14 +187,14 @@ export class Engine {
 			${this.assets.size()} ast\
 		`);
 		
-		this.profiler.stop("update");
+		this.profiler.stop("  update");
 		if (frame % 120 == 0) this.profiler.print();
 	}
 
 	private async draw(time: number, frame: number) {
-		this.profiler.start("draw");
+		this.profiler.start("  draw");
 		await this.renderer.drawScene(this.scene, this.player.camera, time, frame);
-		this.profiler.stop("draw");
+		this.profiler.stop("  draw");
 	}
 
 	private loop() {
@@ -209,15 +209,16 @@ export class Engine {
             if (this.framerate == 0 || dt >= 1 / this.framerate - 0.001) {
             	t0 = t;
 				f++;
-
 				this.deltaHist.push(dt);
 				if (this.deltaHist.length > 60) {
 					this.deltaHist.shift();
 				}
 				this.deltaAvg = this.deltaHist.reduce((acc, v) => acc + v, 0) / this.deltaHist.length;
-
+				
+				this.profiler.start("frame");
                 await this.update(t / 1000 - this.timeOffset, f, dt);
                 await this.draw(t / 1000 - this.timeOffset, f);
+				this.profiler.stop("frame");
             }
         }
 
