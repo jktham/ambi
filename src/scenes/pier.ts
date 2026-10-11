@@ -17,15 +17,15 @@ export class PierScene extends Scene {
 		this.spawnRot = new Vec3(0, rad(90), 0);
 
 		let postUniforms = new PostPsxFogUniforms();
-		postUniforms.fog_start = -2.0;
-		postUniforms.fog_end = 10.0;
+		postUniforms.fog_start = -8.0;
+		postUniforms.fog_end = 14.0;
 		postUniforms.fog_color = new Vec4(0.60, 0.60, 0.60, 1.0);
 		this.postUniforms = postUniforms;
 
 		this.preload = {
 			shaders: ["post/psx_fog.frag.wgsl", "world/psx.frag.wgsl", "world/psx.vert.wgsl", "world/skybox.frag.wgsl", "world/psx_instanced.vert.wgsl"],
 			textures: ["materials/wood.jpg", "materials/snow.jpg", "materials/ground.jpg", "default.png", "colors/white.png", "materials/cracked.jpg", "materials/metal.jpg"],
-			meshes: ["pier/pier.obj", "pier/water.obj", "pier/ground.obj", "cube.obj", "pier/snow.obj", "pier/lantern_post.obj", "pier/lantern.obj", "pier/lantern_holder.obj", "pier/lantern_chain.obj", "pier/tree_stem.obj", "pier/tree_top.obj"],
+			meshes: ["pier/pier.obj", "pier/water.obj", "pier/ground.obj", "cube.obj", "pier/snow.obj", "pier/lantern_post.obj", "pier/lantern.obj", "pier/lantern_holder.obj", "pier/lantern_chain.obj", "pier/tree_stem.obj", "pier/tree_top.obj", "pier/tree_stem.obj", "pier/schilf.obj"],
 			colliders: ["pier/collider.obj"],
 		};
 	}
@@ -167,6 +167,15 @@ export class PierScene extends Scene {
 		(tree_top.vertUniforms as InstancedUniforms).models.push(...tree_models);
 		(tree_top.vertUniforms as InstancedUniforms).normals.push(...tree_models.map(m => m.inverse().transpose()));
 		this.objects.push(tree_top);
+
+		let schilf = new Object();
+		schilf.mesh = await assets.loadMesh("pier/schilf.obj");
+		schilf.textures = [await assets.loadTexture("materials/leaves.jpg")];
+		schilf.color = new Vec4(0.2, 0.15, 0.15, 1.0);
+		schilf.uv_scale = 0.1;
+		schilf.fragShader = await assets.loadShader("world/psx.frag.wgsl");
+		schilf.vertShader = await assets.loadShader("world/psx.vert.wgsl");
+		this.objects.push(schilf);
 	}
 
 	async update(time: number, deltaTime: number, player: Player, assets: Assets) {
