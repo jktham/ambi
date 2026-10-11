@@ -25,7 +25,7 @@ export class PierScene extends Scene {
 		this.preload = {
 			shaders: ["post/psx_fog.frag.wgsl", "world/psx.frag.wgsl", "world/psx.vert.wgsl", "world/skybox.frag.wgsl", "world/psx_instanced.vert.wgsl"],
 			textures: ["materials/wood.jpg", "materials/snow.jpg", "materials/ground.jpg", "default.png", "colors/white.png", "materials/cracked.jpg", "materials/metal.jpg"],
-			meshes: ["pier/pier.obj", "pier/water.obj", "pier/ground.obj", "cube.obj", "pier/snow.obj", "pier/lantern_post.obj", "pier/lantern.obj", "pier/lantern_holder.obj", "pier/lantern_chain.obj"],
+			meshes: ["pier/pier.obj", "pier/water.obj", "pier/ground.obj", "cube.obj", "pier/snow.obj", "pier/lantern_post.obj", "pier/lantern.obj", "pier/lantern_holder.obj", "pier/lantern_chain.obj", "pier/tree_stem.obj", "pier/tree_top.obj"],
 			colliders: ["pier/collider.obj"],
 		};
 	}
