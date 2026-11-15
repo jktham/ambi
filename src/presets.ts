@@ -10,7 +10,7 @@ import { DebugTransparencyScene } from "./scenes/dbg_transparency";
 import { EchoScene } from "./scenes/echo";
 import { PostAsciiUniforms, PostDitherUniforms, PostOutlineUniforms, PostPsxFogUniforms, PostSsaoUniforms, Uniforms } from "./uniforms";
 import { DebugPixelScene } from "./scenes/dbg_pixel";
-import { DebugTriggerScene } from "./scenes/dbg_trigger";
+import { DebugTriggersScene } from "./scenes/dbg_triggers";
 import { DebugShadowsScene } from "./scenes/dbg_shadows";
 import { DebugMaterialScene } from "./scenes/dbg_material";
 import type { FragShaderPath, TexturePath } from "./assets";
@@ -35,7 +35,7 @@ export const scenes: Map<string, new () => Scene> = new Map([
 	["dbg_outline", DebugOutlineScene],
 	["dbg_transparency", DebugTransparencyScene],
 	["dbg_pixel", DebugPixelScene],
-	["dbg_trigger", DebugTriggerScene],
+	["dbg_triggers", DebugTriggersScene],
 	["dbg_rotation", DebugRotationScene],
 	["dbg_shadows", DebugShadowsScene],
 	["dbg_material", DebugMaterialScene],
