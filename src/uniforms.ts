@@ -394,3 +394,34 @@ export class PostAsciiUniforms extends Uniforms {
 		return this.data;
 	}
 }
+
+export class PostCrtUniforms extends Uniforms {
+	name = "PostCrtUniforms";
+
+	n_scanlines = 60;
+	scroll_speed = 1; // seconds per scanline
+	scanline_strength_multiplicative = 1.0; // color * (wave * scanline_strength_multiplicative + 1.0)
+	scanline_strength_additive = 0.01; // color + wave * scanline_strength_additive
+	vignette_strength = 1.0; // 0.0 = no vignette, 1.0 = full black
+	vignette_radius_start = 0.2; // 1.0 = edge, 1.41 = corner
+	vignette_radius_end = 1.2;
+	noise_strength_multiplicative = 1.0; // color * (noise * noise_strength_multiplicative + 1.0)
+	noise_strength_additive = 0.01; // color + noise * noise_strength_additive
+
+	size(): number {
+		return 9;
+	}
+
+	update(): Float32Array {
+		this.data[0] = this.n_scanlines;
+		this.data[1] = this.scroll_speed;
+		this.data[2] = this.scanline_strength_multiplicative;
+		this.data[3] = this.scanline_strength_additive;
+		this.data[4] = this.vignette_strength;
+		this.data[5] = this.vignette_radius_start;
+		this.data[6] = this.vignette_radius_end;
+		this.data[7] = this.noise_strength_multiplicative;
+		this.data[8] = this.noise_strength_additive;
+		return this.data;
+	}
+}

@@ -1,6 +1,6 @@
 import { Scene } from "../scene";
 import { Object } from "../object";
-import { InstancedUniforms, PhongUniforms } from "../uniforms";
+import { InstancedUniforms, PhongUniforms, PostCrtUniforms } from "../uniforms";
 import { Mat4, Vec3, Vec4 } from "../vec";
 import type { Assets, MeshPath } from "../assets";
 
@@ -18,9 +18,10 @@ export class BrutalScene extends Scene {
 		this.phong.light.diffuse = new Vec3(1.0, 0.2, 0.2);
 		this.phong.light.specular = Vec3.splat(0.0);
 		this.phong.material.specular = Vec3.splat(0.0);
+		this.postUniforms = new PostCrtUniforms();
 
 		this.preload = {
-			shaders: ["post/noise.frag.wgsl", "world/phong.frag.wgsl", "world/instanced.vert.wgsl"],
+			shaders: ["post/crt.frag.wgsl", "world/phong.frag.wgsl", "world/instanced.vert.wgsl"],
 			textures: ["materials/concrete.jpg", "colors/white.png"],
 			meshes: ["brutal/tiles/path_straight.obj", "brutal/tiles/path_cross.obj", "brutal/tiles/path_fork.obj", "brutal/tiles/path_end.obj", "brutal/tiles/path_turn.obj", "brutal/tiles/tower.obj", "uvsphere.obj"],
 			colliders: ["brutal/tiles/path_straight.obj", "brutal/tiles/path_cross.obj", "brutal/tiles/path_fork.obj", "brutal/tiles/path_end.obj", "brutal/tiles/path_turn.obj", "brutal/tiles/tower.obj"],
@@ -28,7 +29,7 @@ export class BrutalScene extends Scene {
 	}
 
 	async init(assets: Assets) {
-		this.postShader = await assets.loadShader("post/noise.frag.wgsl");
+		this.postShader = await assets.loadShader("post/crt.frag.wgsl");
 
 		const size = 21;
 		const scale = 20.0;
@@ -76,6 +77,7 @@ export class BrutalScene extends Scene {
 		sun.mesh = await assets.loadMesh("uvsphere.obj");
 		sun.textures = [await assets.loadTexture("colors/white.png")];
 		sun.color = new Vec4(0.8, 0.1, 0.1, 1.0);
+		sun.mask = 1;
 		this.objects.push(sun);
 	}
 }
