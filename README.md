@@ -1,5 +1,19 @@
 silly engine for cool scenes and per object shader stages c:
 
+## running
+`pnpm run dev` /
+`pnpm run build && pnpm run preview`
+
+## adding a new scene
+- create class extending `Scene` in `src/scenes/`
+- add name and constructor to `src/presets.ts` to add to dropdown
+
+## adding a new shader
+- create `*.{vert|frag}.wgsl` in `public/shaders/{post|world}/`
+- create class extending `Uniforms` in `src/uniforms.ts` if needed
+- add path and uniforms, textures to `src/presets.ts` to add to dropdown
+
+
 ## todo
 
 - engine
@@ -58,10 +72,11 @@ silly engine for cool scenes and per object shader stages c:
     - [x] psx field, infinite terrain
     - [x] brutal, wavefunction collapse tile maze
     - [x] debug scenes (wip), small tests for each feature
-    - [ ] cell, shadow map in fixed area
+    - [ ] cell, shadow map in fixed area, light flicker
     - [ ] echo maze, navigate with sonar pings
     - [ ] forest, procedural mesh gen
     - [ ] lake, screenspace reflections
+    - [ ] tree, multiple shaders overlaid using portals
     - [ ] something with high effort assets
 - shaders
     - vert
